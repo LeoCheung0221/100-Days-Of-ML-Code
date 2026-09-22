@@ -3,7 +3,7 @@
 # 🛰️ Season 1 · Models
 
 ✨ One hundred days. Each day removes one shortcut the previous day still allowed. What rises is the constraint, not the name of a library.  
-🔥 Lesson already lit: [Day 1 · The line lets the flare go](day-01.en.md). The other days are listed. Their lamps are still dark.
+🔥 Lesson written: [Day 1 · In-sample nearest neighbor and ordinary least squares](day-01.en.md). The other days are listed and have no lesson yet.
 
 Back to the [front page](../../README.en.md).
 

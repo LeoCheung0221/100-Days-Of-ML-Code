@@ -1,4 +1,4 @@
-<p align="center"><a href="../../docs/season-01/day-01.md#zh">中文讲解</a> · <a href="../../docs/season-01/day-01.md#en">English</a></p>
+<p align="center"><a href="../../docs/season-01/day-01.md">中文讲解</a> · <a href="../../docs/season-01/day-01.en.md">English</a></p>
 
 # 第 1 天 · 样本内最近邻与普通最小二乘
 
@@ -14,7 +14,7 @@
 | **4** | **20.0** | **11.79** | **8.21** |
 | 5 | 10.4 | 15.06 | −4.66 |
 
-论证、损失与本日边界写在 [中文讲解](../../docs/season-01/day-01.md#zh) 与 [English](../../docs/season-01/day-01.md#en)。
+论证、损失与本日边界写在 [中文讲解](../../docs/season-01/day-01.md) 与 [English](../../docs/season-01/day-01.en.md)。
 
 ```bash
 python days/01-line-that-misses/fit_line.py

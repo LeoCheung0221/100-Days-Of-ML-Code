@@ -1,0 +1,83 @@
+[hidden] {
+  display: none !important;
+}
+
+:root {
+  color: #d7e2ea;
+  background: #071018;
+  font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+}
+
+.kicker {
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  color: #8aa4b5;
+  font-family: "Inter", "Noto Sans SC", sans-serif;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 560;
+  margin: 12px 0 8px;
+}
+
+.story,
+.oath,
+.foot {
+  line-height: 1.6;
+  color: #b7c6d0;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 28px 0 12px;
+  background: #0b1822;
+  border: 1px solid #1c3344;
+}
+
+.readout {
+  display: flex;
+  gap: 28px;
+  font-family: "Inter", "Noto Sans SC", sans-serif;
+  font-size: 15px;
+}
+
+.mem { color: #f0b45a; }
+.line { color: #7ec8ff; }
+
+.oath {
+  color: #e8eef2;
+}
+
+.foot {
+  font-size: 13px;
+  color: #7f93a1;
+}
+
+button {
+  margin-top: 8px;
+  background: transparent;
+  color: #d7e2ea;
+  border: 1px solid #345066;
+  padding: 8px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+
+code {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}

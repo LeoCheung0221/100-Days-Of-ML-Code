@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>观测席 · 第 1 天</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <main>
+    <p class="kicker">观测席 · 量化第一课</p>
+    <h1>第四个交易日，价格被拉高了。</h1>
+    <p class="story">领航员有两个习惯。死记会把那一下原样背下来。直线航线要照顾前后几天，会从拉高的价格下面穿过去。</p>
+    <canvas id="sky" width="880" height="420" aria-label="五个交易日的收盘价，第四天被拉高，一条直线从它下面穿过"></canvas>
+    <div class="readout" id="readout" hidden>
+      <p><span class="mem">死记</span>说出 20.0，误差 0</p>
+      <p><span class="line">直线</span>说出 11.79，误差 8.2</p>
+    </div>
+    <p class="oath" id="oath" hidden>直线不是把见过的价格存起来。它选了一条航线，离线的那一天一定被说错。</p>
+    <p class="foot">同一组收盘价在 <code>days/01-line-that-misses/fit_line.py</code>。这里不下单。后面的回测接到 LAT 的历史行情，不接到实盘。</p>
+    <button type="button" id="replay">再看一次</button>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

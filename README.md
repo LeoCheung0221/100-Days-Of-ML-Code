@@ -32,4 +32,6 @@ python days/01-line-that-misses/fit_line.py
 | 71–85 | 把错误分成几类，而不是只看一个分数 | 未写 |
 | 86–100 | 把这个模型讲给另一个工程师 | 未写 |
 
-第 1 天的说明在 [`days/01-line-that-misses`](days/01-line-that-misses)。
+第 1 天可以在浏览器里看完，不用先读代码。在 `site` 目录执行 `npm install` 然后 `npm run dev`。画面里第四个交易日的收盘价被拉高，直线从它下面穿过。同一组数字来自 [`days/01-line-that-misses`](days/01-line-that-misses/fit_line.py)。
+
+后面每一天仍是一个实验。量化实战从这里接：先看历史收盘价上的预测误差，再进 LAT 的回测。这一页不下单。

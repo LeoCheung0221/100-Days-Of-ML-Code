@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-# Five points sit near y = 2x. The sixth is the point we refuse to train on.
+# Five closes. Day 4 is pulled up to 20; the line still has to fit all five.
 TRAIN_X = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
 TRAIN_Y = np.array([2.1, 3.9, 6.2, 20.0, 10.4])
 ASK_X = 4.0

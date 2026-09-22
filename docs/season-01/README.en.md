@@ -1,9 +1,8 @@
 <p align="center"><a href="README.md">中文</a> · <b>English</b></p>
 
-# 🛰️ Season 1 · Models
+# Estimation
 
-✨ One hundred days. Each day removes one shortcut the previous day still allowed. What rises is the constraint, not the name of a library.  
-🔥 Lesson written: [Day 1 · In-sample nearest neighbor and ordinary least squares](day-01.en.md). The other days are listed and have no lesson yet.
+One estimator a day. Note written: [Day 1 · In-sample nearest neighbor and ordinary least squares](day-01.en.md). The remaining days are listed below.
 
 Back to the [front page](../../README.en.md).
 

@@ -1,14 +1,31 @@
-<p align="center"><a href="README.md">中文</a> · <b>English</b></p>
+<p align="center"><a href="README.md">中文</a> &nbsp;&nbsp;·&nbsp;&nbsp; <b>English</b></p>
 
-# Observation Deck
+<h1 align="center">Observation Deck</h1>
 
-Estimation on a price series. One runnable estimator a day, and the residual it leaves on that sample.
+<p align="center">A price study in four phases. One hundred days in each phase. One reproducible calculation each day.</p>
 
-Day 1 reproduces. The query `x = 4` lies in the training set. The in-sample residual is 0 for the nearest neighbor and 8.2 for ordinary least squares. The note is [Day 1](docs/season-01/day-01.en.md). The implementation is [`fit_line.py`](days/01-line-that-misses/fit_line.py).
+<br>
+
+Query `x = 4`, inside the training set.
+
+| | Nearest neighbor | Ordinary least squares |
+|---|---:|---:|
+| In-sample residual | 0 | 8.2 |
+| Output | 20.0 | 11.79 |
+
+<p align="center">Fit &nbsp; <code>ŷ = 3.27x − 1.29</code></p>
+
+<p align="center">
+<a href="docs/season-01/day-01.en.md">Day 1</a>
+&nbsp;&nbsp;·&nbsp;&nbsp;
+<a href="days/01-line-that-misses/fit_line.py">Implementation</a>
+&nbsp;&nbsp;·&nbsp;&nbsp;
+<a href="site">Curve</a>
+</p>
 
 ## Reproduce
 
-Python 3.8 or newer.
+Python 3.8 or newer, from the repository root.
 
 ```bash
 python3 -m venv .venv
@@ -17,13 +34,15 @@ pip install -r requirements.txt
 python days/01-line-that-misses/fit_line.py
 ```
 
-The same closes and fitted values are drawn in [`site`](site). From that directory, run `npm install`, then `npm run dev`.
+The curve is in [`site`](site). From that directory, run `npm install`, then `npm run dev`.
 
-## Contents
+## Phases
 
-1. [Estimation](docs/season-01/README.en.md)
-2. Factors
-3. Portfolio construction
-4. Execution
+| Phase | Subject |
+|---|---|
+| Phase I | [**Models**](docs/season-01/README.en.md) |
+| Phase II | **Factors** |
+| Phase III | **Portfolio and constraints** |
+| Phase IV | **Execution** |
 
-Notes from 2019 are in [`archive/2019`](archive/2019).
+<p align="right"><sub>Notes from 2019 are in <a href="archive/2019">archive/2019</a></sub></p>

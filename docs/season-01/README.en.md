@@ -1,8 +1,8 @@
 <p align="center"><a href="README.md">中文</a> · <b>English</b></p>
 
-# Estimation
+# Phase I · Models
 
-One estimator a day. Note written: [Day 1 · In-sample nearest neighbor and ordinary least squares](day-01.en.md). The remaining days are listed below.
+Note: [Day 1 · In-sample nearest neighbor and ordinary least squares](day-01.en.md). The remaining days are listed below.
 
 Back to the [front page](../../README.en.md).
 

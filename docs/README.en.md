@@ -1,12 +1,3 @@
-<p align="center"><a href="README.md">中文</a> · <b>English</b></p>
+<p align="center"><a href="README.md#zh">中文</a> &nbsp;&nbsp;·&nbsp;&nbsp; <a href="README.md#en"><b>English</b></a></p>
 
-# Docs
-
-| Phase | Subject |
-|---|---|
-| Phase I | [Models](season-01/README.en.md) |
-| Phase II | Factors |
-| Phase III | Portfolio and constraints |
-| Phase IV | Execution |
-
-The day-1 note is [day-01.en.md](season-01/day-01.en.md).
+English is on the [docs index](README.md#en).

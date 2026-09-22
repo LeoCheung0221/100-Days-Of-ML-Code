@@ -188,7 +188,7 @@ Each day's calculation is in its own note. Only the titles are listed here. Day 
 
 ### 01 – 10
 
-- [**01**　Nearest neighbor and OLS](docs/season-01/day-01.en.md)
+- [**01**　Nearest neighbor and OLS](docs/season-01/day-01.md#en)
 - **02**　Absolute and squared error
 - **03**　Residuals, point by point
 - **04**　The chord through the endpoints

@@ -123,7 +123,7 @@ python days/01-line-that-misses/fit_line.py
 
 # Day 1 · In-sample nearest neighbor and ordinary least squares
 
-[Phase I · Models](README.en.md) · runs
+[Phase I · Models](../../README.md#en) · runs
 
 Two estimators, one query, in-sample residuals only. The series is five closing prices. The query `x = 4` lies inside the training set. It is not a holdout.
 

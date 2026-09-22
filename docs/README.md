@@ -1,4 +1,6 @@
-<p align="center"><b>中文</b> · <a href="README.en.md">English</a></p>
+<p align="center"><a href="#zh"><b>中文</b></a> &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#en">English</a></p>
+
+<a id="zh"></a>
 
 # 文档
 
@@ -10,3 +12,20 @@
 | 第四阶段 | 执行 |
 
 第 1 日的说明在 [day-01.md](season-01/day-01.md)。
+
+---
+
+<p align="center"><a href="#zh">中文</a> &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#en"><b>English</b></a></p>
+
+<a id="en"></a>
+
+# Docs
+
+| Phase | Subject |
+|---|---|
+| Phase I | [Models](season-01/README.md#en) |
+| Phase II | Factors |
+| Phase III | Portfolio and constraints |
+| Phase IV | Execution |
+
+The day-1 note is [day-01.md](season-01/day-01.md#en).

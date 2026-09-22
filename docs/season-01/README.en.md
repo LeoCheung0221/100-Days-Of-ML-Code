@@ -1,10 +1,9 @@
 <p align="center"><a href="README.md">中文</a> · <b>English</b></p>
 
-# Season 1 · Models
+# 🛰️ Season 1 · Models
 
-One hundred days. Each day removes one shortcut the previous day still allowed. What rises is the constraint, not the name of a library.
-
-Lesson written: [Day 1 · The line lets the pulled-up day go](day-01.en.md). The other days are listed and do not have a lesson yet.
+✨ One hundred days. Each day removes one shortcut the previous day still allowed. What rises is the constraint, not the name of a library.  
+🔥 Lesson already lit: [Day 1 · The line lets the flare go](day-01.en.md). The other days are listed. Their lamps are still dark.
 
 Back to the [front page](../../README.en.md).
 

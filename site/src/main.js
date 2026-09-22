@@ -114,4 +114,8 @@ function play() {
 }
 
 document.querySelector("#replay").addEventListener("click", play);
-play();
+window.renderFrame = frame;
+
+const still = new URLSearchParams(location.search).get("t");
+if (still == null) play();
+else frame(Number(still));

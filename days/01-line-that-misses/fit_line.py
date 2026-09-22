@@ -1,4 +1,4 @@
-"""Day 1: a memorized neighbor versus a fitted line on one held-out point."""
+"""Day 1: a memorized neighbor versus a fitted line on a pulled-up close."""
 
 from __future__ import annotations
 

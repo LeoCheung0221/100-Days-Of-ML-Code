@@ -1,16 +1,16 @@
 <p align="center"><a href="README.md">中文</a> · <b>English</b></p>
 
-# Observation Deck
+# 🛰️ Observation Deck
 
 **One session a day. One hundred days a season. The constraint only gets tighter.**
 
-For people who already write programs. Each day you run one piece of code and leave one sentence another engineer can repeat: where this model is wrong on these prices.
-
-The 2019 notes are in [`archive/2019`](archive/2019). The series index is in [`docs`](docs/README.en.md).
+✨ For people who already write programs, this window looks at price.  
+📉 Each day you run one piece of code and leave one sentence another engineer can repeat: where this model is wrong on these prices.  
+🧭 The 2019 notes are in [`archive/2019`](archive/2019). The series index is in [`docs`](docs/README.en.md).
 
 ---
 
-## Four seasons
+## 🗺️ Four seasons
 
 | Season | The question | What day 100 must be able to say | Where |
 |---|---|---|---|
@@ -23,9 +23,9 @@ Season 2 opens after season 1 has finished leakage. Season 4 stops at a paper le
 
 ---
 
-## ✦ Day 1 is ready
+## ✨ Day 1 is ready
 
-Five sessions. Day 4 is pulled up to **20**. The other four sit near a line.
+🛰️ The first lesson on the deck. Five sessions, five lights. Four follow the route. The fourth is pulled up to **20**. Memory pockets it and misses by 0. The line has to serve the whole sky, passes underneath, and misses by **8.2**.
 
 | Day | Close | Line |
 |---|---:|---:|
@@ -57,7 +57,7 @@ The same numbers are drawn in [`site`](site). From that directory, run `npm inst
 
 ---
 
-## ▣ The shape of a day
+## 🧭 The shape of a day
 
 | | What you leave behind |
 |---|---|

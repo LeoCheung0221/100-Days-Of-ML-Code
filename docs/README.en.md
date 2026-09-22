@@ -1,8 +1,8 @@
 <p align="center"><a href="README.md">中文</a> · <b>English</b></p>
 
-# Docs
+# 📚 Docs
 
-The repository front page is the outline. Each season's day list, and each written lesson, lives here.
+✨ The front page is the outline. Each season's day list, and each lesson written to be read, lives here.
 
 | Season | What | Status |
 |---|---|---|

@@ -20,20 +20,20 @@
 
 ## Phase I · Models
 
-Each day's calculation is in its own note. Only the titles are listed here. Day 1 runs.
+Each day's calculation is in its own note. Only the titles are listed here. Days 1 through 10 run.
 
 ### 01 – 10
 
 - [**01**　Nearest neighbor and OLS](docs/season-01/day-01.en.md)
-- **02**　Absolute and squared error
-- **03**　Residuals, point by point
-- **04**　The chord through the endpoints
-- **05**　Refit without day 4
-- **06**　A query off the training support
-- **07**　Hold out day 5
-- **08**　A three-day window
-- **09**　Shuffle the dates
-- **10**　Up or down
+- [**02**　Absolute and squared error](docs/season-01/day-02.en.md)
+- [**03**　Residuals, point by point](docs/season-01/day-03.en.md)
+- [**04**　The chord through the endpoints](docs/season-01/day-04.en.md)
+- [**05**　Refit without day 4](docs/season-01/day-05.en.md)
+- [**06**　A query off the training support](docs/season-01/day-06.en.md)
+- [**07**　Hold out day 5](docs/season-01/day-07.en.md)
+- [**08**　A three-day window](docs/season-01/day-08.en.md)
+- [**09**　Shuffle the dates](docs/season-01/day-09.en.md)
+- [**10**　Up or down](docs/season-01/day-10.en.md)
 
 ### 11 – 20
 

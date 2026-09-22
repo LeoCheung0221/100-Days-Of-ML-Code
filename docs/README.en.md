@@ -9,4 +9,4 @@
 | Phase III | Portfolio and constraints |
 | Phase IV | Execution |
 
-The day-1 note is [day-01.en.md](season-01/day-01.en.md).
+Notes for days 1 through 10 are in [Phase I](season-01/README.en.md).

@@ -2,7 +2,7 @@
 
 # Phase I · Models
 
-Note: [Day 1 · In-sample nearest neighbor and ordinary least squares](day-01.en.md). The remaining days are listed below.
+Note: days 1 through 10 have notes, linked in the table. The remaining days are titles only.
 
 Back to the [front page](../../README.en.md).
 
@@ -11,15 +11,15 @@ Back to the [front page](../../README.en.md).
 | Day | Session | Shortcut removed |
 |---|---|---|
 | [01　Nearest neighbor and OLS](day-01.en.md) | In-sample nearest neighbor and ordinary least squares | The query lies in the training set. The two estimators sit side by side |
-| 02 | Absolute error and squared error | The same miss must be handed in as two numbers. Squaring weighs day 4 more |
-| 03 | The five residuals side by side | A single total is no longer enough. Name the day that holds the error |
-| 04 | A line through day 1 and day 5 only | A cruder line has to lose to least squares on the miss |
-| 05 | Fit again without day 4 | Show how far one point can move the whole line |
-| 06 | Ask for day 6 | That day is not in the fit. Memory can only copy a neighbor. The line must extrapolate |
-| 07 | Hide day 5 and call it the exam | Error on the fitting days no longer counts |
-| 08 | Keep a window of three days and slide it once | The line has to drop the earlier prices |
-| 09 | Shuffle the dates and fit again | The score barely moves, so the line is shown not to know time |
-| 10 | Score direction, up or down | A small price error can still get the direction wrong. Both scores are due |
+| [02　Absolute and squared error](day-02.en.md) | Absolute loss and squared loss on one residual | Session 4 is 0.4928 of L1 and 0.6997 of L2 |
+| [03　Residuals, point by point](day-03.en.md) | Open the RSS into five coordinates | The scalar 96.339 does not say where the loss sits |
+| [04　The chord through the endpoints](day-04.en.md) | Chord and OLS in the same affine class | Higher L2 for the chord, and a lower L1 is possible |
+| [05　Refit without day 4](day-05.en.md) | Delete session 4 and solve the normal equations again | The slope falls by 1.1729. Displacement is not a holdout score |
+| [06　A query off the training support](day-06.en.md) | Query x = 6. There is no y₆ | The neighbor copies 10.4, the line extrapolates to 18.33, and the residual is undefined |
+| [07　Hold out day 5](day-07.en.md) | Fit on the first four sessions and score session 5 alone | Training RSS = 42.05 does not count |
+| [08　A three-day window](day-08.en.md) | Three sessions, slid forward once | The slope rises from 2.0500 to 8.0500. An earlier row has weight 0 |
+| [09　Shuffle the dates](day-09.en.md) | Permute row order and keep the pairs | β̂ and RSS do not move. The invariance is row order, not the calendar coordinate |
+| [10　Up or down](day-10.en.md) | Level residuals beside the sign of the one-day move | Session 5 has the smaller absolute residual and the wrong sign |
 
 ## 11 – 25 · Direction
 

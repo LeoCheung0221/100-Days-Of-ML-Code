@@ -10,7 +10,7 @@ Back to the [front page](../../README.en.md).
 
 | Day | Session | Shortcut removed |
 |---|---|---|
-| [01](day-01.en.md) | Memory against a line. Day 4 closes at 20, the line misses by 8.2 | The start. The two habits must sit side by side |
+| [01　Nearest neighbor and OLS](day-01.en.md) | In-sample nearest neighbor and ordinary least squares | The query lies in the training set. The two estimators sit side by side |
 | 02 | Absolute error and squared error | The same miss must be handed in as two numbers. Squaring weighs day 4 more |
 | 03 | The five residuals side by side | A single total is no longer enough. Name the day that holds the error |
 | 04 | A line through day 1 and day 5 only | A cruder line has to lose to least squares on the miss |

@@ -184,3 +184,5 @@ python days/01-line-that-misses/fit_line.py
 | 100 | 对着这一页把失败讲完 | 听众应能复述：数据到哪一天、什么不许用、哪三类错、为什么不下单 |
 
 写完的一天会标成可跑。现在是第 1 天。
+
+后面三季的大纲在 [`docs/seasons-outline.md`](docs/seasons-outline.md)。第 2 季等这一季的泄漏讲完再开。

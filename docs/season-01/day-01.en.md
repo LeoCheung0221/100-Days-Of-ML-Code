@@ -1,81 +1,94 @@
-<p align="center"><a href="day-01.md">🇨🇳 中文</a> · 🇬🇧 <b>English</b></p>
+<p align="center"><a href="day-01.md">中文</a></p>
 
-# 🛰️ Day 1 · The line lets the flare go
+# Day 1 · In-sample nearest neighbor and ordinary least squares
 
-✨ [Season 1 · Models](README.en.md) · 🟢 runs · 📉 no orders
+[Season 1 · Models](README.en.md) · runs · no orders
 
-Welcome to the observation deck. No vocabulary lesson first. Five lights are already in the sky. Four of them walk a quiet route. The fourth is yanked to the top of the dome. The navigator has to answer, out loud, where that light is now.
+Two estimators, one query, in-sample residuals only. The series is five closing prices. The query `x = 4` lies inside the training set. It is not a holdout.
 
-Two habits. One sky. One stores the flare and misses by **0**. One draws a route that can still serve all five days, says **11.79**, and misses by **8.2**. That gap is the first lesson of machine learning on a price.
-
----
-
-## 🌌 Five sessions
-
-| 🗓️ Day | 💰 Close | 📐 Line | 👀 What you see |
-|---|---:|---:|---|
-| 1 | 2.1 | 1.98 | lifting off along the route |
-| 2 | 3.9 | 5.25 | a little above the line |
-| 3 | 6.2 | 8.52 | still near it |
-| 🔥 **4** | **20.0** | **11.79** | **the flare** |
-| 5 | 10.4 | 15.06 | the light falls back, the line keeps climbing |
-
-The other four days drift upward by about 2 a day. Day 4 does not negotiate. The close stands at **20**. Everyone on the deck stares at it. A model that only stares at it is done with today's story before it begins.
+The nearest neighbor therefore repeats that point's label and the residual is 0. Ordinary least squares minimizes the residual sum of squares inside the affine class, cannot place the fitted value at 20, and leaves a residual of 8.2. A zero residual here is retrieval. A nonzero residual is the approximation error of the model class.
 
 ---
 
-## 🧠 Memory · pocket the flare
+## Sample
 
-Memory is simple enough to shine.
+Let `y_t` be the close on session `t`, for `t = 1,…,5`. Aside from session 4, the path rises by about 2 per day. The close at 20 is the observation with the largest pull on squared loss.
 
-It finds the nearest of the five days and repeats that close. The question is day 4, so the nearest day is day 4, and it says **20.0**. Miss **0**. Clean. Brilliant. As if it had never been wrong.
+| t | Close y | OLS fit ŷ | Residual y − ŷ |
+|---:|---:|---:|---:|
+| 1 | 2.1 | 1.98 | 0.12 |
+| 2 | 3.9 | 5.25 | −1.35 |
+| 3 | 6.2 | 8.52 | −2.32 |
+| **4** | **20.0** | **11.79** | **8.21** |
+| 5 | 10.4 | 15.06 | −4.66 |
 
-✨ It wins this day because it put this day in its pocket.  
-✨ On a day the pocket already holds, it looks like a genius.  
-✨ On a day the pocket does not hold, it can only copy a neighbor. That reveal waits for day 6.
-
-Today's question lets memory see 20. A miss of zero is a trophy for storage, not a trophy for prediction.
+Fitted values are the script's two-decimal print. The session-4 residual is `20.0 − 11.79 = 8.21`, reported as **8.2**.
 
 ---
 
-## 📐 The line · one route for the whole sky
+## Estimator 1 · Nearest neighbor
 
-The line does not memorize prices. It borrows from all five days at once:
+For a query `x`,
 
 ```text
-y = 3.27x − 1.29
+î = argmin_i |x_i − x|
+ŷ = y_î
 ```
 
-Put day 4 back in: `3.27 × 4 − 1.29 = 11.79`.
+with `x_i = i`. When the query coincides with a training abscissa, the neighbor is that point, the estimate equals the label, and the in-sample residual is identically 0.
 
-This is least squares. Square each gap from a close to the route, add them, and keep the slope and intercept that make the sum smallest. Hauling the whole route up to 20 would throw the other four days farther off, and the sum of squares would look worse. The route refuses to abandon the sky for one lamp.
+At `x = 4`:
 
-So you get the picture worth keeping: 🔥 the gold point sits at 20, and the blue route passes under it at **11.79**. The vertical mark between them is the miss.
+| | |
+|---|---|
+| Estimate | 20.0 |
+| Residual | 0 |
 
-| 🎭 Habit | 🗣️ Says | 💥 Miss | 🏆 Where it wins |
-|---|---:|---:|---|
-| 🧠 Memory | 20.0 | **0** | perfect on a day it has seen |
-| 📐 Line | 11.79 | **8.2** | able to answer all five, so day 4 has to yield |
-
-`20.0 − 11.79 = 8.21`, printed as **8.2**. Not a slip of the pen. The signed cost of one line that still has to carry five days.
+That 0 does not use the other four closes. It records that the query sits on the training support and the label was retrieved. Outside that support the same rule can only copy the nearest observed label. That is day 6.
 
 ---
 
-## 🎬 Watch first, then run
+## Estimator 2 · Ordinary least squares
 
-The page and the script share one set of closes. Open [`site`](../../site), run `npm install`, then `npm run dev`.
+The hypothesis class is the affine map `ŷ = β₁ x + β₀`. Row `i` of the design matrix is `[x_i, 1]`. The coefficient is the minimizer of the residual sum of squares:
 
-You will see:
+```text
+β̂ = argmin_β || y − Xβ ||²
+```
 
-1. 🌑 The axes come on. The sky is still empty
-2. ✨ Five sessions drop in, one by one
-3. 🔥 Day 4 stops at 20, labeled as a flare
-4. 💙 The line draws from lower left to upper right and passes under 20
-5. ⚡ A dashed vertical falls, marked **miss 8.2**
+The closed form on these five points, printed to two decimals, is
 
-Replay is the button at the bottom. The page only watches. It sends no order. Later backtests meet LAT's history, not a live book.
+```text
+ŷ = 3.27x − 1.29
+```
 
-From the repository root, print the same numbers:
+At the query: `3.27 × 4 − 1.29 = 11.79`.
+
+| | |
+|---|---|
+| Estimate | 11.79 |
+| Residual | 8.2 |
+
+Squared loss weights the outlying close more than the points that already lie near a line. OLS still does not lift the whole line to 20. Doing so would increase the squared residuals of the other four points, and the total loss would rise. 11.79 is the compromise of one line across five points. 8.2 is the in-sample residual session 4 pays for that compromise.
+
+The five residuals change sign. The line has no special rule that spares one point. An affine function cannot zero all five residuals at once. Session 4 has the largest residual because it sits farthest from the slope supported by the other four.
+
+---
+
+## Side by side
+
+| Estimator | Output at x = 4 | In-sample residual | Why the residual is this number |
+|---|---:|---:|---|
+| Nearest neighbor | 20.0 | 0 | The query coincides with a training point, so the output is the label |
+| OLS | 11.79 | 8.2 | Minimizer of residual sum of squares in the affine class |
+
+> A parameterized mean is not a retrieval of the training label. On the training support the nearest-neighbor residual is zero. The residual of the line is the approximation error of the model class.
+
+---
+
+## Reproduce
+
+From the repository root, Python 3.8 or newer:
 
 ```bash
 python3 -m venv .venv
@@ -84,27 +97,18 @@ pip install -r requirements.txt
 python days/01-line-that-misses/fit_line.py
 ```
 
-🐍 Python 3.8 or newer. The script should print `y = 3.27 x + -1.29`, memory miss `0.0`, line miss `8.2`. The file is [`days/01-line-that-misses/fit_line.py`](../../days/01-line-that-misses/fit_line.py).
+The script should print `y = 3.27 x + -1.29`, a nearest-neighbor residual of `0.0`, and a line residual of `8.2`. The implementation is [`fit_line.py`](../../days/01-line-that-misses/fit_line.py). It calls `numpy.linalg.lstsq` for the least squares above. There is no iteration.
+
+The same `y` and fitted values are drawn in [`site`](../../site). From that directory, run `npm install`, then `npm run dev`. Session 4 sits at 20, the line passes through 11.79, and the vertical segment marks the residual 8.2. The page does not emit an order. Later backtests use historical prices, not a live book.
 
 ---
 
-## 🧭 The sentence you leave with
+## What this day is not
 
-> ✨ A line does not store the prices it has seen. It chooses a route, and the day off the route gets said wrong.
+This is not an out-of-sample evaluation. The query belongs to the training set. A zero nearest-neighbor residual does not transfer into a claim that the estimator works.
 
-Memory is a perfect piece of amber. Day 4 is sealed inside it, the miss is zero, and it cannot walk out of that day. The line gives up a zero miss at liftoff, and buys a route that can catch day 1, day 2, day 3, and day 5. Every later story about a model being "accurate" on a price has to pass this question first: did it memorize the flare, or did it pay for the whole sky.
-
----
-
-## 🚀 Tomorrow removes a shortcut
-
-Today you may still hand in one error. Tomorrow the same miss must be written as two numbers: absolute error, and squared error. Squaring hangs more weight on day 4's lamp, and the ranking can change.
-
-Do not spend today's zero as if prediction were already learned:
-
-| 📅 | 🔮 What opens next |
+| Later | Convenience removed |
 |---|---|
-| Day 6 | Ask for a session the fit never stored. Memory copies a neighbor. The line has to fly outward |
-| Day 7 | Hide day 5 and call it the exam. A pretty score on the fitting days no longer counts |
-
-🟢 Day 1 can be run, told, and watched again. The next lamp is not lit yet.
+| Day 2 | The same residual must be reported as absolute loss and as squared loss. Squared loss raises the weight of session 4 further |
+| Day 6 | Query a point outside the training support. The neighbor can only copy. The line must extrapolate |
+| Day 7 | Hold out session 5. Residuals on the fitting set no longer count as the score |

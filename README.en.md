@@ -23,11 +23,11 @@ Season 2 opens after season 1 has finished leakage. Season 4 stops at a paper le
 
 ---
 
-## ✨ Day 1 is ready
+## Day 1 · In-sample residual
 
-🛰️ The first lesson on the deck. Five sessions, five lights. Four follow the route. The fourth is pulled up to **20**. Memory pockets it and misses by 0. The line has to serve the whole sky, passes underneath, and misses by **8.2**.
+The query `x = 4` lies in the training set. The nearest neighbor retrieves the close **20.0** and the residual is **0**. Ordinary least squares minimizes the residual sum of squares in the affine class, fits **11.79**, and leaves a residual of **8.2**. The zero is retrieval. The 8.2 is the part of the close an affine model cannot match.
 
-| Day | Close | Line |
+| Day | Close y | OLS fit |
 |---|---:|---:|
 | 1 | 2.1 | 1.98 |
 | 2 | 3.9 | 5.25 |
@@ -35,14 +35,12 @@ Season 2 opens after season 1 has finished leakage. Season 4 stops at a paper le
 | **4** | **20.0** | **11.79** |
 | 5 | 10.4 | 15.06 |
 
-| Habit | How it answers day 4 | Says | Miss |
+| Estimator | Output at x = 4 | Value | In-sample residual |
 |---|---|---:|---:|
-| Memory | Copy the nearest close | 20.0 | 0 |
-| Line | Fit all five days, then read day 4 | 11.79 | 8.2 |
+| Nearest neighbor | Query coincides with a training point, so the output is the label | 20.0 | 0 |
+| OLS | `ŷ = 3.27x − 1.29` | 11.79 | 8.2 |
 
-The line is `y = 3.27x − 1.29`. It still has to respect the other four days, so it cannot reach 20. **8.2** is the cost of that route.
-
-> A line does not store the prices it has seen. It chooses a route, and the day that sits off the route gets said wrong.
+> A parameterized mean is not a retrieval of the training label. On the training support the nearest-neighbor residual is zero. The residual of the line is the approximation error of the model class.
 
 [Full lesson](docs/season-01/day-01.en.md) · [Code](days/01-line-that-misses) · [The hundred days](docs/season-01/README.en.md)
 

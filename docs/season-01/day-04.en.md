@@ -1,18 +1,22 @@
 <p align="center"><a href="day-04.md">中文</a> &nbsp;&nbsp;·&nbsp;&nbsp; <b>English</b></p>
 
-# Day 4 · The chord through the endpoints
+# Day 4 · The endpoint chord
 
 [Phase I · Models](../../README.en.md) · runs
 
-The chord uses session 1 and session 5 only. It belongs to the same affine class as ordinary least squares, `ŷ = β₁ x + β₀`. Same class, different loss, and the ranking is allowed to flip.
+What you learn today: the endpoint chord and ordinary least squares are the same affine class. The chord's absolute loss 12.0000 is below the line's 16.6600. The chord's squared loss 136.3837 is above the line's 96.3390. One shape, two losses, opposite ranks.
 
-On squared loss the chord cannot beat OLS. OLS is the minimizer of `L2` inside this class. On absolute loss the chord can be smaller. The two norms from day 2 rank the two lines in opposite orders.
+## Plain-language account
 
----
+Hold only the first close and the fifth, and draw the segment between them. The closes are 2.1 and 10.4, four steps apart. The slope is `(10.4 − 2.1) / (5 − 1) = 2.075` and the intercept is 0.025, so the chord is `ŷ = 2.075x + 0.025`. It is a straight line, the same class as `ŷ = 3.27x − 1.29`. The class matches. The rule that picks the coefficients does not. The chord sees two endpoints. Least squares sees the sum of squares on all five points.
 
-## The chord
+Score both lines on all five points. Absolute loss is 12.0000 for the chord and 16.6600 for least squares, so the chord is smaller. Squared loss is 136.3837 for the chord and 96.3390 for least squares, so the chord is larger. Session 4's absolute residual is 11.6750 on the chord and 8.2100 on the line. "The chord is always worse" is a squared-loss sentence. "The chord is always better" is an absolute-loss sentence. Each sentence promotes one loss to the whole comparison.
 
-Through `(1, 2.1)` and `(5, 10.4)`:
+The chord cannot beat least squares on squared loss. Least squares is defined as the minimum of that sum inside this affine class. Any other slope and intercept, including this chord, has a sum of squares at least as large. Absolute loss has no such guarantee. The chord can win there, and on these five points it does.
+
+## Core
+
+The chord uses only `(1, 2.1)` and `(5, 10.4)`:
 
 ```text
 β₁ = (10.4 − 2.1) / (5 − 1) = 2.075
@@ -20,43 +24,29 @@ Through `(1, 2.1)` and `(5, 10.4)`:
 ŷ = 2.075x + 0.025
 ```
 
-Both endpoint residuals are 0. That is two-point interpolation, not a minimum of the residual sum of squares. The three middle sessions do not enter the coefficients. The close at 20 does not enter the coefficients.
+Ordinary least squares remains the day-1 solution. Both lines are scored on all five points.
 
-| t | Chord ŷ | Chord residual | OLS ŷ | OLS residual |
-|---:|---:|---:|---:|---:|
-| 1 | 2.1000 | 0.0000 | 1.9800 | 0.1200 |
-| 2 | 4.1750 | −0.2750 | 5.2500 | −1.3500 |
-| 3 | 6.2500 | −0.0500 | 8.5200 | −2.3200 |
-| 4 | 8.3250 | 11.6750 | 11.7900 | 8.2100 |
-| 5 | 10.4000 | 0.0000 | 15.0600 | −4.6600 |
-
----
-
-## Two losses, two rankings
-
-| Estimator | L1 | L2 | Session 4 \|r\| |
+| Fit | L1 | L2 | session-4 \|r\| |
 |---|---:|---:|---:|
-| Chord | 12.0000 | 136.3837 | 11.6750 |
-| OLS | 16.6600 | 96.3390 | 8.2100 |
+| Endpoint chord | 12.0000 | 136.3837 | 11.6750 |
+| Ordinary least squares | 16.6600 | 96.3390 | 8.2100 |
 
-`136.3837 > 96.3390` is not an accident of this sample. Every affine function has an in-sample sum of squares at least as large as the OLS value. The chord is affine, so it does not win on `L2`.
+On `L2` the chord is larger. That is the definition of least squares inside one affine class, not a property of this particular sample. On `L1` there is no matching theorem. Today's absolute-loss minimizer is still not computed. The computed fact is narrower: this chord can be smaller on `L1` and larger on `L2` at the same time.
 
-`12.0000 < 16.6600` is also computed. The chord sets both endpoint residuals to 0 and piles the absolute error onto session 4. OLS refuses to zero the endpoints, because that would raise the sum of squares. Its absolute residual on session 4 is therefore smaller, and its total absolute loss is larger.
+Do not rank the fits by the session-4 residuals 11.6750 and 8.2100 alone. That cell is one of five. The ranks that matter are the full `L1` and the full `L2`. Day 2 already showed that one cell can have very different shares in the two norms. Today the full norms themselves reverse.
 
-Until the loss is named, there is no answer to which line is better. Calling the chord cruder is a statement about squared loss.
+## Further out
 
----
+A common swap in model comparison is to choose the loss you win and then call the win "the better model." Linear factors, ridge, and trees sit in different classes, and even one class can be fit under different objectives. One reported error cannot say whether the rank survives a change of norm.
 
-## Reproduce
+These two lines share a function class. The only difference is how the coefficients are chosen. The class can still reverse the rank: 12.0000 against 16.6600 on `L1`, 136.3837 against 96.3390 on `L2`. When two fits are compared, name the class and name the loss. An advantage on one loss is not a claim that the line is better on every loss. Out-of-sample rank is a later question. Both losses today are on the five training points.
+
+## What the run showed
 
 ```bash
 python days/04-endpoint-chord/endpoint_chord.py
 ```
 
-The script should print the chord `y = 2.0750 x + 0.0250`, its `L2 = 136.3837`, and the OLS `L2 = 96.3390`. The implementation is [`endpoint_chord.py`](../../days/04-endpoint-chord/endpoint_chord.py). The chord uses the two-point formula, not `lstsq`.
+The script should print the chord `ŷ = 2.075x + 0.025` and the losses in the table. The implementation is [`endpoint_chord.py`](../../days/04-endpoint-chord/endpoint_chord.py).
 
----
-
-## What this day is not
-
-Both lines are scored on all five points. The chord ignores the middle points by keeping them out of the coefficients, then still scores them. That is not a refit after deletion. Delete session 4 and fit again, and the coefficients move. That is day 5.
+Hand in one rank reversal inside one affine class. Do not call the chord always worse, and do not call it always better. It cannot win on squared loss, by definition. It can win on absolute loss, and here that win is 12.0000 against 16.6600. Day 5 removes session 4 from the estimation sample and records how far the line moves. That move is not an exam score.

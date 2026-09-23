@@ -1,6 +1,6 @@
 <p align="center"><a href="README.md">中文</a> &nbsp;&nbsp;·&nbsp;&nbsp; <b>English</b></p>
 
-<h1 align="center">Observation Deck</h1>
+<h1 align="center">100 Days of Quant ML</h1>
 
 <p align="center">A price study in four phases. One hundred days in each phase. One reproducible calculation each day.</p>
 

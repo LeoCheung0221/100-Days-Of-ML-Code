@@ -1,6 +1,6 @@
 <p align="center"><b>中文</b> &nbsp;&nbsp;·&nbsp;&nbsp; <a href="README.en.md">English</a></p>
 
-<h1 align="center">观测席</h1>
+<h1 align="center">100 Days of Quant ML</h1>
 
 <p align="center">价格研究，分四阶段推进。每一阶段一百日，每日一次可复现的计算。</p>
 

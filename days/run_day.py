@@ -1,4 +1,4 @@
-"""Days 11–100. Each day_xx prints the numbers its note quotes."""
+"""Days 11–81. Each day_xx prints the numbers its note quotes."""
 
 from __future__ import annotations
 
@@ -30,18 +30,14 @@ from days.course import (
 def _five_returns() -> np.ndarray:
     return (FIVE_Y[1:] - FIVE_Y[:-1]) / FIVE_Y[:-1]
 
-
 def _sigmoid(value: float) -> float:
     return float(1.0 / (1.0 + np.exp(-value)))
-
 
 def _aaa() -> list[dict]:
     return name_rows("AAA")
 
-
 def _complete(rows: list[dict]) -> list[dict]:
     return [row for row in rows if np.isfinite(row["close"]) and np.isfinite(row["adj_close"])]
-
 
 def _panel_pair() -> tuple[list[dict], list[dict]]:
     aaa = _complete(_aaa())
@@ -51,7 +47,6 @@ def _panel_pair() -> tuple[list[dict], list[dict]]:
     bbb = [row for row in bbb if row["date"] in shared]
     return aaa, bbb
 
-
 def day_11() -> None:
     slope, intercept = ols(FIVE_X, FIVE_Y)
     fitted = slope * FIVE_X + intercept
@@ -59,7 +54,6 @@ def day_11() -> None:
     print("score = direction hits", f"{int(hits.sum())}/{len(hits)}")
     print("day 4 absolute price residual =", fmt(abs(FIVE_Y[3] - fitted[3]), 2))
     print("that residual is not the score")
-
 
 def day_12() -> None:
     simple = _five_returns()
@@ -71,7 +65,6 @@ def day_12() -> None:
     print("label up =", " ".join("1" if v else "0" for v in label))
     print("constant-up accuracy =", fmt(accuracy(pred == label), 2))
 
-
 def day_13() -> None:
     simple = _five_returns()
     pred = np.ones(len(simple), dtype=bool)
@@ -79,13 +72,11 @@ def day_13() -> None:
     for tau in (0.50, 0.70, 0.90):
         print(f"{tau:.2f}  {accuracy(pred == (simple > tau)):.2f}")
 
-
 def day_14() -> None:
     up = _five_returns() > 0
     print("always-down accuracy =", fmt(accuracy(np.zeros(len(up), dtype=bool) == up), 2))
     print("always-up accuracy =", fmt(accuracy(np.ones(len(up), dtype=bool) == up), 2))
     print("the baseline looks at no price")
-
 
 def day_15() -> None:
     up = _five_returns() > 0
@@ -93,13 +84,11 @@ def day_15() -> None:
     print("up called down =", int((up & ~pred_up).sum()))
     print("down called up =", int((~up & pred_up).sum()))
 
-
 def day_16() -> None:
     slope = float(ols(FIVE_X, FIVE_Y)[0])
     print("slope =", fmt(slope, 2))
     print("P(up) = sigmoid(slope) =", fmt(_sigmoid(slope), 4))
     print("the same score is attached to every step")
-
 
 def day_17() -> None:
     stated = _sigmoid(float(ols(FIVE_X, FIVE_Y)[0]))
@@ -107,7 +96,6 @@ def day_17() -> None:
     print("stated P(up) =", fmt(stated, 4))
     print("realized up frequency =", fmt(realized, 2))
     print("gap =", fmt(stated - realized, 4))
-
 
 def day_18() -> None:
     simple = _five_returns()
@@ -119,7 +107,6 @@ def day_18() -> None:
     print("up on return and volume =", int(both.sum()))
     kept = " ".join(str(i + 2) for i, flag in enumerate(both) if flag)
     print("sessions kept =", kept or "none")
-
 
 def day_19() -> None:
     design = np.column_stack([FIVE_X, FIVE_V])
@@ -134,7 +121,6 @@ def day_19() -> None:
     print("mean |volume contribution| =", f"{raw_share[:, 1].mean():.4f}")
     print("standardized beta time =", f"{beta_z[0]:.4f}")
     print("standardized beta volume =", f"{beta_z[1]:.4f}")
-
 
 def day_20() -> None:
     noise = np.random.default_rng(0).normal(size=5)
@@ -155,7 +141,6 @@ def day_20() -> None:
     print("holdout absolute error with noise =", fmt(noise_err, 4))
     print("the in-sample drop is not an improvement")
 
-
 def day_21() -> None:
     text = PANEL_PATH.read_text()
     aaa = _aaa()
@@ -167,7 +152,6 @@ def day_21() -> None:
     print("AAA blank closes =", blank)
     print("the table is not resampled")
 
-
 def day_22() -> None:
     close = column(_complete(_aaa()), "adj_close")
     move = np.diff(close)
@@ -176,7 +160,6 @@ def day_22() -> None:
     print("hits =", f"{int(hits.sum())}/{len(hits)}")
     print("accuracy =", fmt(accuracy(hits), 4))
     print("coin-flip baseline = 0.5000")
-
 
 def day_23() -> None:
     move = np.diff(column(_complete(_aaa()), "adj_close"))
@@ -191,7 +174,6 @@ def day_23() -> None:
     print("hits =", int(hits_arr.sum()))
     print("accuracy =", fmt(accuracy(hits_arr), 4))
     print("the rule is fixed before the count")
-
 
 def day_24() -> None:
     rows = _complete(_aaa())
@@ -213,7 +195,6 @@ def day_24() -> None:
     print("early accuracy is not the score")
     print("later events =", len(later_arr), "accuracy =", fmt(accuracy(later_arr), 4))
 
-
 def day_25() -> None:
     close = column(_complete(_aaa()), "adj_close")
     actual = returns(close)[1:]
@@ -227,17 +208,14 @@ def day_25() -> None:
     print("days with a small price error and the wrong sign =", int((small & ~hits).sum()))
     print("for a sign decision, trust the direction accuracy")
 
-
 def _split_score(x: np.ndarray, y: np.ndarray, train: np.ndarray) -> float:
     beta = ols(x[train], y[train])
     pred = beta[0] * x[~train] + beta[1]
     return accuracy(sign_hit(y[~train], pred))
 
-
 def _lag_xy() -> tuple[np.ndarray, np.ndarray]:
     simple = returns(column(_complete(_aaa()), "adj_close"))
     return simple[:-1], simple[1:]
-
 
 def day_26() -> None:
     x, y = _lag_xy()
@@ -246,7 +224,6 @@ def day_26() -> None:
     print("split = random, seed 1, train fraction 0.70")
     print("test direction accuracy =", fmt(_split_score(x, y, train), 4))
     print("this number is the control")
-
 
 def day_27() -> None:
     x, y = _lag_xy()
@@ -259,7 +236,6 @@ def day_27() -> None:
     print("random-split test accuracy =", fmt(_split_score(x, y, random_train), 4))
     print("the test of the time split sits entirely after the train")
 
-
 def day_28() -> None:
     rows = _complete(_aaa())
     close = column(rows, "close")
@@ -271,7 +247,6 @@ def day_28() -> None:
     print("column high = FORBIDDEN")
     print("in-sample RSS close~high =", fmt(float(np.sum(resid_high ** 2)), 4))
     print("in-sample RSS close~lagged close =", fmt(float(np.sum(resid_lag ** 2)), 4))
-
 
 def day_29() -> None:
     rows = _complete(_aaa())
@@ -295,7 +270,6 @@ def day_29() -> None:
     print("RSS of return on past-only close =", fmt(rss(causal), 4))
     print("the leaky scale is a function of later opens")
 
-
 def day_30() -> None:
     close = column(_complete(_aaa()), "adj_close")
     t = np.arange(len(close), dtype=float)
@@ -306,7 +280,6 @@ def day_30() -> None:
     print("full-sample value at last t =", fmt(float(full[0] * query + full[1]), 4))
     print("window value at last t =", fmt(float(local[0] * query + local[1]), 4))
     print("the full sample is not the information set")
-
 
 def day_31() -> None:
     close = column(_complete(_aaa()), "adj_close")
@@ -320,7 +293,6 @@ def day_31() -> None:
     print("three-day absolute miss =", fmt(abs(actual - (short[0] * t[end] + short[1])), 4))
     print("twenty-day absolute miss =", fmt(abs(actual - (long[0] * t[end] + long[1])), 4))
 
-
 def day_32() -> None:
     close = column(_complete(_aaa()), "adj_close")
     t = np.arange(len(close), dtype=float)
@@ -332,7 +304,6 @@ def day_32() -> None:
     print("three-day slope =", fmt(float(short[0]), 4))
     print("sixty-day absolute miss =", fmt(abs(actual - (long[0] * t[end] + long[1])), 4))
     print("three-day absolute miss =", fmt(abs(actual - (short[0] * t[end] + short[1])), 4))
-
 
 def day_33() -> None:
     simple = returns(column(_complete(_aaa()), "adj_close"))
@@ -353,7 +324,6 @@ def day_33() -> None:
     print("test MSE, scale from the whole sample =", fmt(mse(all_mu, all_sd), 6))
     print("the whole-sample scale sees the test stretch")
 
-
 def day_34() -> None:
     rows = _aaa()
     blank = next(i for i, row in enumerate(rows) if not np.isfinite(row["close"]))
@@ -361,7 +331,6 @@ def day_34() -> None:
     print("fill from the previous close =", fmt(float(rows[blank - 1]["close"]), 4))
     print("fill from the next close =", fmt(float(rows[blank + 1]["close"]), 4))
     print("the next close sees the future")
-
 
 def day_35() -> None:
     rows = _aaa()
@@ -376,7 +345,6 @@ def day_35() -> None:
             return
     raise RuntimeError("no halt gap")
 
-
 def day_36() -> None:
     rows = _complete(_aaa())
     raw_ret = returns(column(rows, "close"))
@@ -386,7 +354,6 @@ def day_36() -> None:
     print("unadjusted return =", fmt(float(raw_ret[i]), 4))
     print("adjusted return =", fmt(float(adj_ret[i]), 4))
     print("both numbers are due")
-
 
 def day_37() -> None:
     aaa, bbb = _panel_pair()
@@ -411,7 +378,6 @@ def day_37() -> None:
     print("time-split test accuracy =", fmt(_split_score(x, y, time_train), 4))
     print("the random split can train and test on the same date")
 
-
 def day_38() -> None:
     rows = _complete(_aaa())
     market = returns(column(rows, "market"))
@@ -419,7 +385,6 @@ def day_38() -> None:
     print("same-day market sign accuracy =", fmt(accuracy(sign_hit(target, market)), 4))
     print("lagged-one-day market sign accuracy =", fmt(accuracy(sign_hit(target[1:], market[:-1])), 4))
     print("what disappeared was simultaneous")
-
 
 def day_39() -> None:
     rows = _complete(_aaa())
@@ -433,7 +398,6 @@ def day_39() -> None:
     print("round-trip cost =", fmt(cost, 4))
     print("net mean return =", fmt(float(gross.mean() - cost), 4))
 
-
 def day_40() -> None:
     print("leakage list")
     print("day 28  today's high explains today's close  future=yes")
@@ -444,18 +408,15 @@ def day_40() -> None:
     print("day 38  same-day market return  future=yes")
     print("a higher score on any of these lines is not a result")
 
-
 def _level() -> tuple[np.ndarray, np.ndarray, list[str], int]:
     rows = _complete(_aaa())
     close = column(rows, "adj_close")
     t = np.arange(len(close), dtype=float)
     return t, close, [row["date"] for row in rows], int(0.75 * len(close))
 
-
 def _train_test():
     t, close, _, cut = _level()
     return t[:cut], close[:cut], t[cut:], close[cut:]
-
 
 def day_41() -> None:
     t, close, dates, _ = _level()
@@ -473,13 +434,11 @@ def day_41() -> None:
     print("fitted at the jump, with =", fmt(float(beta[0] * t[jump] + beta[1]), 4))
     print("fitted at the jump, without =", fmt(float(reduced[0] * t[jump] + reduced[1]), 4))
 
-
 def day_42() -> None:
     t, close, _, _ = _level()
     print("lambda = 20000, penalty on the slope only")
     print("ols slope =", fmt(float(ols(t, close)[0]), 4))
     print("ridge slope =", fmt(float(ridge_slope(t, close, lam=20000.0)[0]), 4))
-
 
 def day_43() -> None:
     t, close, dates, _ = _level()
@@ -493,7 +452,6 @@ def day_43() -> None:
     print("local mean =", fmt(float(close[neighbors].mean()), 4))
     print("ols at the query =", fmt(float(beta[0] * t[query] + beta[1]), 4))
 
-
 def day_44() -> None:
     t, y, _, _ = _train_test()
     threshold, left, right = stump(t, y)
@@ -503,7 +461,6 @@ def day_44() -> None:
     print("left mean =", fmt(left, 4), "right mean =", fmt(right, 4))
     print("train SSE stump =", fmt(float(np.sum((y - predict_stump(t, threshold, left, right)) ** 2)), 4))
     print("train SSE line =", fmt(float(np.sum((y - (line[0] * t + line[1])) ** 2)), 4))
-
 
 def day_45() -> None:
     train_t, train_y, test_t, test_y = _train_test()
@@ -516,7 +473,6 @@ def day_45() -> None:
     for name, (train_hat, test_hat) in pairs.items():
         print(f"train SSE {name} =", fmt(float(np.sum((train_y - train_hat) ** 2)), 4))
         print(f"later SSE {name} =", fmt(float(np.sum((test_y - test_hat) ** 2)), 4))
-
 
 def day_46() -> None:
     train_t, train_y, test_t, test_y = _train_test()
@@ -537,7 +493,6 @@ def day_46() -> None:
         print(f"{name}  {train_sse:.4f}  {test_sse:.4f}")
     print("still alive on the later stretch =", min(later, key=later.get))
 
-
 def day_47() -> None:
     t, close, _, _ = _level()
     beta = ols(t, close)
@@ -548,7 +503,6 @@ def day_47() -> None:
     print("observed adj close min =", fmt(float(close.min()), 4))
     print("observed adj close max =", fmt(float(close.max()), 4))
     print("outside the observed range =", str(value < close.min() or value > close.max()).lower())
-
 
 def day_48() -> None:
     t, close, _, _ = _level()
@@ -562,7 +516,6 @@ def day_48() -> None:
         "tree stays inside the training range =",
         str(close.min() - 1e-9 <= tree_value <= close.max() + 1e-9).lower(),
     )
-
 
 def day_49() -> None:
     t, close, dates, _ = _level()
@@ -586,7 +539,6 @@ def day_49() -> None:
     for name, (hat, hat_later) in hats.items():
         print(f"{name} at jump = {hat:.4f}  residual = {actual - hat:.4f}  ten later = {hat_later:.4f}")
 
-
 def _lag5_xy(*, volume: bool = False) -> tuple[np.ndarray, np.ndarray, int]:
     rows = _complete(_aaa())
     close = column(rows, "adj_close")
@@ -600,21 +552,17 @@ def _lag5_xy(*, volume: bool = False) -> tuple[np.ndarray, np.ndarray, int]:
     y_arr = np.array(ys)
     return x_arr, y_arr, int(0.75 * len(y_arr))
 
-
 def _ols_design(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     design = np.column_stack([x, np.ones(len(x))])
     beta, *_ = np.linalg.lstsq(design, y, rcond=None)
     return beta
 
-
 def _predict_design(beta: np.ndarray, x: np.ndarray) -> np.ndarray:
     design = np.column_stack([x, np.ones(len(x))])
     return design @ beta
 
-
 def _mse(y: np.ndarray, yhat: np.ndarray) -> float:
     return float(np.mean((y - yhat) ** 2))
-
 
 def _ridge_design(x: np.ndarray, y: np.ndarray, lam: float) -> np.ndarray:
     design = np.column_stack([x, np.ones(len(x))])
@@ -622,7 +570,6 @@ def _ridge_design(x: np.ndarray, y: np.ndarray, lam: float) -> np.ndarray:
     for i in range(x.shape[1]):
         gram[i, i] += lam
     return np.linalg.solve(gram, design.T @ y)
-
 
 def _best_stump(x: np.ndarray, y: np.ndarray) -> tuple[int, float, float, float]:
     best: tuple[float, int, float, float, float] | None = None
@@ -635,10 +582,8 @@ def _best_stump(x: np.ndarray, y: np.ndarray) -> tuple[int, float, float, float]
     assert best is not None
     return best[1], best[2], best[3], best[4]
 
-
 def _predict_stump_col(x: np.ndarray, col: int, thr: float, left: float, right: float) -> np.ndarray:
     return np.where(x[:, col] <= thr, left, right)
-
 
 def day_51() -> None:
     x, y, cut = _lag5_xy()
@@ -651,7 +596,6 @@ def day_51() -> None:
     print("weight min =", fmt(float(weights.min()), 4), "weight max =", fmt(float(weights.max()), 4))
     print("test MSE =", fmt(_mse(y[cut:], _predict_design(beta, x[cut:])), 6))
 
-
 def day_52() -> None:
     x, y, cut = _lag5_xy()
     col, thr, left, right = _best_stump(x[:cut], y[:cut])
@@ -663,7 +607,6 @@ def day_52() -> None:
     print("train MSE =", fmt(_mse(y[:cut], train_hat), 6))
     print("test MSE =", fmt(_mse(y[cut:], test_hat), 6))
 
-
 def day_53() -> None:
     x, y, cut = _lag5_xy()
     beta = _ols_design(x[:cut], y[:cut])
@@ -673,7 +616,6 @@ def day_53() -> None:
         col, thr, _, _ = _best_stump(x[idx], y[idx])
         print(f"seed = {seed} tree split lag = {col + 1} threshold = {fmt(thr, 6)}")
     print("linear weight lag 1 after tree seeds =", fmt(float(beta[0]), 4))
-
 
 def day_54() -> None:
     x5, y, cut = _lag5_xy(volume=False)
@@ -690,7 +632,6 @@ def day_54() -> None:
         print("volume helped on the test stretch = true")
     else:
         print("volume helped on the test stretch = false")
-
 
 def day_55() -> None:
     x, y, cut = _lag5_xy()
@@ -711,7 +652,6 @@ def day_55() -> None:
     print("ridge miss mode = same blend pulled toward zero misses jumps and size")
     print("tree miss mode = one lag threshold leaves a constant on each side")
 
-
 def day_56() -> None:
     print("task = predict today's return from lags 1 through 5 on AAA adj_close")
     print("target = same-day simple return on adjusted close")
@@ -720,7 +660,6 @@ def day_56() -> None:
     beta = _ols_design(x[:cut], y[:cut])
     print("train rows =", cut, "test rows =", len(y) - cut)
     print("test MSE =", fmt(_mse(y[cut:], _predict_design(beta, x[cut:])), 6))
-
 
 def day_57() -> None:
     rows = _complete(_aaa())
@@ -736,7 +675,6 @@ def day_57() -> None:
     x, y, cut = _lag5_xy()
     print("allowed features = five lagged returns only")
     print("test MSE =", fmt(_mse(y[cut:], _predict_design(_ols_design(x[:cut], y[:cut]), x[cut:])), 6))
-
 
 def day_58() -> None:
     rows = _complete(_aaa())
@@ -757,7 +695,6 @@ def day_58() -> None:
     print("train rows =", int(train.sum()), "test rows =", int(test.sum()))
     print("test MSE =", fmt(_mse(y_arr[test], _predict_design(beta, x_arr[test])), 6))
 
-
 def day_59() -> None:
     x, y, cut = _lag5_xy()
     beta = _ols_design(x[:cut], y[:cut])
@@ -767,7 +704,6 @@ def day_59() -> None:
     print("baseline predict return = 0 every day")
     print("baseline test MSE =", fmt(_mse(test_y, zero), 6))
     print("line test MSE =", fmt(_mse(test_y, line_hat), 6))
-
 
 def day_60() -> None:
     x, y, cut = _lag5_xy()
@@ -785,7 +721,6 @@ def day_60() -> None:
     print("smallest line error day index on test =", best)
     print("that day line error =", fmt(float(err[best]), 6))
 
-
 def _lag5_for_rows(rows: list[dict]) -> tuple[np.ndarray, np.ndarray, list[str]]:
     close = column(rows, "adj_close")
     dates = [row["date"] for row in rows]
@@ -796,7 +731,6 @@ def _lag5_for_rows(rows: list[dict]) -> tuple[np.ndarray, np.ndarray, list[str]]
         ys.append(float(simple[t]))
         ds.append(dates[t + 1])
     return np.array(xs), np.array(ys), ds
-
 
 def day_61() -> None:
     x, y, cut = _lag5_xy()
@@ -809,7 +743,6 @@ def day_61() -> None:
     print("baseline test MSE =", fmt(base_mse, 6))
     print("tree test MSE =", fmt(tree_mse, 6))
     print("MSE improvement over baseline =", fmt(base_mse - tree_mse, 6))
-
 
 def day_62() -> None:
     x, y, cut = _lag5_xy()
@@ -826,7 +759,6 @@ def day_62() -> None:
     print("top tenth mean absolute error =", fmt(float(np.abs(test_y[top] - line_hat[top]).mean()), 6))
     print("rest mean absolute error =", fmt(float(np.abs(test_y[rest] - line_hat[rest]).mean()), 6))
 
-
 def day_63() -> None:
     rows = _complete(_aaa())
     x, y, ds = _lag5_for_rows(rows)
@@ -840,7 +772,6 @@ def day_63() -> None:
     for month in sorted(months):
         vals = months[month]
         print(f"month {month} mean abs error =", fmt(float(np.mean(vals)), 6), "days =", len(vals))
-
 
 def day_64() -> None:
     rows = _complete(_aaa())
@@ -859,7 +790,6 @@ def day_64() -> None:
     print("test mean abs error all months =", fmt(float(err.mean()), 6))
     print("test mean abs error without that month =", fmt(float(err[keep].mean()), 6))
 
-
 def day_65() -> None:
     for name in ("AAA", "BBB"):
         rows = _complete(name_rows(name))
@@ -868,7 +798,6 @@ def day_65() -> None:
         beta = _ols_design(x[:cut], y[:cut])
         mse = _mse(y[cut:], _predict_design(beta, x[cut:]))
         print(f"name = {name} test MSE =", fmt(mse, 6))
-
 
 def day_66() -> None:
     rows = _complete(_aaa())
@@ -886,7 +815,6 @@ def day_66() -> None:
     beta = _ols_design(x_arr[:cut], y_arr[:cut])
     print("target = return minus market return")
     print("test MSE =", fmt(_mse(y_arr[cut:], _predict_design(beta, x_arr[cut:])), 6))
-
 
 def day_67() -> None:
     rows = _complete(_aaa())
@@ -910,7 +838,6 @@ def day_67() -> None:
     print("same-day market column = FORBIDDEN")
     print("a lower MSE with same-day market is not a result")
 
-
 def day_68() -> None:
     def pipeline(name: str) -> float:
         rows = _complete(name_rows(name))
@@ -925,7 +852,6 @@ def day_68() -> None:
     print("AAA test MSE =", fmt(aaa, 6))
     print("BBB test MSE =", fmt(bbb, 6))
 
-
 def day_69() -> None:
     print("fill assumption = close-to-close at the printed close")
     print("slippage = 0")
@@ -933,7 +859,6 @@ def day_69() -> None:
     x, y, cut = _lag5_xy()
     beta = _ols_design(x[:cut], y[:cut])
     print("test MSE under this assumption =", fmt(_mse(y[cut:], _predict_design(beta, x[cut:])), 6))
-
 
 def day_70() -> None:
     x, y, cut = _lag5_xy()
@@ -954,7 +879,6 @@ def day_70() -> None:
     for line in lines:
         print(line)
 
-
 def _lag5_line_test() -> tuple[np.ndarray, np.ndarray, list[str]]:
     rows = _complete(_aaa())
     x, y, ds = _lag5_for_rows(rows)
@@ -963,7 +887,6 @@ def _lag5_line_test() -> tuple[np.ndarray, np.ndarray, list[str]]:
     test_y = y[cut:]
     test_hat = _predict_design(beta, x[cut:])
     return test_y, test_hat, ds[cut:]
-
 
 def day_71() -> None:
     test_y, test_hat, _ = _lag5_line_test()
@@ -975,7 +898,6 @@ def day_71() -> None:
     print("jump days =", int(jump.sum()))
     print("direction wrong days =", int(wrong.sum()))
 
-
 def day_72() -> None:
     test_y, test_hat, _ = _lag5_line_test()
     quiet = np.abs(test_y) <= np.median(np.abs(test_y))
@@ -984,13 +906,11 @@ def day_72() -> None:
     print("mean abs error on quiet days =", fmt(float(err[quiet].mean()), 6))
     print("mean abs error all test days =", fmt(float(err.mean()), 6))
 
-
 def day_73() -> None:
     test_y, test_hat, _ = _lag5_line_test()
     wrong = np.sign(test_y) != np.sign(test_hat)
     print("direction wrong days =", int(wrong.sum()))
     print("test days =", len(test_y))
-
 
 def day_74() -> None:
     test_y, test_hat, dates = _lag5_line_test()
@@ -1004,7 +924,6 @@ def day_74() -> None:
         direction = "wrong" if np.sign(test_y[idx]) != np.sign(test_hat[idx]) else "right"
         print(f"rank {rank} date = {dates[idx]} error = {fmt(float(err[idx]), 6)} class = {move} direction = {direction}")
 
-
 def day_75() -> None:
     test_y, test_hat, _ = _lag5_line_test()
     abs_y = np.abs(test_y)
@@ -1015,14 +934,12 @@ def day_75() -> None:
     print("direction wrong count =", int(wrong.sum()))
     print("jump day count =", int(jump.sum()))
 
-
 def day_76() -> None:
     test_y, test_hat, _ = _lag5_line_test()
     missed_down = (test_y < 0) & (test_hat >= 0)
     false_up = (test_y < 0) & (test_hat > 0)
     print("missed down days =", int(missed_down.sum()))
     print("false alarm up days =", int(false_up.sum()))
-
 
 def day_77() -> None:
     test_y, test_hat, _ = _lag5_line_test()
@@ -1036,7 +953,6 @@ def day_77() -> None:
     else:
         print("mean abs error when speaking = not defined")
 
-
 def day_78() -> None:
     test_y, test_hat, _ = _lag5_line_test()
     tau = 0.001
@@ -1045,7 +961,6 @@ def day_78() -> None:
     print("threshold =", fmt(tau, 4))
     print("days speaking =", int(speak.sum()))
     print("mean abs error when speaking =", fmt(float(err[speak].mean()), 6))
-
 
 def day_79() -> None:
     x, y, cut = _lag5_xy()
@@ -1064,7 +979,6 @@ def day_79() -> None:
     print("total bill tree =", fmt(float(bill_tree.sum()), 4))
     print("lower bill wins =", "line" if bill_line.sum() >= bill_tree.sum() else "tree")
 
-
 def day_80() -> None:
     test_y, test_hat, _ = _lag5_line_test()
     wrong = int((np.sign(test_y) != np.sign(test_hat)).sum())
@@ -1074,12 +988,10 @@ def day_80() -> None:
     print("jump days billed at 3 =", jump)
     print("this choice names column direction wrong in the bill table")
 
-
 def _iso_week(date_str: str) -> str:
     d = dt.datetime.strptime(date_str, "%Y-%m-%d").date()
     year, week, _ = d.isocalendar()
     return f"{year}-W{week:02d}"
-
 
 def _week_vol_high_low(test_y: np.ndarray, dates: list[str]) -> tuple[np.ndarray, np.ndarray, float]:
     weeks: dict[str, list[int]] = {}
@@ -1096,12 +1008,10 @@ def _week_vol_high_low(test_y: np.ndarray, dates: list[str]) -> tuple[np.ndarray
     low = np.array([i for wk, idxs in weeks.items() if week_vol[wk] < med for i in idxs], dtype=int)
     return high, low, med
 
-
 def _lag5_depth2_on_best_col(x_train: np.ndarray, y_train: np.ndarray) -> tuple[int, dict]:
     col, _, _, _ = _best_stump(x_train, y_train)
     tree = tree_depth2(x_train[:, col], y_train)
     return col, tree
-
 
 def day_81() -> None:
     test_y, test_hat, dates = _lag5_line_test()
@@ -1113,308 +1023,6 @@ def day_81() -> None:
     print("low volatility week days =", len(low))
     print("mean abs error high vol weeks =", fmt(float(err[high].mean()), 6))
     print("mean abs error low vol weeks =", fmt(float(err[low].mean()), 6))
-
-
-def day_82() -> None:
-    test_y, test_hat, dates = _lag5_line_test()
-    abs_y = np.abs(test_y)
-    p75 = float(np.percentile(abs_y, 75))
-    high, _, _ = _week_vol_high_low(test_y, dates)
-    jump_high = high[abs_y[high] >= p75]
-    err = np.abs(test_y - test_hat)
-    print("regime = high volatility ISO weeks on test stretch")
-    print("jump days in high vol weeks =", len(jump_high))
-    if len(jump_high):
-        print("line mean abs error on those jump days =", fmt(float(err[jump_high].mean()), 6))
-    else:
-        print("line mean abs error on those jump days = not defined")
-
-
-def day_83() -> None:
-    x, y, cut = _lag5_xy()
-    rows = _complete(_aaa())
-    _, _, ds = _lag5_for_rows(rows)
-    test_dates = ds[cut:]
-    test_y = y[cut:]
-    beta = _ols_design(x[:cut], y[:cut])
-    col, thr, left, right = _best_stump(x[:cut], y[:cut])
-    d2_col, d2_tree = _lag5_depth2_on_best_col(x[:cut], y[:cut])
-    line_hat = _predict_design(beta, x[cut:])
-    stump_hat = _predict_stump_col(x[cut:], col, thr, left, right)
-    deep_hat = predict_tree(x[cut:, d2_col], d2_tree)
-    _, low, _ = _week_vol_high_low(test_y, test_dates)
-    print("regime = low volatility ISO weeks on test stretch")
-    print("low vol week days =", len(low))
-    print("line test MSE low vol weeks =", fmt(_mse(test_y[low], line_hat[low]), 6))
-    print("stump test MSE low vol weeks =", fmt(_mse(test_y[low], stump_hat[low]), 6))
-    stump_mse = _mse(test_y[low], stump_hat[low])
-    deep_mse = _mse(test_y[low], deep_hat[low])
-    print("depth-2 tree test MSE low vol weeks =", fmt(deep_mse, 6))
-    print("deeper tree worse than stump on low vol =", str(deep_mse > stump_mse).lower())
-
-
-def day_84() -> None:
-    test_y, test_hat, dates = _lag5_line_test()
-    abs_y = np.abs(test_y)
-    quiet = abs_y <= np.median(abs_y)
-    jump = abs_y >= float(np.percentile(abs_y, 75))
-    wrong = np.sign(test_y) != np.sign(test_hat)
-    high, low, _ = _week_vol_high_low(test_y, dates)
-    err = np.abs(test_y - test_hat)
-    for label, idx in (("high vol", high), ("low vol", low)):
-        sub = np.zeros(len(test_y), dtype=bool)
-        sub[idx] = True
-        print(f"table {label} quiet days =", int((quiet & sub).sum()))
-        print(f"table {label} jump days =", int((jump & sub).sum()))
-        print(f"table {label} direction wrong days =", int((wrong & sub).sum()))
-        print(f"table {label} mean abs error =", fmt(float(err[sub].mean()), 6))
-
-
-def day_85() -> None:
-    test_y, test_hat, dates = _lag5_line_test()
-    x, y, cut = _lag5_xy()
-    beta = _ols_design(x[:cut], y[:cut])
-    col, thr, left, right = _best_stump(x[:cut], y[:cut])
-    line_hat = _predict_design(beta, x[cut:])
-    tree_hat = _predict_stump_col(x[cut:], col, thr, left, right)
-    high, low, _ = _week_vol_high_low(test_y, dates)
-    line_mse_high = _mse(test_y[high], line_hat[high])
-    tree_mse_high = _mse(test_y[high], tree_hat[high])
-    pick = "line" if line_mse_high <= tree_mse_high else "tree"
-    print("decision cell = high volatility weeks test MSE")
-    print("line test MSE high vol weeks =", fmt(line_mse_high, 6))
-    print("tree test MSE high vol weeks =", fmt(tree_mse_high, 6))
-    print("model kept =", pick)
-
-
-def day_86() -> None:
-    rows = _complete(_aaa())
-    dates = [row["date"] for row in rows]
-    lines = [
-        "source = days/data/panel.csv",
-        "name = AAA",
-        "price column = adj_close",
-        f"first date = {dates[0]}",
-        f"last date = {dates[-1]}",
-        f"complete rows = {len(rows)}",
-        "return = same-day simple from adj_close",
-        "lags = 1 through 5 of that return",
-        "split = first seventy-five percent train time-ordered",
-        "hold-out = remaining twenty-five percent",
-    ]
-    for line in lines:
-        print(line)
-
-
-def day_87() -> None:
-    lines = [
-        "allowed = lag1 lag2 lag3 lag4 lag5 intercept",
-        "target = same-day simple return",
-        "forbidden = same-row high low close",
-        "forbidden = same-day market return as feature",
-        "volume = only when day script adds next-bar volume",
-        "label never uses future row",
-        "train fits coefficients thresholds only",
-        "test scores frozen parameters only",
-        "panel = days/data/panel.csv not live feed",
-        "reject list matches day 56 through 57 stdout",
-    ]
-    for line in lines:
-        print(line)
-
-
-def day_88() -> None:
-    test_y, test_hat, _ = _lag5_line_test()
-    mse = _mse(test_y, test_hat)
-    print("entry = python3 -m days.run_day 88")
-    print("line test MSE two decimals =", fmt(mse, 2))
-    print("line test MSE six decimals =", fmt(mse, 6))
-    print("match required to two decimals = true")
-
-
-def day_89() -> None:
-    x, y, cut = _lag5_xy()
-    beta = _ols_design(x[:cut], y[:cut])
-    col, thr, left, right = _best_stump(x[:cut], y[:cut])
-    test_y = y[cut:]
-    zero = np.zeros_like(test_y)
-    line_hat = _predict_design(beta, x[cut:])
-    tree_hat = _predict_stump_col(x[cut:], col, thr, left, right)
-    lines = [
-        "talk baseline = predict zero return",
-        f"talk baseline test MSE = {fmt(_mse(test_y, zero), 6)}",
-        "talk line = five lag OLS frozen",
-        f"talk line test MSE = {fmt(_mse(test_y, line_hat), 6)}",
-        "talk tree = single lag stump frozen",
-        f"talk tree test MSE = {fmt(_mse(test_y, tree_hat), 6)}",
-        "numbers must match script stdout",
-    ]
-    for line in lines:
-        print(line)
-
-
-def day_90() -> None:
-    test_y, test_hat, dates = _lag5_line_test()
-    err = np.abs(test_y - test_hat)
-    order = np.argsort(err)[::-1][:3]
-    abs_y = np.abs(test_y)
-    med = np.median(abs_y)
-    p75 = float(np.percentile(abs_y, 75))
-    for rank, idx in enumerate(order, start=1):
-        if abs_y[idx] >= p75:
-            reason = "jump day horizontal miss"
-        elif np.sign(test_y[idx]) != np.sign(test_hat[idx]):
-            reason = "direction wrong"
-        else:
-            reason = "quiet day size miss"
-        print(f"fail rank {rank} date = {dates[idx]} reason = {reason}")
-
-
-def day_91() -> None:
-    rows = _complete(_aaa())
-    close = column(rows, "adj_close")
-    market = column(rows, "market")
-    simple = returns(close)
-    mkt = returns(market)
-    xs, ys = [], []
-    for t in range(5, len(simple)):
-        xs.append([float(simple[t - k]) for k in range(1, 6)] + [float(mkt[t])])
-        ys.append(float(simple[t]))
-    x_arr = np.array(xs)
-    y_arr = np.array(ys)
-    cut = int(0.75 * len(y_arr))
-    mse_lag = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut, :5], y_arr[:cut]), x_arr[cut:, :5]))
-    mse_leak = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut], y_arr[:cut]), x_arr[cut:]))
-    print("feature rejected = same-day market return")
-    print("rank before reject = line with leak MSE", fmt(mse_leak, 6))
-    print("rank after reject = lags only MSE", fmt(mse_lag, 6))
-    print("reject stands even if MSE rises = true")
-
-
-def day_92() -> None:
-    print("fill row 1 = signal at close uses adj_close that day")
-    print("fill row 2 = no order sent slippage zero in script")
-    print("fill row 3 = PnL not computed only errors and bills")
-
-
-def day_93() -> None:
-    test_y, test_hat, _ = _lag5_line_test()
-    slip = 0.0001
-    adj_hat = test_hat - slip
-    wrong_before = np.sign(test_y) != np.sign(test_hat)
-    wrong_after = np.sign(test_y) != np.sign(adj_hat)
-    print("slippage one tick =", fmt(slip, 4))
-    print("direction wrong before slippage =", int(wrong_before.sum()))
-    print("direction wrong after slippage =", int(wrong_after.sum()))
-    if wrong_after.sum() != wrong_before.sum():
-        print("rank changed = true")
-    else:
-        print("rank changed = false")
-
-
-def day_94() -> None:
-    rows = _complete(_aaa())
-    x, y, ds = _lag5_for_rows(rows)
-    cut = int(0.75 * len(y))
-    beta = _ols_design(x[:cut], y[:cut])
-    err = np.abs(y[cut:] - _predict_design(beta, x[cut:]))
-    months: dict[str, list[float]] = {}
-    for date, value in zip(ds[cut:], err):
-        months.setdefault(date[:7], []).append(float(value))
-    month_means = {m: float(np.mean(v)) for m, v in months.items()}
-    best = max(month_means, key=month_means.get)
-    keep = np.array([d[:7] != best for d in ds[cut:]])
-    col, thr, left, right = _best_stump(x[:cut], y[:cut])
-    line_mse = _mse(y[cut:][keep], _predict_design(beta, x[cut:][keep]))
-    tree_mse = _mse(y[cut:][keep], _predict_stump_col(x[cut:][keep], col, thr, left, right))
-    pick = "line" if line_mse <= tree_mse else "tree"
-    print("month dropped =", best)
-    print("line test MSE without that month =", fmt(line_mse, 6))
-    print("tree test MSE without that month =", fmt(tree_mse, 6))
-    print("model kept after drop =", pick)
-
-
-def day_95() -> None:
-    def mse_name(name: str) -> float:
-        rows = _complete(name_rows(name))
-        x, y, _ = _lag5_for_rows(rows)
-        cut = int(0.75 * len(y))
-        beta = _ols_design(x[:cut], y[:cut])
-        return _mse(y[cut:], _predict_design(beta, x[cut:]))
-
-    print("entry = same pipeline function as day 68")
-    print("AAA test MSE =", fmt(mse_name("AAA"), 6))
-    print("BBB test MSE =", fmt(mse_name("BBB"), 6))
-
-
-def day_96() -> None:
-    print("one page title task = predict AAA return from five lags")
-    print("one page title split = seventy-five percent train time order")
-    print("one page title baseline = zero return on hold-out")
-    print("one page title errors = quiet jump direction wrong plus bill")
-
-
-def day_97() -> None:
-    print("open leak = same-day market column lowers MSE but forbidden")
-    print("reference day = 67")
-    print("patch = fit lags only on train score hold-out")
-    print("symptom = MSE changes when forbidden column added")
-    print("fix owner = feature builder before OLS")
-
-
-def day_98() -> None:
-    rows = _complete(_aaa())
-    close = column(rows, "adj_close")
-    market = column(rows, "market")
-    simple = returns(close)
-    mkt = returns(market)
-    xs, ys = [], []
-    for t in range(5, len(simple)):
-        xs.append([float(simple[t - k]) for k in range(1, 6)] + [float(mkt[t])])
-        ys.append(float(simple[t]))
-    x_arr = np.array(xs)
-    y_arr = np.array(ys)
-    cut = int(0.75 * len(y_arr))
-    mse_lag = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut, :5], y_arr[:cut]), x_arr[cut:, :5]))
-    mse_leak = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut], y_arr[:cut]), x_arr[cut:]))
-    print("patch applied = drop same-day market from design")
-    print("valid test MSE after patch =", fmt(mse_lag, 6))
-    print("invalid test MSE with leak =", fmt(mse_leak, 6))
-    print("valid score worse than leak =", str(mse_lag > mse_leak).lower())
-
-
-def day_99() -> None:
-    x, y, cut = _lag5_xy()
-    beta = _ols_design(x[:cut], y[:cut])
-    test_y, test_hat, _ = _lag5_line_test()
-    test_mse = _mse(test_y, test_hat)
-    wrong = int((np.sign(test_y) != np.sign(test_hat)).sum())
-    print("full run line test MSE =", fmt(test_mse, 6))
-    print("full run direction wrong days =", wrong)
-    print("full run matches day 51 test MSE =", str(fmt(test_mse, 6) == fmt(_mse(y[cut:], _predict_design(beta, x[cut:])), 6)).lower())
-    print("manifest matches day 70 ten lines = true")
-
-
-def day_100() -> None:
-    rows = _complete(_aaa())
-    dates = [row["date"] for row in rows]
-    test_y, test_hat, test_dates = _lag5_line_test()
-    wrong = int((np.sign(test_y) != np.sign(test_hat)).sum())
-    lines = [
-        f"narrative data ends = {dates[-1]}",
-        "narrative forbidden = same-row OHLC and same-day market",
-        "narrative mistake types = quiet jump direction wrong",
-        "narrative why no order = script assumes close fill slippage zero only scores",
-        f"narrative hold-out days = {len(test_y)}",
-        f"narrative direction wrong = {wrong}",
-        "narrative baseline = zero return not beaten on all metrics",
-        "narrative bill prefers line over tree on day 79",
-        "narrative forbidden market column is not a valid result day 67",
-        "listener can repeat this page without opening code",
-    ]
-    for line in lines:
-        print(line)
-
 
 def day_50() -> None:
     train_t, train_y, test_t, test_y = _train_test()
@@ -1444,8 +1052,7 @@ def day_50() -> None:
     print("vote wrong =", str(bool(vote_wrong[index])).lower())
     print("days all three and the vote are wrong =", int(all_three.sum()))
 
-
-DAYS = {i: globals()[f"day_{i}"] for i in range(11, 101)}
+DAYS = {i: globals()[f"day_{i}"] for i in range(11, 82)}
 
 
 def main(day: int) -> None:

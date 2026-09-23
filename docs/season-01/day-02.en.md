@@ -68,7 +68,7 @@ The script should print `L1 = sum |r| = 16.66`, `L2 = sum r^2 = 96.339`, and ses
 
 Both losses are in-sample. The query is still inside the training set. Neither number is a holdout score.
 
-| Later | What makes this day hard |
+| Later | What you learn today |
 |---|---|
 | Day 3 | The scalar `L2` is no longer enough. The sum of squares has to be opened by session |
 | Day 4 | The endpoint chord is scored against this OLS line. The two losses can rank them in opposite orders |

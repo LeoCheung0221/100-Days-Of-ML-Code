@@ -107,7 +107,7 @@ The same `y` and fitted values are drawn in [`site`](../../site). From that dire
 
 This is not an out-of-sample evaluation. The query belongs to the training set. A zero nearest-neighbor residual does not transfer into a claim that the estimator works.
 
-| Later | What makes this day hard |
+| Later | What you learn today |
 |---|---|
 | Day 2 | The same residual must be reported as absolute loss and as squared loss. Squared loss raises the weight of session 4 further |
 | Day 6 | Query a point outside the training support. The neighbor can only copy. The line must extrapolate |

@@ -8,7 +8,7 @@ Back to the [front page](../../README.en.md).
 
 ## 01 – 10 · Error
 
-| Day | Session | What makes this day hard |
+| Day | Session | What you learn today |
 |---|---|---|
 | [01　Nearest neighbor and OLS](day-01.en.md) | In-sample nearest neighbor and ordinary least squares | The query lies in the training set. The two estimators sit side by side |
 | [02　Absolute and squared error](day-02.en.md) | Absolute loss and squared loss on one residual | Session 4 is 0.4928 of L1 and 0.6997 of L2 |
@@ -23,7 +23,7 @@ Back to the [front page](../../README.en.md).
 
 ## 11 – 25 · Direction
 
-| Day | Session | What makes this day hard |
+| Day | Session | What you learn today |
 |---|---|---|
 | [11　Direction labels](day-11.en.md) | Keep only up or down | The score is now a direction hit, not a price distance. |
 | [12　A threshold](day-12.en.md) | Cut return into up and down with one threshold | The four returns are 0.8571, 0.5897, 2.2258, and −0.4800. |
@@ -43,7 +43,7 @@ Back to the [front page](../../README.en.md).
 
 ## 26 – 40 · Time
 
-| Day | Session | What makes this day hard |
+| Day | Session | What you learn today |
 |---|---|---|
 | [26　A random split](day-26.en.md) | Split rows into train and test at random | Seed 1, training fraction 0.70, and the sign of the lagged return predicts the next step. |
 | [27　A split by time](day-27.en.md) | Split by time instead | The time split scores 0.5417. |
@@ -63,7 +63,7 @@ Back to the [front page](../../README.en.md).
 
 ## 41 – 55 · How the miss happens
 
-| Day | Session | What makes this day hard |
+| Day | Session | What you learn today |
 |---|---|---|
 | [41　The line on a longer sample](day-41.en.md) | Fit the line again on a longer price history | The adjusted return on 2024-02-28 is 0.1349. |
 | [42　Ridge](day-42.en.md) | Ridge, with the slope penalized | The penalty is on the slope only, λ = 20000, and the intercept is free. |
@@ -83,7 +83,7 @@ Back to the [front page](../../README.en.md).
 
 ## 56 – 70 · One small task
 
-| Day | Session | What makes this day hard |
+| Day | Session | What you learn today |
 |---|---|---|
 | 56 | Freeze the task in one sentence: from the past, guess the next day's return | Table, target, and forbidden columns go into the program before the run |
 | 57 | The program refuses today's high, low, and close | A forbidden column must fail the run, not get used quietly |
@@ -103,7 +103,7 @@ Back to the [front page](../../README.en.md).
 
 ## 71 – 85 · Costly mistakes
 
-| Day | Session | What makes this day hard |
+| Day | Session | What you learn today |
 |---|---|---|
 | 71 | Split misses into jumps, quiet days, and wrong direction | Three counts replace one error |
 | 72 | Look only at quiet days | A small error has to be said as "these days were easy" |
@@ -123,7 +123,7 @@ Back to the [front page](../../README.en.md).
 
 ## 86 – 100 · Tell another engineer
 
-| Day | Session | What makes this day hard |
+| Day | Session | What you learn today |
 |---|---|---|
 | 86 | Ten lines for the start date, end date, and source | Those ten lines alone must locate the same data |
 | 87 | Ten lines for why each column is allowed | This matches the program's refusal list |

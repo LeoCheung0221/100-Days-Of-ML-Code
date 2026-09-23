@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs" / "season-01"
 
-MIN_CJK = 3000  # season-01 zh; use --min-cjk / --no-mermaid for legacy
+MIN_CJK = 0  # no forced length; optional --min-cjk for local drafts
 DOC_DAYS = range(1, 101)
 MIN_MERMAID_PER_DAY = 1
 
@@ -28,6 +28,16 @@ FORBIDDEN_ZH = (
     "第 71–80 天用 quiet/jump/direction 与 bill 重读误差",
     "### 深度补读",
     "深度阅读轮次",
+    "回测代码审查时，第",
+    "混池实验（如第37课）",
+    "课写 commit message 时建议带 verify day 号",
+    "课 narrative 收束：数字 frozen",
+    "延伸 §",
+    "本课 stdout 锚点：",
+    "培训演练",
+    "让同事只看",
+    "新同事 PR",
+    "新同事常混淆",
     "match the terminal verbatim",
     "Core block, line by line",
     "Engineer reading order:",

@@ -6,8 +6,6 @@
 
 今天的学习要点：查询点落在训练集内部时，最近邻残差为 0 只说明标签被检索到了；普通最小二乘的残差 8.2 是仿射函数类的近似误差。
 
----
-
 ## 费曼法讲解
 
 > **结论先行**：在训练横坐标上查询且与某样本重合时，1-NN 的零残差是 **in-support 检索** 的定义结果，不是样本外预测能力；OLS 的 8.2 是 **仿射假设类** 在平方损失下的近似误差。
@@ -37,8 +35,6 @@ flowchart TD
 从实现角度，1-NN 在代码里常表现为 `y[i]` 或索引命中；OLS 为 `lstsq`。两者 **CPU 成本** 在此可忽略，但 **统计成本** 不同：OLS 用五个点估两个参数，残差自由度为 3；1-NN 在命中训练点时 **不消耗邻域平滑带宽**。这不是说 OLS「更省数据」，而是说 **有效参数个数** 不同，样本外方差阶不同（此处不做渐近展开，只建立直觉）。
 
 若把问题改写成「预测 `y_4`  given 过去四天」，估计器与损失都要改；本课 **不做时间因果重述**，只固定横坐标为日序、查询为 4。读文献时看到「in-sample fit at training covariates」应自动联想到本图左支，而不是样本外泛化。
-
----
 
 ## 核心知识
 
@@ -86,8 +82,6 @@ xychart-beta
 
 Gauss–Markov 定理前提在本玩具样本上 **未检验**：同方差、无自相关、外生 `X`。五点的异方差性已肉眼可见（第四日方差贡献大），故 **BLUE 陈述** 仅作「OLS 在线性无偏类中有效」的符号锚点，不作本表统计推断。推断进入第 7 天 hold-out 与第 58 天按年切分之后。开发侧读定理时，应默认问：**残差是否交换、`X` 是否含未来列**——本课两者都刻意保持最简单，以便只隔离估计器差异。
 
----
-
 ## 拓展领域
 
 **检索 vs 参数化**在量化中常对应：k-NN / 相似日匹配（样本内易过拟合已见标签）与线性因子、风格回归（残差承载模型类误差）。Breiman（2001）的两种文化——数据模型与算法模型——本课以 1-NN 与 OLS 并排，为第 44 天起的 **树 / 分段** 模型预留同一面板上的对照。
@@ -109,95 +103,6 @@ Gauss–Markov 定理前提在本玩具样本上 **未检验**：同方差、无
 **审计清单（本日可执行）**：打开 stdout → 确认 `ask x=4.0` 与 `stored y=20.0` → 核对 `memorized` 与 `fitted` 两行 → 用 `train points` 第四行验证 11.79 与 8.2 四舍五入关系 → 在 research log 写「1-NN vs OLS，in-support query，水平绝对误差，未做样本外」。五步完成即满足内部 quant dev 对 **day-1 实验** 的最低披露标准。
 
 **与生产代码的映射**：回测框架里的 `predict()` 若在 `date` 已存在于训练索引时走 **cache lookup**，metrics 模块却报告 `mse_oos`，就属于本课左支误标为样本外。代码审查应 grep「merge_asof / reindex / loc 精确命中」与 metrics 命名是否一致。OLS 路径对应 `LinearRegression.fit` 全样本再 `predict` 同索引——右支。两路径 **可以共存**，但 report 必须分表，否则 PM 看到的 Sharpe 没有定义。
-
-
-混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第1课文档应在开头声明主语范围。
-
-FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第1课写模型比较时禁止用非法列作优选依据。
-
-缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第1课起应在 CI 里 grep fillna 方向。
-
-标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第1课应把 scale 来源写入 model card。
-
-时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第1课若改切分为随机，必须另开对照行而不覆盖 time 行。
-
-随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第1课命名错误会导致合规审查失败。
-
-事件规则课（如第23–24课）强调规则先于计数；第1课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
-
-双分数课（如第25课）说明水平误差与方向误差可分离；第1课策略若为 sign book，primary metric 必须指向 direction。
-
-成本门（如第39课）应在 hit rate 之前进入；第1课若未扣费，memo 应显式写「未含 transaction cost」。
-
-泄漏清单（第40课）是 negative catalog；第1课新特征应主动问：是否会出现在未来某天的 list 行上。
-
-停牌间隔（如第35课）改变 row-lag 语义；第1课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
-
-复权口径（如第36课）要求双列披露；第1课任何 return 图表必须标注 adj 或 raw，禁止混用。
-
-窗口均值（如第30–32课）区分 full sample 与 lookback；第1课 feature 命名建议带 window 长度后缀。
-
-市场同期信号（如第38课）与 lag 市场对照；第1课 merge 外部指数时务必 asof 对齐到前一可用观测。
-
-固定 panel（第21课）之后所有数字绑同一 CSV；第1课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
-
-lag-1 方向（第22课）是最简 autocorr sign 游戏；第1课扩展至多元时，先确认单变量基线仍复现 36/77。
-
-三连规则（第23课）样本稀疏；第1课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
-
-early 非 score（第24课）是防 peek 文案；第1课 dashboard 应把 non-score 段视觉降级（灰显）。
-
-open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第1课 security review 应看公式分母而非看 delta RSS。
-
-high FORBIDDEN（第28课）教 bar 内同步；第1课 intraday 特征更严格，decision time 须早于 bar end。
-
-第1课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
-
-第1课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
-
-第1课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
-
-第1课写 commit message 时建议带 verify day 号；例如「docs: day-1 sync stdout golden」。
-
-第1课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
-
-第1课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
-
-第1课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
-
-第1课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
-
-第1课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
-
-第1课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
-
-第1课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
-
-第1课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
-
-第1课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
-
-第1课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
-
-第1课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
-
-第1课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
-
-第1课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
-
-第1课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
-
-第1课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
-
-第1课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
-
-第1课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
-
-第1课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
-
-第1课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
-
----
 
 ## 实战总结
 

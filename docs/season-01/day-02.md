@@ -6,8 +6,6 @@
 
 今天的学习要点：同一条直线、同一组残差，必须同时交绝对损失和平方损失。第四日占绝对损失的 0.4928，占平方损失的 0.6997。
 
----
-
 ## 费曼法讲解
 
 > **结论先行**：\(\hat\beta\) 由 \(L_2\) 拟合得到并固定后，\(L_1=\sum|r_t|\) 与 \(L_2=\sum r_t^2\) 是对 **同一残差向量** 的两个评价泛函；第四日份额 0.4928 vs 0.6997 的差异来自 \(x\mapsto x^2\) 在 \(|x|>1\) 上的超线性，不是「第四天更重要」的叙事判断。
@@ -27,8 +25,6 @@ flowchart LR
 ```
 
 Walk-forward 回测忌用 MSE 调参、却只写 Sharpe 而不链到大残差日是否可交易。本课无 P&L，只固定 **in-sample 份额代数**；写 risk memo 须注明 estimand 与窗口。
-
----
 
 ## 核心知识
 
@@ -75,8 +71,6 @@ OLS：\(\hat\beta=\arg\min_\beta \sum(y_t-\beta_1 x_t-\beta_0)^2\)。同一 \(\h
 
 未归一化 RSS 96.339；RMSE \(\sqrt{96.339/5}\approx 4.39\)，MAE \(16.66/5=3.332\)——并列报告比单报 RSS 更接近生产监控习惯。
 
----
-
 ## 拓展领域
 
 GARCH 族多用 \(L_2\) 似然；稳健尺度估计靠近 \(L_1\)。只写「RMSE ↓20%」而不说是否由跳点驱动，读者无法区分整体改善与平方惩罚 dominate。Rousseeuw & Leroy（1987）强调 breakdown point：\(L_1\) 回归对离群更稳；第 5 天删第四日动 \(\hat\beta\) 是 **样本变**，本日份额是 **固定 \(\hat\beta\)** 下的集中度。
@@ -114,123 +108,6 @@ White（1980）异方差稳健 SE 不改点估计但改推断；Christoffersen &
 **英文键名**：终端使用 `L1`、`L2`、`day 4 share` 等键，与后续季节英文笔记对齐；中文正文引用份额时用四位小数零点四九二八与零点六九九七，与脚本一致，勿四舍五入到两位。
 
 **风险披露**：本课无样本外、无交易费用、无方向命中率；任何将零点六九九七写成「第四日模型失效概率」的表述均属过度解读。合法表述是：在固定最小二乘拟合下，第四日贡献约七成未解释平方偏差。
-
-
-随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第2课命名错误会导致合规审查失败。
-
-事件规则课（如第23–24课）强调规则先于计数；第2课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
-
-双分数课（如第25课）说明水平误差与方向误差可分离；第2课策略若为 sign book，primary metric 必须指向 direction。
-
-成本门（如第39课）应在 hit rate 之前进入；第2课若未扣费，memo 应显式写「未含 transaction cost」。
-
-泄漏清单（第40课）是 negative catalog；第2课新特征应主动问：是否会出现在未来某天的 list 行上。
-
-停牌间隔（如第35课）改变 row-lag 语义；第2课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
-
-复权口径（如第36课）要求双列披露；第2课任何 return 图表必须标注 adj 或 raw，禁止混用。
-
-窗口均值（如第30–32课）区分 full sample 与 lookback；第2课 feature 命名建议带 window 长度后缀。
-
-市场同期信号（如第38课）与 lag 市场对照；第2课 merge 外部指数时务必 asof 对齐到前一可用观测。
-
-固定 panel（第21课）之后所有数字绑同一 CSV；第2课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
-
-lag-1 方向（第22课）是最简 autocorr sign 游戏；第2课扩展至多元时，先确认单变量基线仍复现 36/77。
-
-三连规则（第23课）样本稀疏；第2课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
-
-early 非 score（第24课）是防 peek 文案；第2课 dashboard 应把 non-score 段视觉降级（灰显）。
-
-open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第2课 security review 应看公式分母而非看 delta RSS。
-
-high FORBIDDEN（第28课）教 bar 内同步；第2课 intraday 特征更严格，decision time 须早于 bar end。
-
-第2课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
-
-第2课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
-
-第2课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
-
-第2课写 commit message 时建议带 verify day 号；例如「docs: day-2 sync stdout golden」。
-
-第2课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
-
-第2课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
-
-第2课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
-
-第2课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
-
-第2课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
-
-第2课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
-
-第2课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
-
-第2课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
-
-第2课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
-
-第2课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
-
-第2课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
-
-第2课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
-
-第2课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
-
-第2课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
-
-第2课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
-
-第2课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
-
-第2课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
-
-第2课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
-
-第2课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
-
-第2课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
-
-第2课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
-
-第2课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
-
-第2课避免写「显然」「众所周知」；改写成可核对机制句。
-
-第2课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
-
-第2课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
-
-第2课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
-
-第2课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
-
-第2课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
-
-第2课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
-
-第2课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
-
-第2课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
-
-第2课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
-
-第2课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
-
-第2课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
-
-第2课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
-
-第2课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
-
-第2课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
-
-回测代码审查时，第2课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
-
----
 
 ## 实战总结
 

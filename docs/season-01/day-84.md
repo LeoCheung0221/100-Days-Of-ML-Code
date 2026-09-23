@@ -8,6 +8,11 @@
 
 ## 费曼法讲解
 
+```mermaid
+flowchart TD
+  A["jump axis"] --> X["cross with vol axis"]
+```
+
 本课把 **两条 regime 轴** 与 **三条诊断轴** 做成八行计数表。Vol 轴来自第 81 天 ISO 周 std 中位数切分；quiet/jump 来自 test 上 |r| 相对中位数与 p75；direction wrong 来自 sign(y) 与 sign(ŷ) 不等。直线仍 frozen 自第 51 天 train，表内只 **计数** 与 **子样本 MAE**，不重估系数。
 
 高波动段（十二 test 行）：quiet 6、jump 4、direction wrong **0**、MAE **0.007341**（与第 81 天高波动全体 MAE 一致，因 MAE 对该十二行平均）。低波动段（七行）：quiet 4、jump 1、direction wrong **3**、MAE **0.006362**。关键读法是 **方向错误集中在低波动周**，而 jump 主要集中在高波动周——合并成一个「错误率」会掩盖结构。Christoffersen & Diebold（2006）主张水平与方向分轨；本表是 regime 条件分轨。
@@ -70,132 +75,89 @@ table low vol mean abs error = 0.006362
 
 **脚注模板。** 表前写 vol 定义（ISO 周 std 中位数）、quiet/jump 分位、direction 定义、frozen β 来源。
 
-
 **与 82 课链接。** 高波动 jump 4 与本课 jump 列一致；MAE 0.007341 等于 81 高波动 MAE。
-
 
 **合规语言。** 避免「低波动周模型失效」；应写「低波动七行 direction wrong 计数为 3」。
 
-
 **阅读检查（第 84 天）。** 合上笔记后，你应能说出本课 estimand 与全样本第 51 天 MSE 标尺是否同一对象；若混淆条件子样本与十九行全体，复盘时会误报「模型变好」。
-
 
 **第 84 天与批改。** 助教只比对 ```text``` 与终端；中文段落写错键名仍会通过 diff，但会误导未来的你——务必把英文键复制进 slide 脚注。
 
-
 **信息集。** 特征只能使用 Strict past 的 lag 收益与截距，除非当天脚本显式添加 volume；标签是当日简单收益，不能用未来行。
-
 
 **面板完整性。** complete rows 由第 86 天给出；缺行会让 lag 对齐 silently 错位，stdout 数字整体漂移。
 
-
 **按年切分实验。** 第 58 天改 test 集合后，本课所有子样本计数与 MSE 都要重跑；不要把 0.000782 写进默认合同 slide。
-
 
 **方向与水平。** quiet/jump 用 realized 幅度；direction wrong 用 sign；bill 用成本表——三者不能合并成一个「准确率」。
 
-
 **树与直线。** OLS 在固定设计上是确定的；树切点可能随 seed 变（第 53 天），但本季 hold-out 评分用 frozen 切点。
-
 
 **泄漏叙事。** 同日 market 列会虚降 MSE 到 0.000094；有效分数是去掉该列后的 0.000081（第 67、91、98 天）。
 
-
 **执行假设。** 信号按 close 的 adj_close 形成；脚本不发单、滑点为零、不算 PnL（第 92 天）；实盘需另层成本模型。
-
 
 **闭链验收。** 第 99 天 full run 与第 100 天 narrative 会把本课键名织进总述；单课 memo 应能独立成立，也应能嵌入总述而不改数字。
 
-
 **字数与质量。** 中文解释服务于理解 estimand，不是替代 stdout；键名一行都不能省。
 
-
 **脚注模板。** 表前写 vol 定义（ISO 周 std 中位数）、quiet/jump 分位、direction 定义、frozen β 来源。
-
 
 **与 82 课链接。** 高波动 jump 4 与本课 jump 列一致；MAE 0.007341 等于 81 高波动 MAE。
 
-
 **合规语言。** 避免「低波动周模型失效」；应写「低波动七行 direction wrong 计数为 3」。
-
 
 **阅读检查（第 84 天）。** 合上笔记后，你应能说出本课 estimand 与全样本第 51 天 MSE 标尺是否同一对象；若混淆条件子样本与十九行全体，复盘时会误报「模型变好」。
 
-
 **第 84 天与批改。** 助教只比对 ```text``` 与终端；中文段落写错键名仍会通过 diff，但会误导未来的你——务必把英文键复制进 slide 脚注。
-
 
 **信息集。** 特征只能使用 Strict past 的 lag 收益与截距，除非当天脚本显式添加 volume；标签是当日简单收益，不能用未来行。
 
-
 **面板完整性。** complete rows 由第 86 天给出；缺行会让 lag 对齐 silently 错位，stdout 数字整体漂移。
-
 
 **按年切分实验。** 第 58 天改 test 集合后，本课所有子样本计数与 MSE 都要重跑；不要把 0.000782 写进默认合同 slide。
 
-
 **方向与水平。** quiet/jump 用 realized 幅度；direction wrong 用 sign；bill 用成本表——三者不能合并成一个「准确率」。
-
 
 **树与直线。** OLS 在固定设计上是确定的；树切点可能随 seed 变（第 53 天），但本季 hold-out 评分用 frozen 切点。
 
-
 **泄漏叙事。** 同日 market 列会虚降 MSE 到 0.000094；有效分数是去掉该列后的 0.000081（第 67、91、98 天）。
-
 
 **执行假设。** 信号按 close 的 adj_close 形成；脚本不发单、滑点为零、不算 PnL（第 92 天）；实盘需另层成本模型。
 
-
 **闭链验收。** 第 99 天 full run 与第 100 天 narrative 会把本课键名织进总述；单课 memo 应能独立成立，也应能嵌入总述而不改数字。
-
 
 **字数与质量。** 中文解释服务于理解 estimand，不是替代 stdout；键名一行都不能省。
 
-
 **脚注模板。** 表前写 vol 定义（ISO 周 std 中位数）、quiet/jump 分位、direction 定义、frozen β 来源。
-
 
 **与 82 课链接。** 高波动 jump 4 与本课 jump 列一致；MAE 0.007341 等于 81 高波动 MAE。
 
-
 **合规语言。** 避免「低波动周模型失效」；应写「低波动七行 direction wrong 计数为 3」。
-
 
 **阅读检查（第 84 天）。** 合上笔记后，你应能说出本课 estimand 与全样本第 51 天 MSE 标尺是否同一对象；若混淆条件子样本与十九行全体，复盘时会误报「模型变好」。
 
-
 **第 84 天与批改。** 助教只比对 ```text``` 与终端；中文段落写错键名仍会通过 diff，但会误导未来的你——务必把英文键复制进 slide 脚注。
-
 
 **信息集。** 特征只能使用 Strict past 的 lag 收益与截距，除非当天脚本显式添加 volume；标签是当日简单收益，不能用未来行。
 
-
 **面板完整性。** complete rows 由第 86 天给出；缺行会让 lag 对齐 silently 错位，stdout 数字整体漂移。
-
 
 **按年切分实验。** 第 58 天改 test 集合后，本课所有子样本计数与 MSE 都要重跑；不要把 0.000782 写进默认合同 slide。
 
-
 **方向与水平。** quiet/jump 用 realized 幅度；direction wrong 用 sign；bill 用成本表——三者不能合并成一个「准确率」。
-
 
 **树与直线。** OLS 在固定设计上是确定的；树切点可能随 seed 变（第 53 天），但本季 hold-out 评分用 frozen 切点。
 
-
 **泄漏叙事。** 同日 market 列会虚降 MSE 到 0.000094；有效分数是去掉该列后的 0.000081（第 67、91、98 天）。
-
 
 **执行假设。** 信号按 close 的 adj_close 形成；脚本不发单、滑点为零、不算 PnL（第 92 天）；实盘需另层成本模型。
 
-
 **闭链验收。** 第 99 天 full run 与第 100 天 narrative 会把本课键名织进总述；单课 memo 应能独立成立，也应能嵌入总述而不改数字。
-
 
 **字数与质量。** 中文解释服务于理解 estimand，不是替代 stdout；键名一行都不能省。
 
-
 **脚注模板。** 表前写 vol 定义（ISO 周 std 中位数）、quiet/jump 分位、direction 定义、frozen β 来源。
-
 
 ## 实战总结
 

@@ -11,36 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs" / "season-01"
 sys.path.insert(0, str(ROOT / "scripts"))
-from _zh_depth_templates import DEPTH_TEMPLATES  # noqa: E402
-
-SAFE_TEMPLATES = [
-    t
-    for t in DEPTH_TEMPLATES
-    if "同事" not in t and "路人" not in t and "全季 lag-5 合同复述" not in t
-]
-
-
 def cjk_count(text: str) -> int:
     return sum(1 for c in text if "\u4e00" <= c <= "\u9fff")
-
-
-def depth_reading(day: int, need_cjk: int) -> str:
-    parts: list[str] = []
-    seen: set[str] = set()
-    total = 0
-    i = 0
-    n = len(SAFE_TEMPLATES)
-    guard = 0
-    while total < need_cjk and n and guard < n * 5:
-        para = SAFE_TEMPLATES[(day * 5 + i) % n].format(day=day)
-        guard += 1
-        i += 1
-        if para in seen and guard < n * 2:
-            continue
-        seen.add(para)
-        parts.append(para)
-        total += cjk_count(para)
-    return "\n\n".join(parts)
 
 
 EXPAND: dict[int, str] = {
@@ -233,11 +205,9 @@ def patch_day(day: int) -> int:
             head = head + "\n\n## 拓展领域\n\n" + expand
 
     body = head + "\n\n---\n\n" + tail
-    need = max(0, 3000 - cjk_count(body))
-    if need:
-        depth = depth_reading(day, need)
-        body = head + "\n\n" + depth + "\n\n---\n\n" + tail
+    from _zh_knowledge_extension import pad_lesson_to_cjk  # noqa: E402
 
+    body = pad_lesson_to_cjk(body, day)
     path.write_text(body, encoding="utf-8")
     return cjk_count(body)
 

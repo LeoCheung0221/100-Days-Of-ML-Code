@@ -8,6 +8,12 @@
 
 ## 费曼法讲解
 
+```mermaid
+flowchart LR
+  H["high vol 12d"] --> MAE["MAE 0.007341"]
+  L["low vol 7d"] --> MAE2["MAE 0.006362"]
+```
+
 第 71–80 天在 nineteen 个 hold-out 日上用 quiet/jump/direction 与 bill 读**同一 frozen 直线**；本课起增加**日历 regime**：按 ISO 周把 test 行分成「高波动周」与「低波动周」，再分别报告水平误差 MAE。波动定义写在 stdout 首行：只在 test 行上，对每一 ISO 周内的当日简单收益 \(r_t\) 算样本标准差（该周仅一行时退化为 \(|r_t|\)）；各周 std 的中位数为 0.009415，高于中位数的周记为高波动，其包含的 test 日共 12 天，其余 7 天为低波动周。
 
 直线系数仍是第 51 天在 54 行训练段估定的 OLS，本课不重估。MAE 是子样本上 \(|r_t - \hat y_t|\) 的算术平均：高波动周 0.007341 略高于低波动周 0.006362。这与 Andersen & Bollerslev（1998）强调的「波动 clustering 下预测精度随状态变化」同向，但此处**不是** GARCH 条件波动，而是教学面板上的**已实现周波动分区**（Andersen et al.，2001，*Journal of Empirical Finance* 对 realized vol 的讨论可作背景）。19 个点不能做强显著声明；读数重点是：**同一 \(\hat\beta\)** 在不同波动 regime 下 MAE 可分叉，全样本单一 MAE 会掩盖这一点。
@@ -99,7 +105,7 @@ mean abs error low vol weeks = 0.006362
 
 **实现细节指读。** `_week_vol_high_low` 返回的 high/low 是 **test 行索引数组**，不是 ISO 周编号列表；打印 12/7 前已对索引去重计数。Median 0.009415 是对 **周 std 列表** 取中位数，不是对日行 |r| 取中位数——与第 71 天 quiet/jump 分位对象不同。
 
-**培训演练。** 让同事只看六行 stdout 画出 high/low 日历条带；再对照代码。画错通常源于把 train 日期混入周 std 或把 jump 阈值当成 vol 阈值。
+**手算核对。** 仅用六行 stdout 标 high/low 日行，再对照 `_week_vol_high_low`。常见错误是把 train 日期混入周 std，或误用 jump 分位当 vol 阈值。
 
 **英文键完整性。** 六行 stdout 首词均为英文小写键；中文标题可写「波动周分段」，但 ```text``` 内不得翻译键名，否则 verify 与 CI diff 失败。差一个字符也会判 SHORT。
 

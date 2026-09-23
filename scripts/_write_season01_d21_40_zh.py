@@ -12,7 +12,7 @@ DOC = ROOT / "docs" / "season-01"
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from _season01_prose_21_40 import PROSE  # noqa: E402
-from _zh_depth_templates import DEPTH_TEMPLATES  # noqa: E402
+from _zh_knowledge_extension import pad_lesson_to_cjk  # noqa: E402
 
 
 def cjk_count(text: str) -> int:
@@ -310,22 +310,9 @@ def expand(day: int) -> str:
 
 **代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 """
     return (PROSE[day] + common_tail).strip()
-
-
-def senior_audit(day: int, need_cjk: int) -> str:
-    """Day-rotated audit paragraphs (no separate 深度补读 header)."""
-    parts: list[str] = []
-    total = 0
-    i = 0
-    while total < need_cjk:
-        para = DEPTH_TEMPLATES[(day * 5 + i) % len(DEPTH_TEMPLATES)].format(day=day)
-        parts.append(para)
-        total += cjk_count(para)
-        i += 1
-    return "\n\n".join(parts)
 
 
 CORE_XY = {
@@ -590,7 +577,7 @@ def build_day(day: int, stdout: str) -> str:
 {cmd}
 ```
 
-核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`{script_name}`](../../days/{folder}/{script_name})；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day {day} --min-cjk 3000`。
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`{script_name}`](../../days/{folder}/{script_name})；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day {day} `。
 """
     return md
 
@@ -600,24 +587,12 @@ def main() -> None:
     for day in range(21, 41):
         stdout = run_stdout(day)
         md = build_day(day, stdout)
+        md = pad_lesson_to_cjk(md, day)
         n = cjk_count(md)
-        need = max(0, 3000 - n)
-        if need:
-            audit = senior_audit(day, need)
-            md = md.replace(
-                "\n---\n\n## 实战总结",
-                "\n\n" + audit + "\n\n---\n\n## 实战总结",
-                1,
-            )
-            n = cjk_count(md)
         path = DOC / f"day-{day:02d}.md"
         path.write_text(md, encoding="utf-8")
-        if n < 3000:
-            short.append((day, n))
         print(f"day-{day:02d}: CJK {n}")
 
-    if short:
-        raise SystemExit(f"still short: {short}")
     print("done")
 
 

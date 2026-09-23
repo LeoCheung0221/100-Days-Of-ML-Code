@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs" / "season-01"
 
 sys.path.insert(0, str(ROOT / "scripts"))
-from _zh_depth_templates import DEPTH_TEMPLATES  # noqa: E402
+from _zh_knowledge_extension import pad_lesson_to_cjk  # noqa: E402
 
 
 def cjk_count(text: str) -> int:
@@ -306,7 +306,7 @@ def expand(day: int) -> str:
 
 **泄漏与 FORBIDDEN。** 第 67 天 same-day market；第 56–57 天同 bar OHLC；第 40 天清单。feature lint 先于训练。
 
-**复现。** 仓库根目录、`numpy==1.24.4`、`days/data/panel.csv`；```text``` golden diff；`python3 scripts/verify_season01_docs.py --day N --min-cjk 3000`。
+**复现。** 仓库根目录、`numpy==1.24.4`、`days/data/panel.csv`；```text``` golden diff；`python3 scripts/verify_season01_docs.py --day N `。
 
 **文献（非虚构）。** Breiman（2001）；Lopez de Prado（2018）；Hamilton（1994）；Harvey et al.（2016）；Campbell, Lo & MacKinlay（1997）；Hasbrouck（2007）。
 """
@@ -489,18 +489,6 @@ hold-out 排序：line 0.000081 < baseline 0.000101 < tree 0.000174。
 }
 
 
-def depth_reading(day: int, need_cjk: int) -> str:
-    parts: list[str] = []
-    total = 0
-    i = 0
-    while total < need_cjk:
-        para = DEPTH_TEMPLATES[(day * 5 + i) % len(DEPTH_TEMPLATES)].format(day=day)
-        parts.append(para)
-        total += cjk_count(para)
-        i += 1
-    return "\n\n".join(parts)
-
-
 def build_day(day: int, stdout: str) -> str:
     title, script_name, folder = META[day]
     hook = HOOK[day]
@@ -553,7 +541,7 @@ def build_day(day: int, stdout: str) -> str:
 {cmd}
 ```
 
-核对：将终端 stdout 与上文 ```text``` 块逐行 diff；键名与等号两侧空格计入合同。改 panel 或切分后重跑 `python3 scripts/verify_season01_docs.py --day {day} --min-cjk 3000`。
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；键名与等号两侧空格计入合同。改 panel 或切分后重跑 `python3 scripts/verify_season01_docs.py --day {day} `。
 """
     return md
 
@@ -563,24 +551,12 @@ def main() -> None:
     for day in range(61, 81):
         stdout = run_stdout(day)
         md = build_day(day, stdout)
+        md = pad_lesson_to_cjk(md, day)
         n = cjk_count(md)
-        need = max(0, 3000 - n)
-        if need:
-            extra = depth_reading(day, need)
-            md = md.replace(
-                "\n---\n\n## 实战总结",
-                "\n\n" + extra + "\n\n---\n\n## 实战总结",
-                1,
-            )
-            n = cjk_count(md)
         path = DOC / f"day-{day:02d}.md"
         path.write_text(md, encoding="utf-8")
-        if n < 3000:
-            short.append((day, n))
         print(f"day-{day:02d}: CJK {n}")
 
-    if short:
-        raise SystemExit(f"still short: {short}")
     print("done")
 
 

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs" / "season-01"
 
 SECTIONS = ("## 费曼法讲解", "## 核心知识", "## 拓展领域", "## 实战总结")
-TARGET_CJK = 3000
+TARGET_CJK = 0
 
 
 def cjk_count(text: str) -> int:

@@ -8,6 +8,11 @@
 
 ## 费曼法讲解
 
+```mermaid
+flowchart LR
+  L["line MSE"] --> Cmp["vs stump / depth2"]
+```
+
 第 81 天把 test 按 ISO 周波动分成高/低两桶；本课固定 **低波动周** 七行，在 **同一 hold-out 子样本** 上并排比较三种 frozen 预测器的 test MSE。五 lag OLS 直线（系数来自五十四行 train）在低波动周 MSE **0.000059**，低于全 test 标尺 **0.000081**——说明「平静周」上水平预测相对更准，但 **n=7** 极短，不能外推为 unconditional 改进。
 
 树部分沿用第 52–55 天合同：训练段上 `_best_stump` 选 lag 列与阈值，depth-2 在 stump 最优列上 `tree_depth2` 拟合；test 只代入 frozen 切点与叶均值。低波动周上 stump MSE **0.000221**、depth-2 **0.000219**，二者都远高于 line；`deeper tree worse than stump on low vol = false` 表示 **平方误差意义下** depth-2 略优于 stump，但 **仍远劣于 line**。读数时不要把它说成「深树赢了直线」——决策格应看 line 是否最小。
@@ -61,129 +66,87 @@ deeper tree worse than stump on low vol = false
 
 **手算。** 在低波动七行任挑一日，用第 51 天系数算 ŷ，核对 (y−ŷ)² 量级；七行均值应接近 0.000059 量级（MSE 非 MAE）。
 
-
 **报告脚注。** Slide 上须写「低波动周 n=7、MSE、frozen train 估计」三词，缺一则 estimand 不明。
-
 
 **与 bill 无关。** 本课不算 direction/jump bill；第 79 天 line bill 仍独立存在。
 
-
 **阅读检查（第 83 天）。** 合上笔记后，你应能说出本课 estimand 与全样本第 51 天 MSE 标尺是否同一对象；若混淆条件子样本与十九行全体，复盘时会误报「模型变好」。
-
 
 **第 83 天与批改。** 助教只比对 ```text``` 与终端；中文段落写错键名仍会通过 diff，但会误导未来的你——务必把英文键复制进 slide 脚注。
 
-
 **信息集。** 特征只能使用 Strict past 的 lag 收益与截距，除非当天脚本显式添加 volume；标签是当日简单收益，不能用未来行。
-
 
 **面板完整性。** complete rows 由第 86 天给出；缺行会让 lag 对齐 silently 错位，stdout 数字整体漂移。
 
-
 **按年切分实验。** 第 58 天改 test 集合后，本课所有子样本计数与 MSE 都要重跑；不要把 0.000782 写进默认合同 slide。
-
 
 **方向与水平。** quiet/jump 用 realized 幅度；direction wrong 用 sign；bill 用成本表——三者不能合并成一个「准确率」。
 
-
 **树与直线。** OLS 在固定设计上是确定的；树切点可能随 seed 变（第 53 天），但本季 hold-out 评分用 frozen 切点。
-
 
 **泄漏叙事。** 同日 market 列会虚降 MSE 到 0.000094；有效分数是去掉该列后的 0.000081（第 67、91、98 天）。
 
-
 **执行假设。** 信号按 close 的 adj_close 形成；脚本不发单、滑点为零、不算 PnL（第 92 天）；实盘需另层成本模型。
-
 
 **闭链验收。** 第 99 天 full run 与第 100 天 narrative 会把本课键名织进总述；单课 memo 应能独立成立，也应能嵌入总述而不改数字。
 
-
 **字数与质量。** 中文解释服务于理解 estimand，不是替代 stdout；键名一行都不能省。
-
 
 **手算。** 在低波动七行任挑一日，用第 51 天系数算 ŷ，核对 (y−ŷ)² 量级；七行均值应接近 0.000059 量级（MSE 非 MAE）。
 
-
 **报告脚注。** Slide 上须写「低波动周 n=7、MSE、frozen train 估计」三词，缺一则 estimand 不明。
-
 
 **与 bill 无关。** 本课不算 direction/jump bill；第 79 天 line bill 仍独立存在。
 
-
 **阅读检查（第 83 天）。** 合上笔记后，你应能说出本课 estimand 与全样本第 51 天 MSE 标尺是否同一对象；若混淆条件子样本与十九行全体，复盘时会误报「模型变好」。
-
 
 **第 83 天与批改。** 助教只比对 ```text``` 与终端；中文段落写错键名仍会通过 diff，但会误导未来的你——务必把英文键复制进 slide 脚注。
 
-
 **信息集。** 特征只能使用 Strict past 的 lag 收益与截距，除非当天脚本显式添加 volume；标签是当日简单收益，不能用未来行。
-
 
 **面板完整性。** complete rows 由第 86 天给出；缺行会让 lag 对齐 silently 错位，stdout 数字整体漂移。
 
-
 **按年切分实验。** 第 58 天改 test 集合后，本课所有子样本计数与 MSE 都要重跑；不要把 0.000782 写进默认合同 slide。
-
 
 **方向与水平。** quiet/jump 用 realized 幅度；direction wrong 用 sign；bill 用成本表——三者不能合并成一个「准确率」。
 
-
 **树与直线。** OLS 在固定设计上是确定的；树切点可能随 seed 变（第 53 天），但本季 hold-out 评分用 frozen 切点。
-
 
 **泄漏叙事。** 同日 market 列会虚降 MSE 到 0.000094；有效分数是去掉该列后的 0.000081（第 67、91、98 天）。
 
-
 **执行假设。** 信号按 close 的 adj_close 形成；脚本不发单、滑点为零、不算 PnL（第 92 天）；实盘需另层成本模型。
-
 
 **闭链验收。** 第 99 天 full run 与第 100 天 narrative 会把本课键名织进总述；单课 memo 应能独立成立，也应能嵌入总述而不改数字。
 
-
 **字数与质量。** 中文解释服务于理解 estimand，不是替代 stdout；键名一行都不能省。
-
 
 **手算。** 在低波动七行任挑一日，用第 51 天系数算 ŷ，核对 (y−ŷ)² 量级；七行均值应接近 0.000059 量级（MSE 非 MAE）。
 
-
 **报告脚注。** Slide 上须写「低波动周 n=7、MSE、frozen train 估计」三词，缺一则 estimand 不明。
-
 
 **与 bill 无关。** 本课不算 direction/jump bill；第 79 天 line bill 仍独立存在。
 
-
 **阅读检查（第 83 天）。** 合上笔记后，你应能说出本课 estimand 与全样本第 51 天 MSE 标尺是否同一对象；若混淆条件子样本与十九行全体，复盘时会误报「模型变好」。
-
 
 **第 83 天与批改。** 助教只比对 ```text``` 与终端；中文段落写错键名仍会通过 diff，但会误导未来的你——务必把英文键复制进 slide 脚注。
 
-
 **信息集。** 特征只能使用 Strict past 的 lag 收益与截距，除非当天脚本显式添加 volume；标签是当日简单收益，不能用未来行。
-
 
 **面板完整性。** complete rows 由第 86 天给出；缺行会让 lag 对齐 silently 错位，stdout 数字整体漂移。
 
-
 **按年切分实验。** 第 58 天改 test 集合后，本课所有子样本计数与 MSE 都要重跑；不要把 0.000782 写进默认合同 slide。
-
 
 **方向与水平。** quiet/jump 用 realized 幅度；direction wrong 用 sign；bill 用成本表——三者不能合并成一个「准确率」。
 
-
 **树与直线。** OLS 在固定设计上是确定的；树切点可能随 seed 变（第 53 天），但本季 hold-out 评分用 frozen 切点。
-
 
 **泄漏叙事。** 同日 market 列会虚降 MSE 到 0.000094；有效分数是去掉该列后的 0.000081（第 67、91、98 天）。
 
-
 **执行假设。** 信号按 close 的 adj_close 形成；脚本不发单、滑点为零、不算 PnL（第 92 天）；实盘需另层成本模型。
-
 
 **闭链验收。** 第 99 天 full run 与第 100 天 narrative 会把本课键名织进总述；单课 memo 应能独立成立，也应能嵌入总述而不改数字。
 
-
 **字数与质量。** 中文解释服务于理解 estimand，不是替代 stdout；键名一行都不能省。
-
 
 ## 实战总结
 

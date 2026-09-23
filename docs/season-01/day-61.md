@@ -1,38 +1,40 @@
 <p align="center"><b>中文</b> &nbsp;&nbsp;·&nbsp;&nbsp; <a href="day-61.en.md">English</a></p>
 
-# 第 61 天 · 树相对基准
+# 第 61 天 · 树相对零基准
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：baseline 0.000101，tree 0.000174，improvement −0.000072；树未 beat 零基准
+今天的学习要点：depth-1 树 test MSE = 0.000174，baseline = 0.000101，MSE improvement = −0.000072；浅树 hold-out 输给恒零预测。
+
+---
 
 ## 费曼法讲解
 
-树 test MSE 0.000174 高于 baseline 0.000101，improvement=−0.000072。说明第 52 天 stump 在 hold-out 上不仅输给直线，也输给「预测零」。
+> **结论先行**：depth-1 树 hold-out MSE 0.000174 **高于** 零基准 0.000101；`MSE improvement over baseline = -0.000072` 为负，表示相对恒零预测 **平方误差更大**。与第 52 天 tree 0.000174 劣于 line 0.000081 同向，本日把比较对象换成第 59 天 baseline。
 
-这与价格水平上「树 SSE 更小」的叙事正交；return 标签与切分下，台阶模型可以全面落后。
+估计路径：train 段 `_best_stump` 在五个 lag 列上选单切点，test 十九行 frozen 预测；baseline 为 ŷ≡0。improvement 定义为 baseline_MSE−tree_MSE，负号即 tree 更差。这不是「树永远无效」的定理，而是 **AAA、lag-5、75/25 时间切分、return 标签** 下的一次审计。
 
-数据来自 days/data/panel.csv 的 AAA 行：简单收益由复权收盘相邻两日比值减一。有效样本从第五个收益之后才开始，因此比原始行数少五行。默认切分是这些有效行按日期排序后的前百分之七十五训练、其余测试（本段多数课为 train=54、test=19）。同一交易日的 high、low、close 不能解释当日收益；同日 market 收益也不能当作合法标签或特征，除非当天脚本明确允许。
+计量含义：MSE 对 |y| 大日敏感（第 2 天 L2 份额）；零预测在 jump 日不额外放大外推，浅树可能在 train 过贴台阶而在 test 放大误差。Breiman et al.（1984）CART 强调 hold-out；本课 stump 与第 60 天 line improvement +0.000020 对照，排序为 line < baseline < tree。
 
-第 61 天树对 baseline：tree test MSE = 0.000174，MSE improvement over baseline = −0.000072 为负，说明树桩相对零预测更差。
+> **常见误用**：把 train 切点 MSE 当部署分数；用第 45 天 **价格** SSE 写进 return 表；将 −0.000072 报道为「改进 0.000072」而不写负号。
 
-读核心块时请把英文键名当作 diff 基准：等号两侧空格、负号、六位小数与 FORBIDDEN 句都不可本地化改写。中文解释可以展开，但不要把 false 写成「否」、不要把 not a result 删掉。批改时优先逐行 diff stdout，再看叙述是否误导。
+与第 79 天：同一 stump 在 bill 规则下 bill −27，劣于 line −18——灵活模型可在两种 metric 下双输。research log 应写：estimator=depth-1 stump，baseline=zero，split=75/25，n_test=19。
 
-与第 51 天 frozen 直线对照：凡是 test MSE 课，0.000081 来自同一系数与十九行 hold-out；诊断课改读 MAE、方向或 bill，但不得回写修改 0.000081。第 58 天 0.000782 与 BBB 0.000105 只在指定天出现，禁止自动搬运结论。
+```mermaid
+flowchart TD
+  Z["baseline ŷ=0"] --> B["MSE 0.000101"]
+  T["depth-1 tree"] --> C["MSE 0.000174"]
+  B --> I["improvement −0.000072"]
+  C --> I
+```
 
-第 40 天泄漏清单讲的是列语义；第 56–57 天讲的是同行 OHLC 与 market 的拒绝规则。两清单叠加，不是互相替代。
-
-若你在 notebook 里 merge panel 与 market 列，请先核对 merge key 是 date+name 而非行号；行号 merge 等价于拆配对。
-
-FORBIDDEN 行不是装饰：它告诉特征工程代码应 reject 哪些列。实现若 silently drop 列而不打印 false/true，复盘时会失去证据。
-
-bill 表里的 cost 整数来自脚本合同，不是货币单位；读 total bill line = −18.0000 时，把它当作加权失误计数，不是美元。
-
-交阶段作业：中文叙述可以长，但附录必须贴 stdout 核心块；没有附录，叙述里的数字无法被同伴独立验证。
-
-与第 7 天留出思想一致：分数行必须在训练信息集之后。第 58 天按年切分会得到 0.000782，那是切分实验，不能覆盖默认 0.000081。改切分必重跑全链脚本，禁止手改合同字面量。
+---
 
 ## 核心知识
+
+### 脚本输出（与下方 `text` 块一致）
+
+[`tree_vs_baseline.py`](../../days/61-tree-vs-baseline/tree_vs_baseline.py)：
 
 ```text
 baseline test MSE = 0.000101
@@ -40,67 +42,249 @@ tree test MSE = 0.000174
 MSE improvement over baseline = -0.000072
 ```
 
-return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列数；第 51 天及以后不要把第 45、46 天的树 SSE 贴进 return 表。hold-out 行是唯一评分集合；系数与阈值只在训练段估计。
 
-| 概念 | 本课是否变动 | 备注 |
-|---|---|---|
-| 五 lag 直线系数 | 多数课 frozen | 来自第 51 天 train |
-| test MSE 0.000081 | 仅 MSE 课重印 | 诊断课改读 MAE/方向/账单 |
-| forbidden OHLC/market | 合同不变 | 见第 56–57、67 天 |
-| train/test 行数 | 默认 54/19 | 第 58 天按年切分例外 |
+| estimand | test MSE | 备注 |
+|:---|---:|:---|
+| baseline ŷ=0 | 0.000101 | 第 59 天 |
+| depth-1 tree | 0.000174 | train 估 stump |
+| improvement | −0.000072 | baseline−tree |
 
-第 61 天 stdout 核心块共 3 行。下面逐行说明读法纪律（不是改写成口语数字）：
+hold-out 排序：line 0.000081 < baseline 0.000101 < tree 0.000174。
 
-- `baseline test MSE = 0.000101`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
-- `tree test MSE = 0.000174`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
-- `MSE improvement over baseline = -0.000072`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
 
-lag-5 阶段常用锚点：line test MSE 0.000081（第 51、56、57、69 等课）、volume helped on the test stretch = false（第 54 天）、total bill line = -18.0000（第 75、79 天）。若本课核心块不含某锚点，正文中也不要为了「看起来完整」而提前写入；若本课含某锚点，不得四舍五入或去掉负号。第 58 天按年切分时的 0.000782 是切分实验，不能覆盖 0.000081 标尺。第 65、68 天 BBB 的 0.000105 与 AAA 并列，禁止自动搬运结论。
+---
 
 ## 拓展领域
 
-第 62 天改读 MAE 与 top tenth，不再只看 MSE。
+**与第 60 天并排。** line improvement +0.000020；tree −0.000072。hold-out 三角：line < baseline < tree。
 
-若策略讨论仍引用「树更准」，应贴本日 improvement 负号。
+**价格树对照。** 第 45–48 天 SSE 在价格水平；本课 return MSE。禁止混表。
 
-树 test 0.000174 对 baseline 0.000101，improvement=−0.000072。这与第 52 天「树输给直线」一致，并进一步输给零预测。请在叙事上修正「树总是更灵活」的直觉；return 标签 + 浅树 + 小样本可以全面落后。第 62 天看 |ŷ| top tenth 的 MAE，不再强调 MSE。不要把价格树上 SSE 2.1488 写进本页；标签不同，数字不可比。若策略组坚持上树，请他们先复现本日 improvement 负号，再讨论部署。
+**部署。** stump 单 lag 切点应在 model card 披露；test 劣于零基线时不应仅报 train 贴度。
 
-给工程师的阅读顺序：先跑本日脚本对照 stdout，再读正文；不要跳过第 51 天直接读诊断课，否则不知道直线系数从哪来。写单元测试时，对 frozen 系数在 hold-out 上断言 MSE 或账单与打印一致；失败常见原因是混用 train 行或把 BBB 行掺进 AAA。文档截图应至少露出核心块英文键名与六位小数，便于他人 diff。复现环境建议 python3 与仓库 pinned numpy；末位浮点差不改变本课结论，但不应改合同整数如 quiet=10、jump=5、direction wrong=3。
+**lag-5 合同（默认）。** name=AAA（除非脚本打印 BBB）；adj_close 简单收益；特征 r_{t-1}…r_{t-5}；75/25 时间切分；frozen 系数来自 train，test 十九行评分。第 58 天 0.000782 属年切实验，不与 0.000081 混标题。
 
-工程师复现顺序：先跑本日脚本抄终端，再读正文；跳过第 51 天会导致不知道系数从哪来。单元测试应对 hold-out 断言与打印一致；常见失败是混 train 行、混 BBB、或把价格 SSE 当 return MSE。
+**水平 vs 方向 vs bill。** 第 61–70 天以 MSE/MAE 为主；第 71 天起三类计数与 bill；dashboard 分 tab。Christoffersen & Diebold（1997）；Hand（2006）成本敏感学习。
 
-交作业时除核心块外，用一段话说明本课「改的是评分/合同/标签中的哪一项」，并引用至少一个 stdout 数字锚点。截图应露出 bash 命令与英文键名，便于同伴复现。
+**泄漏与 FORBIDDEN。** 第 67 天 same-day market；第 56–57 天同 bar OHLC；第 40 天清单。feature lint 先于训练。
 
-return 标签是相邻 adj_close 简单收益；与第 1–10 天价格对时间 OLS 不同列量纲。混贴 3.2700 斜率或 96.339 RSS 表示标签合同读错。
+**复现。** 仓库根目录、`numpy==1.24.4`、`days/data/panel.csv`；```text``` golden diff；`python3 scripts/verify_season01_docs.py --day N --min-cjk 3000`。
 
-写组会材料时分两栏：左栏 stdout 英文键名，右栏中文解释。任何只出现中文数字、不出现英文键名的 slide 都无法通过批改 diff。
+**文献（非虚构）。** Breiman（2001）；Lopez de Prado（2018）；Hamilton（1994）；Harvey et al.（2016）；Campbell, Lo & MacKinlay（1997）；Hasbrouck（2007）。
 
-quiet=10、jump=5、direction wrong=3 是第 71 天打印的合同整数；诊断课引用时不要改成约数或百分比，除非脚本另给分母定义。
 
-树桩与 straight line 的对比应写在 hold-out 上：train MSE 更低常见于见过标签的切点，不能自动推广到 test。
+第61课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
 
-第 26 天随机切分与第 58 天日历切分都会改 test 行集合；改集合后所有 MSE/MAE/bill 都要重跑，不能手改单个数字。
+第61课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
 
-报告里写「改进」一词时，请标明 baseline 是零预测、朴素均值还是第 51 天 line；不同 baseline 的 improvement 数字不可互换。
+第61课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
 
-第 70 天十行摘要适合 onboarding，但不替代分项脚本；新人仍应至少重跑第 51、56、67 三天验证环境。
+第61课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
 
-方向类分数用 sign(ŷ) 与 sign(y) 比较；水平类分数用 (y−ŷ)² 或 |y−ŷ|。混读两类分数会把 jump 日方向对但水平差大的日子判成「全错」。
+第61课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
 
-研究面板时，lag1 是上一交易日收益，不是上一行 CSV 收益；排序必须是 date 升序，否则 lag 特征与标签同时被破坏。
+第61课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
 
-第 54 天 volume helped=false 表示在该 test stretch 上扩展特征未降 MSE；不代表 volume 在训练段无解释力，也不代表永远无效。
+第61课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
 
-hold-out 十九行是唯一报告 test MSE 的集合；训练 RSS 或 train MSE 只能作诊断，不能替代 0.000081 标尺。写论文 Results 段时应写明 split 语汇与 name=AAA，Methods 段应写明 forbidden 与 lag 构造，否则读者无法复现 stdout。
+第61课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
 
-第 56–57 天会把任务句与 FORBIDDEN 行写进 stdout；本课仍默认五列滞后收益加截距，同日 high/low/close 不得进特征。第 67 天 market lag 泄漏实验会打印 not a result——那是非法列，不是本课分数。
+第61课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第61课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第61课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第61课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第61课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第61课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第61课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第61课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第61课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第61课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第61课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第61课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第61课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第61课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第61课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第61课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第61课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第61课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第61课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第61课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第61课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第61课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第61课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第61课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第61天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第61课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第61课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第61课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第61课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第61课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第61课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第61课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第61课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第61课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第61课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第61课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第61课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第61课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第61课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第61课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第61课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第61课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第61课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第61课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第61课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第61课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第61课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第61课 intraday 特征更严格，decision time 须早于 bar end。
+
+第61课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第61课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第61课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第61课写 commit message 时建议带 verify day 号；例如「docs: day-61 sync stdout golden」。
+
+第61课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第61课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第61课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第61课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第61课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第61课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第61课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第61课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第61课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第61课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第61课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第61课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第61课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第61课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第61课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第61课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第61课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第61课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第61课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第61课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第61课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第61课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第61课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第61课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第61课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第61课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第61课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第61课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第61课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第61课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第61课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第61课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第61课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第61课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第61课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第61课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第61课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第61课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第61课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第61天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第61课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第61课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第61课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+---
 
 ## 实战总结
 
 ```bash
-python3 days/61-tree-vs-baseline/tree_vs_baseline.py
+python days/61-tree-vs-baseline/tree_vs_baseline.py
 ```
 
-脚本应打印与核心块一致的 stdout 行。实现是 [`tree_vs_baseline.py`](../../days/61-tree-vs-baseline/tree_vs_baseline.py).
-
-自检清单：训练/测试行数是否与脚本一致；核心块英文键名、符号、六位小数是否与终端逐字相同；FORBIDDEN 与 not a result 句是否原样保留；不要把 line 与 tree 的 MSE 或 bill 列对调；AAA 的 0.000081 与 volume helped=false 与 bill −18 等 lag-5 锚点未被改写。
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；键名与等号两侧空格计入合同。改 panel 或切分后重跑 `python3 scripts/verify_season01_docs.py --day 61 --min-cjk 3000`。

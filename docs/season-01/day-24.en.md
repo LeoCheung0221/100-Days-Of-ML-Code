@@ -54,3 +54,4 @@ python days/24-next-stretch/next_stretch.py
 The script prints `cut date = 2024-02-28`, `early events = 8 accuracy = 0.5000`, `early accuracy is not the score`, and `later events = 3 accuracy = 0.6667`. The implementation is [`next_stretch.py`](../../days/24-next-stretch/next_stretch.py).
 
 The score is 0.6667 on the 3 later events. The early accuracy 0.5000 on 8 events is not the score. Three events are not a distribution. They only move the score off the stretch that was already used to look. Next, direction accuracy and the mean absolute return error are handed in together, with a statement of which one a sign decision trusts.
+

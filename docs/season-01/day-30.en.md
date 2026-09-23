@@ -25,17 +25,7 @@ the full sample is not the information set
 
 Let the time index be `t = 0, 1, …` and the adjusted close be `P_t`. The full-sample line and the window line are both
 
-```text
-P̂_t = α + β t
-```
-
 The full-sample `α, β` are estimated on every finite adjusted close. The window's `α, β` are estimated on only the last 20 pairs `(t, P_t)`. The query is the last index `t*`, and it lies inside those 20 indexes.
-
-```text
-P̂^{full}(t*) = 12.1976
-P̂^{20}(t*) = 12.0095
-12.1976 − 12.0095 = 0.1881
-```
 
 The 0.1881 is the difference of two fitted values. The two fitted values use the same query day and different rows. The information set of the window value 12.0095 is those 20 days. The information set of the full-sample value 12.1976 is the whole stretch of finite adjusted closes. The print says the full sample is not the information set: when the declared history has length 20, the rows that enter the estimate are not the whole table.
 
@@ -48,6 +38,8 @@ A fixed lookback writes the number of rows used in the estimate as a length give
 The point at the end of the window takes part in the window's own least squares. So 12.0095 absorbs the last day's adjusted close. It is a fitted value, not an extrapolation made after hiding that day. Reading 12.0095 or 12.1976 as a prediction of an unseen close would call an in-sample fitted level a holdout score. Their difference, 0.1881, likewise only compares two in-sample fits. It measures how far the level at the end changes once the information set shrinks from the whole stretch to 20 days.
 
 Day 28 forbade the high on the same row. Day 29 showed a scale that had read in later opens. Today restricts the length of the past: rows earlier than these 20 days, although they have already happened, do not enter this window line. Having already happened and being allowed into the information set are two different things. The earlier rows are already written in the file. The window regression does not read them. The information set is those 20 days, the fitted value is 12.0095, and it differs from the full-sample fitted value 12.1976 by 0.1881.
+
+**Point-in-time.** 12.1976 uses the full sample at the last t; 12.0095 uses only the past 20 adjusted closes. lookback=20 is contractual.
 
 ## What the run showed
 

@@ -24,6 +24,9 @@ Line test MSE 0.000081 stays the frozen day-51 benchmark on nineteen hold-out ro
 
 ## Core
 
+
+Copy stdout literally: English keys, spacing, signs, and printed decimals. The ```text``` block must diff clean against the day script.
+
 ```text
 cut date = 2024-02-28
 train rows = 33 test rows = 40
@@ -39,12 +42,6 @@ Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows 
 | forbidden OHLC/market | Contract holds | See days 56–57, 67 |
 | train/test rows | Default 54/19 | Day 58 calendar cut excepted |
 
-Day 58 prints 3 contract lines:
-
-- `cut date = 2024-02-28`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `train rows = 33 test rows = 40`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `test MSE = 0.000782`: match the terminal verbatim—keys, spacing, signs, six decimals.
-
 Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
 
 ## Further out
@@ -54,8 +51,6 @@ Day 59 returns to seventy-five percent with nineteen test rows.
 Walk-forward splits are common in production; this day is a teaching contrast.
 
 Calendar cut 2024-02-28: train 33, test 40, MSE 0.000782. Compare splits, not just scores. Day 59 restores seventy-five percent and 0.000081.
-
-Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
 
 Reproduce by running today's script first; unit tests should assert hold-out literals; do not mix train rows or paste price SSE as return MSE.
 

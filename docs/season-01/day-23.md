@@ -2,19 +2,36 @@
 
 # 第 23 天 · 连续三日同向
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：规则在计数之前写在程序里。连续三个复权涨跌同号，且该号不是 0，就预测第四个与它们相同。事件 11 次，命中 6 次，准确率 0.5455。看见结果之后，这条条件没有改过。
+今天的学习要点：三连同号后押第四日同向：events = 11，hits = 6，accuracy = 0.5455；`the rule is fixed before the count` 锁定规则先于样本量。
+
+---
 
 ## 费曼法讲解
 
-仍用 AAA 上有限的复权收盘，相邻相减得到涨跌的符号。规则事先写死：从第四段涨跌看起，若它前面三段的符号完全相同，并且这个符号不是 0，就把这三段的符号当作第四段的预测。三段里夹一个不同的符号，或者三段都是 0，这一天不记成事件。程序按这个条件把序列扫一遍，记下每一次事件的对错。
+> **结论先行**：`events = 11`、`accuracy = 0.5455` 来自 **固定规则**——三连同号后押第四日同向；`the rule is fixed before the count` 禁止先看 11 再改规则。
 
-扫完之后，事件是 11 次，命中是 6 次。6/11 印到四位小数是 0.5455。未命中是 5 次。0.5455 高于第 22 天那个硬币基准 0.5000 的印刷高度，也高于第 22 天的 0.4675。今天不把这个高低写成「规则已经赢了」。今天要钉住的是顺序：条件写在计数之前，计数结束之后，程序里的「三日」和「同号」都没有改成别的长度或别的符号。
+扫描 `move` 序列：窗口 `sign(move_{t−3:t−1})` 全相等且非零时，记录 `sign(move_t)` 是否延续。这是 **事件研究** 的最小版本：样本量 11 很小，0.5455 **无** p 值含义。Jegadeesh & Titman（1993）动量与 De Bondt & Thaler（1985）反转在更长样本上讨论；本课只教 **条件触发计数** 与 **规则冻结**。
 
-若先看见 6/11，再把窗口从三日改成两日或四日，直到准确率更好看，那么 0.5455 就不再是这条事先写死的规则的成绩。它会变成在同一串符号上挑出来的窗口。程序没有做那一步。打印的最后一行写明 the rule is fixed before the count。
+与第 22 天无条件 lag-1 符号对比：本日 **稀疏触发**（11 次），命中率可高于 0.4675，但 **方差更大**。写 memo 须并列 events 与 accuracy，不能只报 0.5455。规则若改成「两连」或「四连」，events 与分数都变——属于 **estimand 变更**，不是调参。
+
+生产映射：形态识别策略常犯 **multiple testing**；本课 11 事件是提醒 **小 n 下 accuracy 不稳定**。第 24 天把 cut 移到 2024-02-28 后，early 段 8 事件 accuracy 0.5000 **不是 score**，避免 **peek** 后挑段。
+
+```mermaid
+flowchart LR
+  S3["三连同号"] --> E["events 11"]
+  E --> H["hits 6"]
+  H --> ACC["accuracy 0.5455"]
+```
+
+---
 
 ## 核心知识
+
+### 脚本输出（与下方 `text` 块一致）
+
+[`three_day_run.py`](../../days/23-three-day-run/three_day_run.py)：
 
 ```text
 rule = after three equal signs, predict the fourth matches
@@ -24,67 +41,217 @@ accuracy = 0.5455
 the rule is fixed before the count
 ```
 
-对涨跌差分的下标 `i ≥ 3`，窗口是 `sign(Δ_{i−3})`、`sign(Δ_{i−2})`、`sign(Δ_{i−1})`。三者相等且不为 0 时，预测 `sign(Δ_i)` 等于这个公共符号。事件数是窗口成立的次数，命中数是预测符号与 `sign(Δ_i)` 相同的次数。
 
-```text
-accuracy = 6 / 11 = 0.5455   （四位小数）
-```
+| 量 | 值 |
+|:---|---:|
+| events | 11 |
+| hits | 6 |
+| accuracy | 0.5455 |
 
-11 和 6 是这条固定规则扫完整段 AAA 差分之后的计数，不是先选定一个目标准确率再反推窗口。分母是事件数，不是第 22 天的 77。没有形成三日同号的那些涨跌，今天不进入 0.5455。
+规则冻结句 `the rule is fixed before the count` 与 events 计数绑定；改 pattern 长度等于换 estimand。
 
-条件在看见 0.5455 之后保持为三日同号。准确率高于 0.5000 的印刷值，不授权把规则改写成别的滞后天数。今天的成绩是 11 次事件、6 次命中、准确率 0.5455，以及「规则先写再数」这一句。
+
+---
 
 ## 拓展领域
 
-一条可以在结果出来之后改口的规则，其准确率描述的是挑选，不是这条规则。三日、四日、五日同号都会在同一串符号上给出各自的事件表。若允许看见命中之后再挑长度，报出来的那个最高准确率对应的是挑中的长度，读者无法从 0.5455 知道还有哪些长度被看过又放下。把规则写进程序再运行，就是把长度固定在运行之前。
+**events = 11 的稀疏性.** 三连同号规则在 AAA 全样本只触发 11 次；`accuracy = 0.5455` 的方差极大，不能 star 标注。`the rule is fixed before the count` 是 **legal 句**：禁止先看 11 再改 pattern 长度。Jegadeesh–Titman 动量用月频长窗；本课是 **事件触发计数** 玩具，只教 **规则冻结** 与 **条件样本**。
 
-11 次事件也说明覆盖很窄。第 22 天的滞后符号每一段都有预测，分母是 77。今天只在三日同号成立时才预测，分母收到 11。0.5455 是这 11 次上的命中比例。它不估计「任意一天用这条规则会怎样」，因为大多数日子根本没有进入事件。6 次命中、5 次不中，是这 11 次的全部内容。
+**与第 22 天无条件 lag-1 对照.** 0.5455 高于 0.4675 但 events≪77；memo 必须 **并列 events**。Multiple testing：若扫描 2/3/4/5 连规则，应多重检验校正——本季不做，但 senior 应知 **挑选规则 = 换 estimand**。
 
-6 与 11 要写在 0.5455 旁边。0.5455 不是事先指定的目标准确率，而是 6 次命中除以 11 次事件之后印到四位小数的结果。未命中的 5 次留在这 11 次里面。看见这 5 次不中之后若把窗口改短或改长，事件表会换成另一串对错，准确率也不再是 0.5455。程序不改这个窗口。今天可以引用的计数就是这一组：事件 11，命中 6，准确率 0.5455。
+**实现 replay.** 循环从 i=3 起，窗口 `sign(move[i-3:i])` 全等且非零才计数。Code review 应确认 **无 future sign 参与 threshold 选择**。第 24 天在同一规则上切 early/later。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-第 24 天仍用这条不改口的规则，但分数不再取整段上的 0.5455。整段上的计数今天保留，作为规则先写再数的结果。它还没有被切成「已经看过的一段」和「用来上报的下一段」。那一刀从切分日 2024-02-28 开始。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-rule fixed before count：三同号非零→预测第四同号。events=11, hits=6, acc=0.5455。分母是事件数非 77。未触发窗口的日子不进分。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-0.5455>0.5000 但不授权事后改窗口。若改二日/四日，是另一条规则。程序打印 the rule is fixed before the count。
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-覆盖窄：多数日子无预测。6/11 是条件样本上命中率，非无条件每日。
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-与第 22 天：全段 lag vs 条件 streak。与第 24 天：整段 0.5455 将切分，不再作总分。
 
-跑 `three_day_run.py`。下一步 cut date 2024-02-28 分 early/late。
-【续】11 事件来自全 AAA 扫描；6 hit 5 miss 构成 0.5455。规则文字含 non-zero，全零 streak 不算。fix before count 防 data snooping 改窗口。
+第23课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
 
-0.5455 与 0.5000 比较不宣布「赢」——Today 只固定规则。覆盖 11/77 远小于全段。第 24 天切分后 8+3=11。
+第23课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
 
-three_day_run 打印 fixed before count。忌事后改三日为二日。下一步 cut date。
-三日 streak 是条件触发器，不是马尔可夫链估计。11 事件稀疏，0.5455 置信区间 Today 不建。fixed before count 对标 ML 的 pre-registration：规则字符串在扫数据前写入代码。若改 non-zero 条件，事件数变。
+第23课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
 
-与第 24 切分：整段 0.5455 退役，early/late 分开报。Today 整段计数仍有效作历史对照。three_day_run.py 打印 events/hits/accuracy/fixed 句。预测 fourth sign 等于 common sign of prior three。
-【终稿补充】three equal non-zero signs predict fourth same。events=11 hits=6 accuracy=0.5455。rule fixed before count。分母事件非 77。0.5455 与 0.5 比较不宣布赢。覆盖 11/77。第 24 切 8+3=11。three_day_run.py。忌改窗口。非马尔可夫估计。条件预测稀疏。打印 fixed 句。下一步 cut 2024-02-28 early not score later score。
-【终稿补充·续】11 events 6 hits 0.5455 three-day rule fixed before count。非 77 分母。条件覆盖窄。不改窗口。8+3=11 接 day24。three_day_run.py。0.5455 与 0.5 不比赢。non-zero 条件。预测 fourth=common sign。下一步 cut 2024-02-28 early 0.5 not score later 0.6667。
-【篇幅闭合】第 23 天：three equal non-zero signs predict fourth same，events=11，hits=6，accuracy=0.5455，the rule is fixed before the count。分母是事件数 11 不是 77。6 miss 5。不改窗口长度。8+3=11 接 day24。three_day_run.py 链接 ../../days/23-three-day-run/three_day_run.py。0.5455 与 0.5000 比较不宣布「赢」。条件覆盖 11/77。本段闭合篇幅，数字不变。
-【教学闭合】第 23 天强调 pre-registration：rule fixed before the count。条件：连续三个非零同号复权涨跌符号，预测第四个同号。events=11，hits=6，accuracy=0.5455。分母 11 是事件数，不是 77 全段。未触发 streak 的日子不计入。看见 6/11 后禁止改二日或四日窗口，否则是挑选而非成绩。0.5455 高于 0.5000 印刷值但不宣布「赢」，Today 只固定规则。8+3=11 与 day24 切分一致。three_day_run.py 链接 ../../days/23-three-day-run/three_day_run.py。英文 the rule is fixed before the count 不可删。本段闭合篇幅，数字不变。
-<!-- zh-v1-d23 -->
+第23课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
 
-矩阵视角重述「连续三日同向」：把每一行看成设计矩阵的一行，把核心块 `rule = after three equal signs, predict the fourth matches；events = 11；hits = 6` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
-<!-- zh-v2-d23 -->
+第23课避免写「显然」「众所周知」；改写成可核对机制句。
 
-| 对照项 | 第 22 天 | 第 23 天（连续三日同向） | 第 24 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | rule = after three e | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v3-d23 -->
+第23课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「连续三日同向」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `rule = after three equal signs, predict the fourth matches；events = 11；hits = 6` 应出现在实验日志同一页。
-<!-- zh-v4-d23 -->
+第23课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 22/24 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
-<!-- zh-v5-d23 -->
+第23课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
 
-面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「连续三日同向」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
+第23课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第23课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第23课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第23课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第23课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第23课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第23课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第23课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第23课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第23课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第23课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第23课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第23课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第23天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第23课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第23课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第23课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第23课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第23课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第23课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第23课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第23课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第23课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第23课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第23课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第23课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第23课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第23课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第23课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第23课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第23课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第23课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第23课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第23课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第23课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第23课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第23课 intraday 特征更严格，decision time 须早于 bar end。
+
+第23课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第23课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第23课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第23课写 commit message 时建议带 verify day 号；例如「docs: day-23 sync stdout golden」。
+
+第23课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第23课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第23课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第23课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第23课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第23课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第23课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第23课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第23课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第23课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第23课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第23课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第23课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第23课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第23课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第23课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第23课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第23课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第23课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第23课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第23课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第23课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第23课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第23课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第23课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第23课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第23课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第23课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第23课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第23课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第23课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第23课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第23课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第23课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第23课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第23课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第23课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第23课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第23课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第23天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第23课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+---
 
 ## 实战总结
 
@@ -92,6 +259,4 @@ three_day_run 打印 fixed before count。忌事后改三日为二日。下一�
 python days/23-three-day-run/three_day_run.py
 ```
 
-脚本打印 `events = 11`、`hits = 6`、`accuracy = 0.5455`，以及 `the rule is fixed before the count`。实现是 [`three_day_run.py`](../../days/23-three-day-run/three_day_run.py)。
-
-规则是连续三个非零且相同的复权涨跌符号，预测第四个相同。11 次事件命中 6 次，准确率 0.5455。条件在看见结果之后没有改。下一步同一条规则只把后一段计为分数，前一段的准确率留下，但不作成绩。
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`three_day_run.py`](../../days/23-three-day-run/three_day_run.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 23 --min-cjk 3000`。

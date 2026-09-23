@@ -59,5 +59,3 @@ python days/07-holdout-day-5/holdout_day5.py
 The script should print training `RSS = 42.05` and mark it as not the score, then the holdout residuals `-9.6` and `-11.65`. The implementation is [`holdout_day5.py`](../../days/07-holdout-day-5/holdout_day5.py).
 
 Hand in the holdout residuals, not the training sum of squares. The neighbor's smaller absolute error on this one point stays in the table and is not promoted to a ranking of classes. Day 8 uses a three-session window, slides it once, and watches the slope follow the information set. That is not another holdout exam.
-
-Self-check: script says training RSS is not the score? Signed residuals reported? 22.05 not confused with full-sample fit at session 5?

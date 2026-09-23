@@ -66,3 +66,4 @@ python days/14-constant-baseline/baseline.py
 On the sign labels the script prints `always-down accuracy = 0.25` and `always-up accuracy = 0.75`, and it states that the baseline looks at no price. The implementation is [`baseline.py`](../../days/14-constant-baseline/baseline.py).
 
 The two numbers are cited together. The 0.75 is the three positive signs hit by all 1s. The 0.25 is the one negative sign hit by all 0s. A 0.75 with no 0.25 beside it has no control.
+

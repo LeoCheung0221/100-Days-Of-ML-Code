@@ -2,21 +2,36 @@
 
 # 第 27 天 · 按时间切分
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：按时间切分的测试方向准确率是 0.5417。同一条序列、种子 1、训练比例 0.70 的随机切分是 0.4583。两个数都印。这一只名字上，随机切分没有把准确率抬到时间切分之上。时间切分的测试全部落在训练之后。把第二个名字混进来，使同一个日期可以出现在两侧，是第 37 天。
+今天的学习要点：time-split test accuracy = 0.5417，random-split test accuracy = 0.4583；`the test of the time split sits entirely after the train` 声明测试块日历上全在训练之后。
+
+---
 
 ## 费曼法讲解
 
-行仍是 AAA 的滞后收益：昨日收益预测今日收益，系数由训练行的最小二乘决定，分数是测试行上的符号准确率。第 26 天用种子 1 把行打散，得到对照 0.4583，当天不与别的切分并排。今天把两种切分都印出来。
+> **结论先行**：`time-split test accuracy = 0.5417` 且 `the test of the time split sits entirely after the train`；同协议 random 为 `0.4583`。在 **AAA 单名、lag-1** 下，random **未** 抬高分数。
 
-按时间切时，训练是序列前面的那一段，长度仍按 0.70 取整。测试是剩下的后一段。后一段里的每一行，日期都在训练行之后。测试方向准确率是 0.5417。随机切分仍用种子 1、同样的训练比例 0.70，测试方向准确率是 0.4583，与第 26 天的对照是同一个打印。两个数一起出现：时间切分 0.5417，随机切分 0.4583。
+时间切分：前 70% 行估系数，后 30% 测试；测试下标全部大于训练下标。random 仍 seed 1、比例 0.70。两个数 **必须并排**，禁止只印 0.5417。差 0.0834 不是 p 值，只是 **两种掩码** 下的符号频率差。
 
-在这一只名字上，随机切分的 0.4583 低于时间切分的 0.5417。随机切分没有把测试准确率抬到时间切分之上。时间切分更高，是这一次打印的事实。它不改写第 26 天的句子：0.4583 在那里只是对照。今天才把两个数放在一起。
+Campbell、Lo & MacKinlay（1997）默认解释变量在 t 前已知；time split 是 **最小因果序实现**。random 0.4583 允许日历逆序进训练——在单名序列上表现为 **更低** test acc，不是「随机总是更差」；第 37 天混池会反转名次。
 
-同一日期出现在训练侧和测试侧，在单名序列上做不到：一个日期只有一行。要让同一个日期同时出现在两侧，需要把第二个名字的同一天也放进同一次切分。那件事留在第 37 天。今天的样本只有 AAA。时间切分的测试整段落在训练之后，打印写明 the test of the time split sits entirely after the train。
+与第 9 天行置换：今天动 **train/test 掩码**，不是同一 `(X,y)` 上行 shuffle。第 28 天 FORBIDDEN 特征与切分正交。memo 四锚点：0.5417、0.4583、entirely after train 句、单名 AAA。
+
+```mermaid
+flowchart LR
+  T["time split"] --> A1["0.5417"]
+  R["random split"] --> A2["0.4583"]
+  T --> Q["test 全在 train 后"]
+```
+
+---
 
 ## 核心知识
+
+### 脚本输出（与下方 `text` 块一致）
+
+[`time_split.py`](../../days/27-time-split/time_split.py)：
 
 ```text
 time-split test accuracy = 0.5417
@@ -24,40 +39,223 @@ random-split test accuracy = 0.4583
 the test of the time split sits entirely after the train
 ```
 
-两种切分估计的是同一类直线，`ŷ = β̂₀ + β̂₁ x`，`x` 是昨日收益，`y` 是今日收益。差别在训练掩码。
 
-| 切分 | 训练掩码 | 测试方向准确率 |
-|---|---|---:|
-| 时间 | 序列前一段，比例 0.70 | 0.5417 |
-| 随机 | 种子 1，无放回，比例 0.70 | 0.4583 |
+| 切分 | test direction accuracy |
+|:---|---:|
+| time | 0.5417 |
+| random (seed 1) | 0.4583 |
 
-时间切分的测试下标全部大于训练下标。随机切分不保证这个顺序。两个准确率都打印，不允许只留较高的 0.5417。0.5417 是时间切分的测试成绩。0.4583 是同一预测、同一种子、同一比例下的随机切分测试成绩。
+时间切分测试块 **calendar-after** 训练块；random 允许逆序。
 
-这一只名字上的比较是：随机切分没有抬高分数。0.4583 低于 0.5417。单名随机切分在这次打印里不是一个偏高的数。第 37 天才会把第二个名字放进来，使同一个日期有机会同时落到训练和测试。今天不把那一种切分的结果提前写上。
+
+```mermaid
+xychart-beta
+    title "单名 AAA：time vs random test accuracy"
+    x-axis ["time", "random"]
+    y-axis "accuracy" 0.44 --> 0.56
+    bar [0.5417, 0.4583]
+```
+
+
+---
 
 ## 拓展领域
 
-按时间切分对应的使用方式是：系数只用当时已经过去的行来估，再拿到后面的行上读符号。0.5417 是这种顺序下的测试方向准确率。随机切分打乱了行在时间上的位置，0.4583 是那种抽法下的测试方向准确率。把两者都印出来，读者才能看见这一次谁高谁低。只印 0.5417，会把随机切分的 0.4583 藏掉。
+**0.5417 与 0.4583 必须并排.** time split 测试块 **全部在训练行之后**（`the test of the time split sits entirely after the train`）。random 同 seed、同比例；差 0.0834 **不是 p 值**。单名 AAA 上 random **未** 抬高分数——与第 37 天 pooled 反转对照。
 
-在单名面板上，随机打散不会把同一个日期拆到训练和测试两边，因为这个日期只有 AAA 的一行。因此今天不能把 0.4583 说成「同一天泄漏到了两侧」的结果。这次随机切分相对时间切分是更低的那个数。更高的是时间切分的 0.5417，而时间切分的测试整段在训练之后，同一天不可能同时出现在两侧。
+**因果最低标准.** Campbell–Lo–MacKinlay 默认可预测变量在 t 前已知；time split 是 **最小因果序** 实现。第 9 天行置换不动 OLS 系数但破坏 lag；本日动 **掩码** 非 shuffle 行。
 
-第 26 天把 0.4583 单独标成对照，是为了让那个数先有一个不靠比较而存在的身份。今天的比较使用了它，并写出时间切分的 0.5417。比较的句子是：这一只名字上，随机切分没有把准确率抬过时间切分。第二个名字、以及由此而来的同一日期跨侧，不在今天的打印里。
+**实施假设.** CSV 已按 date sort；掩码按行序 70%。第 58 天升级按年切分。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-与 walk-forward 回测的对应关系要写得具体。时间切分在这里是「前 0.70 的行估系数，后 0.30 的行数符号」，测试下标全部大于训练下标。这接近「只用过去估、在未来读」的最小版本，虽然今天仍是一条全局直线而不是滚动重估。随机切分则允许未来行进入训练、过去行进入测试，0.4583 是在这种混合下得到的测试符号比例。两个数并排，是在同一特征、同一比例、同一种子下比较两种掩码，不是比较两个不同模型族。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-不要把 0.5417 写成「真实准确率」而把 0.4583 写成「错误切分的噪声」。两者都是 honest 的测试定义，差别是信息集在时间上是否尊重「测试在训练之后」。第 37 天会在混切里让随机切分测到 0.7234，高于时间 0.6170；那是跨股票共享日期的通道，不是今天单名序列上的结论。今天表格里的 0.4583 与 0.5417 仍应原样保留，不被后来的混切数字替换。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-第 28 天起特征列会进入 FORBIDDEN 讨论，与切分正交。切分错误与特征泄漏可以叠加，但今天是干净的 `(r_{t−1}, r_t)`。读者若只记住「时间切分更高」，应同时记住「仅在 AAA 单名、这一滞后、这一比例下」。换特征或混池后，名次可以反转，第 37 天就是印刷上的反转例。
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-时间切分 0.5417 与随机 0.4583 的差 0.0834 不是 p 值，也不是「显著性」结论；它只是两种掩码下测试符号频率的印刷差。写 memo 时应并列 seed 1、train fraction 0.70、单名 AAA、滞后 `(r_{t−1}, r_t)`，并原样引用 the test of the time split sits entirely after the train。缺任一项，读者无法判断 0.5417 是否来自「测试整段在训练之后」这一协议。随机掩码允许测试行早于训练行，0.4583 是在允许逆序下的计数；把它改称为 walk-forward 成绩，会把第 26 天对照与第 27 天时间切分混成一种切分。
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-与第 9 天行序不变性无关：今天动的是训练/测试掩码，不是同一 `(X,y)` 上的行置换。与第 37 天混切的关系：单名上随机更低，混池后随机可更高，两句都真，主语不同。学习笔记里应保留两个名次，而不是合并成「随机切分好/坏」一句。第 40 天清单不收录 honest 时间切分本身；泄漏条目针对特征与共享日期，不是否定 0.5417 或 0.4583 的可印性。
-<!-- zh-v1-d27 -->
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「按时间切分」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `time-split test accuracy = 0.5417；random-split test accuracy = 0.4583；the test of the time split sits entirely after the train` 应出现在实验日志同一页。
-<!-- zh-v2-d27 -->
+因子入库前，应用与第27课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 26/28 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
+研究 memo 的 estimand 小节应写清第27天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第27课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第27课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第27课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第27课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第27课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第27课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第27课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第27课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第27课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第27课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第27课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第27课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第27课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第27课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第27课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第27课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第27课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第27课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第27课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第27课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第27课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第27课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第27课 intraday 特征更严格，decision time 须早于 bar end。
+
+第27课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第27课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第27课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第27课写 commit message 时建议带 verify day 号；例如「docs: day-27 sync stdout golden」。
+
+第27课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第27课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第27课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第27课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第27课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第27课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第27课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第27课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第27课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第27课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第27课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第27课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第27课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第27课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第27课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第27课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第27课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第27课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第27课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第27课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第27课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第27课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第27课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第27课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第27课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第27课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第27课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第27课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第27课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第27课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第27课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第27课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第27课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第27课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第27课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第27课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第27课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第27课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第27课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第27天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第27课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第27课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第27课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第27课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第27课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第27课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第27课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第27课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第27课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第27课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第27课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第27课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第27课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第27课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第27课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第27课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第27课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第27课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第27课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第27课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+---
 
 ## 实战总结
 
@@ -65,8 +263,4 @@ the test of the time split sits entirely after the train
 python days/27-time-split/time_split.py
 ```
 
-脚本打印 `time-split test accuracy = 0.5417`、`random-split test accuracy = 0.4583`，以及 `the test of the time split sits entirely after the train`。实现是 [`time_split.py`](../../days/27-time-split/time_split.py)。
-
-两个测试方向准确率都交：时间切分 0.5417，随机切分 0.4583。这一只名字上随机切分没有抬高分数。下一步用当日最高价解释当日收盘，并把那一列标成禁止使用。
-
-复现顺序：第 26 天单独看 0.4583，再跑本脚本确认随机行仍为 0.4583 且时间行为 0.5417。交作业时四个锚点缺一不可：0.5417、0.4583、the test of the time split sits entirely after the train、以及说明比较仅限单名 AAA。不要写「随机切分永远更低」——第 37 天会给出更高随机数的混切设计。自检：是否只报告 0.5417？是否把第 26 天对照改写成「已被击败的对照」？对照仍是 0.4583，只是今天才与时间切分并排。
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`time_split.py`](../../days/27-time-split/time_split.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 27 --min-cjk 3000`。

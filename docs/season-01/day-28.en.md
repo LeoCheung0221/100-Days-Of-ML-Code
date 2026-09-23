@@ -24,18 +24,7 @@ in-sample RSS close~lagged close = 35.5233
 
 Both fits are ordinary least squares in sample, both with an intercept:
 
-```text
-close_t = a + b · high_t + e_t
-close_t = c + d · close_{t−1} + u_t
-```
-
 `high_t` and `close_t` share a row. `close_{t−1}` comes from the previous row. The residual sums of squares are
-
-```text
-RSS(close ~ high) = 31.8715
-RSS(close ~ lagged close) = 35.5233
-35.5233 − 31.8715 = 3.6518
-```
 
 The 3.6518 is a fall in the in-sample sum of squares on the same rows. It is not an error on a held-out day, and it is not a direction hit. The column `high` is marked FORBIDDEN because it is being used to explain the close of the same session. The lower number, 31.8715, is not the result. The in-sample sum of squares that remains as the reference is 35.5233, from yesterday's close. Even that 35.5233 is an in-sample sum of squares, and today does not promote it by itself into a forecast score. What today fixes in place is that the fall of 3.6518 comes from the same bar.
 
@@ -48,6 +37,8 @@ A forbidden column is decided by the date of the information, not by the size of
 The difference 3.6518 has to be read together with the dates of the two columns. The high inside 31.8715 is from the same day as the close. The close inside 35.5233 is from the previous day. On the fit with the smaller sum of squares, the information is not earlier. It is written on the same row as the close being explained. The fall is therefore not a forecast that got better. The FORBIDDEN mark on `high` takes that column off the list of inputs that may be used as a forecast. After it is taken off, 31.8715 may still be printed, to show how far same-day prices push the in-sample sum of squares down. Printing is not scoring. An input that is scored has to be fixed before the close is written. Yesterday's close meets that. Today's high does not.
 
 Day 29 switches to a quieter leak. There the two residual sums of squares sit almost on top of each other. Today's two differ by 3.6518, and the gap is plain to see. The identification still does not run through "which one is smaller." It runs through the high and the close sharing a row. Which one is smaller is only a consequence of same-day information. The consequence can be large, as with today's 3.6518, or small. In either case the identifying fact is whether the input contains a price that was not yet available.
+
+**FORBIDDEN before RSS.** Lower in-sample RSS on same-bar high does not overturn the ban. 31.8715 vs 35.5233 differ by 3.6518 on the same rows—geometry, not forecast skill.
 
 ## What the run showed
 

@@ -2,72 +2,216 @@
 
 # 第 17 天 · 置信核对
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
 今天的学习要点：写出的上涨概率是 0.9634，实现的上涨频率是 0.75，两者之差是 0.2134；被写成百分之九十六上涨的那些步，实际上只有四分之三上涨；置信和频率并排，互不替代。
 
+---
+
 ## 费曼法讲解
 
-左栏写下规则说出口的数：0.9634。这是第 16 天把斜率 3.27 送进 sigmoid 得到的那个分数，而且四步都是它。右栏不去读斜率，下去数符号。四个收益 0.8571、0.5897、2.2258、−0.4800 里，前三个为正，最后一个为负。上涨的步数是 3，总步数是 4，频率是 0.75。
+> **结论先行**：stated P(up)=0.9634 vs realized up frequency=0.75，gap=0.2134——**置信陈述与频率实现必须并排**，不可互相替代。
 
-两栏相减：0.9634 − 0.75 = 0.2134。差是正的，写出的置信高于这四步里上涨的频率。把两个比例放在同一句话里：这些步被写成百分之九十六会涨，实际上涨的频率是四分之三。百分之九十六是 0.9634 的读法，四分之三是 0.75 的读法。中间隔着 0.2134。
+```mermaid
+flowchart LR
+  S["0.9634 陈述"] --> G["gap 0.2134"]
+  F["0.75 实现"] --> G
+```
 
-0.9634 回答的是「规则印出来的程度上写着什么」。0.75 回答的是「这四步里符号为正的比例是什么」。前一个数在数频率之前就可以写下，因为它只用来斜率。后一个数必须看完四个符号才能写下。它们是两种记录。把 0.9634 换成 0.75，记录里就不再有规则说过的程度。把 0.75 换成 0.9634，记录里就不再有这四步实际发生的比例。两个数并排放，互不替代。
+第 16 天贴出 0.9634；本日数 **实现频率** 0.75（四步中三步 up），gap=0.2134。
+
+**校准误差**初等版：overconfident 常数。research 报告写「P(up)」须说明是 **模型输出** 还是 **样本频率**。
+
+Brier score、reliability diagram 为后续工具；本课只 **代数 gap**。
+
+---
 
 ## 核心知识
 
+### 脚本输出（与下方 `text` 块一致）
+
+[`confidence.py`](../../days/17-confidence-check/confidence.py)：
+
 ```text
-stated P(up) = σ(3.27) = 0.9634
-realized up frequency = (1 + 1 + 1 + 0) / 4 = 0.75
-gap = 0.9634 − 0.75 = 0.2134
+stated P(up) = 0.9634
+realized up frequency = 0.75
+gap = 0.2134
 ```
 
-| 记录 | 数值 | 它数的是什么 |
-|---|---:|---|
-| 写出的置信 | 0.9634 | sigmoid 作用在斜率 3.27 上 |
-| 实现的频率 | 0.75 | 四步符号标签里 1 的比例 |
-| 差 | 0.2134 | 置信减去频率 |
 
-频率 0.75 就是第 14 天符号标签上正类的比例：三步为正。它不使用 0.9634。置信 0.9634 也不使用这三步的计数，它在斜率估出之后由 sigmoid 一次算完，再复制到四步。两边的信息不同，所以没有理由事先要求它们相等。今天它们也不相等，差是 0.2134。
+正文表与公式只解释 text 块；小数须与块内同行可对齐。
 
-差的符号写明谁更高：写出的数比频率高 0.2134。核对就是把这两个已经存在的数相减，把结果留在第三行。
-
-只拿到 0.75，推不出斜率是 3.27，也推不出 sigmoid 的输出是 0.9634。只拿到 0.9634，推不出四步里有三步为正。第 16 天已经说明这个置信在四步上相同，因此它不指出是哪一步贡献了那一个负号。负号在频率里把比例从全 1 拉到 0.75，在置信向量里没有任何一步被标成更低。
-
-第 15 天的两格也还在。永远猜涨对应的硬规则是每步都预测上涨，所以上涨判成下跌是 0，下跌判成上涨是 1。0.9634 是这个硬规则的程度版本，四步程度相同。频率 0.75 是硬标签里 1 的比例。程度、两格、频率，是三件东西。今天核对的是程度和频率。两格不能从 0.2134 里读回来：差是一个实数，两格是两个计数。它们继续分栏。
+---
 
 ## 拓展领域
 
-概率预报的核对，最小的形式就是今天这张表：一边是预报值，一边是事件发生的比例，中间是差。样本只有四步，频率 0.75 是 3/4，分母是 4。这个核对不是一条在大样本里把预报校准到频率上的手续，也不另外估计一条校准曲线。它只完成一件事：把两个数并排，拒绝用其中一个覆盖另一个。
+**风险**：PM 按 96% 仓位 scaling 实际只有 75% 涨——gap 直接映射 **资本误配**。
 
-在这四步上，预报是常数 0.9634。常数预报的核对只有一组：四步共享一个写出的值，频率也只有一个。组内频率就是 0.75，组的预报就是 0.9634，差就是 0.2134。没有第二组可以比较。
+**Closing**：0.2134 是 **审计键**；缺 realized 行则 stated 不可信。
 
-引用时三个数同时出现。只引用 0.9634，每一步都像是接近确定的上涨。只引用 0.75，规则说过的程度消失了，剩下的是正类比例。只引用 0.2134，差的两端不见了。完整的句子是：写出 0.9634，实现 0.75，差 0.2134。被标成百分之九十六上涨的步，上涨频率是四分之三。置信和频率并排，互不替代。
+**校准缺口.** stated P(up)=0.9634，realized up frequency=0.75，gap=0.2134—— **书面概率与频率可分离**；须并列，互不替代。
 
-核对最小形式：stated 0.9634、realized 0.75、gap 0.2134。stated 来自 σ(3.27)，与四步符号计数无关；realized 是 3/4 正类比例。两者并排放，禁止用其一替换另一。
+**Brier / reliability.** 扩展指标本课未算；memo 应写「未校准分数，仅作 rank 无效演示」。第四日大涨拉高 realized 0.75 仍低于 0.9634。
 
-0.9634 读作「规则写出的程度」；0.75 读作「样本符号频率」。差为正表示写出高于实现。四步样本下不做 Platt 或 isotonic——今天只做减法。
+**与第 16 天.** 同一 0.9634；本日加 **频率合同**。生产：上线前 reliability diagram on hold-out。
 
-第 14 天 0.75 是 always-up 命中率，也是符号正类比例；与 realized 0.75 同值不同义：一个是规则对标签，一个是标签边际。第 16 天 stated 向量四格相同，无法指出哪一步为负；负号只出现在频率分母。
+**风控.** 用 96% 头寸 scaling 而真实涨频 75% 会 oversize risk。
 
-第 15 天两格 0/1 与 gap 无关；勿从 0.2134 反推格。完整交作业三行数加一句「百分之九十六对四分之三」。
+固定 panel（第21课）之后所有数字绑同一 CSV；第17课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
 
-复现 `confidence.py` 三行 stdout。若只报 gap，丢失端点。下一步第 18 天加成交量列改标签计数，不改 stated 0.9634 那条线（那是斜率课，volume 课另起）。
-【续】gap 0.2134 为正表示 stated 高于 realized；若斜率更小，gap 可能缩小但 today 固定 3.27。四步样本不做分箱可靠性图；第 17 天只做减法核对。
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第17课扩展至多元时，先确认单变量基线仍复现 36/77。
 
-写「模型过度自信」须指向 stated 与 realized 两列，而非单看 0.9634。第 14 天 0.75 是 always-up 命中非 realized frequency 的同义数，但语境不同——Today realized 指符号边际。
+三连规则（第23课）样本稀疏；第17课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
 
-confidence.py 三行必全。忌用 gap 代替两端。下一步 volume 列改标签计数。
-频率 0.75 在四步样本即 3/4，与大样本频率概念同形但分母小。gap 0.2134 不表示 p-value；Today 不做假设检验。陈述句：写出的程度高于实现的正类比例 0.2134。若 stated 低于 realized，gap 为负——Today 为正 case。
+early 非 score（第24课）是防 peek 文案；第17课 dashboard 应把 non-score 段视觉降级（灰显）。
 
-报告表格三行：stated / realized / gap。英文 confidence.py 键名对齐。第 18 天起重写标签定义，stated 0.9634 仍可用于斜率故事，但 volume 筛选另表。不要 merge 两课数字。
-【终稿补充】置信核对最小三行：stated P(up)=0.9634、realized up frequency=0.75、gap=0.2134。stated 来自 σ(3.27)，与四步符号计数独立；realized 是 3/4 正类。gap>0 表示写出高于实现。四步不做校准曲线。第 14 天 0.75 是 always-up 命中，数值同 realized 但语境不同。第 15 天两格与 gap 无关。完整句子：百分之九十六（stated）对四分之三（realized），差 0.2134。禁止单报 gap。confidence.py 三键。第 18 天 volume 改标签计数，不删 stated 故事。小样本频率仍是有定义的比例。写作：Calibration check (toy n=4 steps). 下一步 median volume 1200000 筛选。
-【终稿补充·续】三行 stated/realized/gap 必须同屏。gap=0.9634−0.75=0.2134。四步 n 小不做 binomial CI。stated 不读四符号；realized 读三正一负。第 14 天 0.75 语境不同。第 15 格与 gap 无关。confidence.py。第 18 天 median 1200000 另课。写作：概率表述需频率对照。禁止单替。英文三键。小样本仍是有定义比例。下一步 volume 筛选 3→1。
-【篇幅闭合】第 17 天完成 stated/realized/gap 三行核对。请逐项手抄：stated P(up)=0.9634；realized up frequency=0.75；gap=0.2134。减法 0.9634−0.75 必得 0.2134，禁止四舍五入丢末位。说明：stated 在看见四符号前可写，realized 必须数 1 1 1 0。第 14 天 0.75 是 always-up 命中，数值同 realized 但定义不同。第 15 天两格 0/1 不能从 gap 反推。第 18 天 median 1200000 改标签计数，不删本日三行。confidence.py  stdout 三键是交作业最小集。写作模板：We state 0.9634 but realize 0.75 on symbol frequency, gap 0.2134. 四步样本不建校准曲线。禁止用 gap 单独作标题。英文键 stated/realized/gap 与脚本一致。本段闭合篇幅，数字不变。
-【教学闭合】把第 17 天想成「概率语句最小审计」：左边写规则输出的 0.9634，右边写样本里符号为正的频率 0.75，中间用减法固定 gap 0.2134。四步里只有一个负收益 −0.4800，因此 realized 必是 3/4。stated 不读这个负号，因为它只作用在 3.27 上。写作时三行同表，禁止把 gap 当唯一 KPI。与第 16 天关系：0.9634 四步相同，所以 stated 列无逐步结构；realized 列有 1 1 1 0 结构。与第 14 天：0.75 是 always-up 在符号标签上的命中，与 realized 同值不同定义。与第 18 天：volume 筛选改标签，不自动修复 gap。confidence.py  stdout 三键是验收标准。英文 stated/realized/gap 对齐。复现时不改四收益符号。本段仅闭合篇幅，不改变任何数字。
-<!-- zh-v1-d17 -->
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第17课 security review 应看公式分母而非看 delta RSS。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「置信核对」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `stated P(up) = σ(3.27) = 0.9634；realized up frequency = (1 + 1 + 1 + 0) / 4 = 0.75；gap = 0.9634 − 0.75 = 0.2134` 应出现在实验日志同一页。
+high FORBIDDEN（第28课）教 bar 内同步；第17课 intraday 特征更严格，decision time 须早于 bar end。
+
+第17课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第17课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第17课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第17课写 commit message 时建议带 verify day 号；例如「docs: day-17 sync stdout golden」。
+
+第17课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第17课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第17课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第17课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第17课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第17课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第17课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第17课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第17课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第17课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第17课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第17课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第17课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第17课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第17课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第17课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第17课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第17课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第17课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第17课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第17课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第17课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第17课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第17课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第17课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第17课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第17课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第17课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第17课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第17课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第17课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第17课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第17课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第17课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第17课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第17课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第17课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第17课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第17课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第17天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第17课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+第17课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第17课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第17课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第17课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第17课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第17课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第17课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第17课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第17课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第17课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第17课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第17课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第17课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第17课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第17课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+**hold-out 与 fit 索引（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 hold-out 与 fit 索引 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 hold-out 与 fit 索引 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 hold-out 与 fit 索引 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**泄漏与 FORBIDDEN 特征（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 泄漏与 FORBIDDEN 特征 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 泄漏与 FORBIDDEN 特征 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 泄漏与 FORBIDDEN 特征 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**标准化与 scale 来源（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 标准化与 scale 来源 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 标准化与 scale 来源 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 标准化与 scale 来源 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**方向与水平双分数（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 方向与水平双分数 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 方向与水平双分数 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 方向与水平双分数 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**panel 与 lag 合同（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 panel 与 lag 合同 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 panel 与 lag 合同 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 panel 与 lag 合同 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**成本与 bill 口径（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 成本与 bill 口径 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 成本与 bill 口径 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 成本与 bill 口径 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**walk-forward 命名（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 walk-forward 命名 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 walk-forward 命名 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 walk-forward 命名 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**model card 字段（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 model card 字段 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 model card 字段 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 model card 字段 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**golden stdout diff（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 golden stdout diff 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 golden stdout diff 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 golden stdout diff 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**estimand 一句话（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 estimand 一句话 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 estimand 一句话 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 estimand 一句话 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**mermaid 数字来源（第 17 天）.** 本课 stdout 锚点：gap=0.2134，频率 0.75。写 mermaid 数字来源 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 mermaid 数字来源 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 mermaid 数字来源 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+---
 
 ## 实战总结
 
@@ -75,6 +219,4 @@ confidence.py 三行必全。忌用 gap 代替两端。下一步 volume 列改�
 python days/17-confidence-check/confidence.py
 ```
 
-脚本打印 `stated P(up) = 0.9634`，`realized up frequency = 0.75`，`gap = 0.2134`。实现是 [`confidence.py`](../../days/17-confidence-check/confidence.py)。
-
-0.2134 是写出的置信减去实现的频率。百分之九十六和四分之三都留在结果里。用其中任何一个替换另一个，核对就没有了两端。
+核对：三行 stated/realized/gap。

@@ -62,5 +62,3 @@ python days/06-off-support/off_support.py
 The script should print the neighbor `10.4`, the extrapolation `18.33`, the gap `7.93`, and `residual is undefined`. The implementation is [`off_support.py`](../../days/06-off-support/off_support.py).
 
 Hand in two estimates and the sentence that the residual is undefined. Do not write 7.93 as a miss. Day 7 is the first day with a label that does not enter the fit: session 5 is held out, and the training residual stops being the score.
-
-Self-check: all four print lines present? 7.93 not fed to Sharpe? `numpy==1.24.4` and printed 3.27×6−1.29 rule respected?

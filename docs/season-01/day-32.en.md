@@ -14,14 +14,14 @@ The endpoint is the same as yesterday. The last adjusted close is still used onl
 
 ## Core
 
-The sixty-day slice is the sixty time indices before the endpoint. The three-day slice is still the three time indices before the endpoint. The endpoint's adjusted close stays out of the slope.
-
 ```text
 sixty-day slope = 0.0353
 three-day slope = -0.1195
 sixty-day absolute miss = 0.4426
 three-day absolute miss = 0.0867
 ```
+
+The sixty-day slice is the sixty time indices before the endpoint. The three-day slice is still the three time indices before the endpoint. The endpoint's adjusted close stays out of the slope.
 
 Read this beside yesterday. The twenty-day slope was 0.0251 and the absolute miss was 0.1506. The sixty-day slope is 0.0353 and the absolute miss is 0.4426. Lengthening the window from twenty sessions to sixty leaves the slope positive, and this day's absolute miss rises from 0.1506 to 0.4426. The added rows are earlier sessions. They hold the line on the old direction. The three-day slope −0.1195 is the direction of the last three points themselves. The three rows answer three different questions: the local direction, the slope already formed over twenty sessions, and the older slope the sixty-day window is still using. Each miss belongs to that information set at this one time index.
 
@@ -35,10 +35,9 @@ The sign gap between 0.0353 and −0.1195 says more about the information set th
 
 The sixty-day slope 0.0353 and the three-day slope −0.1195 use the same endpoint and the same adjusted close. The difference is how long the slice is. 0.4426 is how far the sixty-session extrapolation sits from this close. 0.0867 is how far the three-session extrapolation sits from the same close. The two misses already have their own lines. That the long window is farther on this day stays on the 0.4426 line. That the short window is chasing a local direction stays on the −0.1195 line. Yesterday's twenty-day slope 0.0251 and absolute miss 0.1506 stay on their own print and are not folded into a ranking today. Next the question leaves window length and asks whether the mean and standard deviation used for scaling come from the training stretch, or whether they have also seen the test stretch.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Sixty-day miss 0.4426 vs three-day 0.0867 at the same endpoint. Long window keeps older positive slope 0.0353; short window follows local −0.1195.
+
+**Long window.** Sixty-day miss 0.4426 vs three-day 0.0867 on the same last t compares absolute error, not in-sample RSS.
 
 ## What the run showed
 

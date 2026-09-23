@@ -59,3 +59,4 @@ python days/20-noise-column/noise.py
 The script states that the fit is on t = 1..4 and the score is on t = 5. It prints the in-sample residual sums of squares 42.0500 without noise and 26.7061 with noise, and the holdout absolute errors 11.6500 and 18.1513, and it states that the in-sample drop is not an improvement. The noise seed is 0, fixed in advance. The implementation is [`noise.py`](../../days/20-noise-column/noise.py).
 
 After the column space grows, the training sum of squares can fall. The score that counts is the holdout absolute error. It went from 11.6500 to 18.1513, and it got worse. The value 26.7061 is not a better result.
+

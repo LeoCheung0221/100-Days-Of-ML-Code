@@ -16,8 +16,6 @@ On day 34 the blank close on 2024-02-01 fills from the previous close at 10.1047
 
 ## Core
 
-The list is six designs that have already been run. It is not a new price table. The script prints future=yes on every line, and it ends by stating that a higher score is not a result.
-
 ```text
 leakage list
 day 28  today's high explains today's close  future=yes
@@ -29,6 +27,8 @@ day 38  same-day market return  future=yes
 a higher score on any of these lines is not a result
 ```
 
+The list is six designs that have already been run. It is not a new price table. The script prints future=yes on every line, and it ends by stating that a higher score is not a result.
+
 The six lines share a structure: the inputs to the score depend on information from the same time as the label, or from later. Day 28 depends on the high of the same bar. Days 29 and 33 depend on later observations entering a scale. Day 34 depends on the next close. Day 37 depends on the other name's row on the same date, and on the same-day market. Day 38 depends on the same-day market return itself. Once the dependence is in place, a score that improves, a score that worsens, or a score that sits still at six decimals does not rewrite the line as future=no. Day 33 is the line whose score did not move, and future is still yes. Day 29 is the line whose scores differ by 0.0008, and future is still yes. Day 28's sum of squares is smaller by 3.6518, day 37's random split is 0.7234, and day 38's same-day alignment is 0.6795. Those lines look higher, and future is still yes.
 
 ## Further out
@@ -38,6 +38,8 @@ A leakage list is the negative page of a research log. Each line carries three t
 Prints that are not on these six lines stay with their own information sets. Day 31's three-day slope −0.1195 and twenty-day slope 0.0251 come from windows that exclude the last close. Day 32's sixty-day absolute miss 0.4426 is the distance of the old slope on that day. Day 35's business-day gap of 2 is a calendar fact. Day 36's −0.4938 and 0.0124 are returns that are each due on their own price series, and −0.4938 reads the corporate action. These numbers are not rewritten as an edge because a leakage list exists today, and they are not written into the six future=yes lines.
 
 A new day that wants to be added answers first whether its inputs were fixed before the label could be known. Today's high, later opens, the moments of the test stretch, the next close, the same date across names, and the same-day market return are all answered yes today. Changing the model family does not turn the source into no. Linear regression, a tree, or a more flexible fit, as long as it still consumes these inputs, still does not produce a result.
+
+**Negative list.** Six future=yes lines may stay in the log; a higher score on any of these lines is not a result.
 
 ## What the run showed
 

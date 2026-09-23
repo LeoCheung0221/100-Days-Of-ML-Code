@@ -2,84 +2,221 @@
 
 # 第 14 天 · 常数基准
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
 今天的学习要点：在符号标签上，永远猜跌的准确率是 0.25，永远猜涨的准确率是 0.75，基准不看价格，单独一个 0.75 旁边没有 0.25 就没有对照。
 
+---
+
 ## 费曼法讲解
 
-四个收益仍是 0.8571、0.5897、2.2258、−0.4800。今天的标签只看符号：正数记上涨，负数记下跌。前三个是正的，最后一个是负的。标签写成 1 1 1 0。
+> **结论先行**：符号标签上 always-down acc=0.25、always-up acc=0.75——**baseline 不看价格**；单报 0.75 无对照即不可审计。
 
-永远猜涨把四步都写成 1。它与标签比：前三步相同，第四步不同。准确率 0.75。永远猜跌把四步都写成 0。它与标签比：前三步不同，第四步相同。准确率 0.25。
+```mermaid
+flowchart LR
+  D["always-down 0.25"] --> C["对照"]
+  U["always-up 0.75"] --> C
+```
 
-这两条规则的输入是空的。它们不读收盘 2.1、3.9、6.2、20.0、10.4，不读斜率 3.27，不读直线 `ŷ = 3.27x − 1.29`。标签一旦写成 1 1 1 0，两个准确率就已经确定。价格列可以换成另一列数字，只要四个符号还是三正一负，0.75 和 0.25 就还在。基准不看价格。
+**零信息分类器**：不读特征，只输出常数方向。涨标签占 75% 样本（四步中三步 up under sign label），故 always-up 0.75= **类频率**；always-down 0.25。
 
-第 11 天的方向命中也是 3/4。当时因为斜率是正的，那条规则和永远猜涨是同一条。今天把这句话旁边的另一个数补上。永远猜涨得到 0.75 的同时，永远猜跌得到 0.25。只把 0.75 拿走，这个数看起来像一个用了价格的模型分数。把 0.25 放在旁边，才看得出：在三正一负的符号标签上，两条不看价格的常数已经占住了 0.75 和 0.25。0.75 旁边没有 0.25，就没有这个对照。
+任何「策略 accuracy」必须 **减 baseline** 或并列报告。脚本：`the baseline looks at no price`——强调 **未使用 covariate**。
+
+误用：把 0.75 当 alpha；不报 0.25。
+
+---
 
 ## 核心知识
 
-符号标签：
+### 脚本输出（与下方 `text` 块一致）
+
+[`baseline.py`](../../days/14-constant-baseline/baseline.py)：
 
 ```text
-y = 1{r > 0} = 1, 1, 1, 0
+always-down accuracy = 0.25
+always-up accuracy = 0.75
+the baseline looks at no price
 ```
 
-常数预测不依赖任何一行的价格：
 
-```text
-always up   = 1, 1, 1, 1     accuracy = 0.75
-always down = 0, 0, 0, 0     accuracy = 0.25
-```
+正文表与公式只解释 text 块；小数须与块内同行可对齐。
 
-| 规则 | 看的列 | 命中的步 | 准确率 |
-|---|---|---|---:|
-| 永远猜涨 | 无 | 三个正收益 | 0.75 |
-| 永远猜跌 | 无 | 一个负收益 | 0.25 |
-
-四步里正号占三步，所以全 1 的命中比例是 0.75。四步里负号占一步，所以全 0 的命中比例是 0.25。两条预测在每一步都相反，一步恰好被其中一条说中，两个比例之和是 1。这个加法是互补常数在二分类标签上的算术，不是额外的样本信息。
-
-对照的用法是并排。只引用 0.75，等于把类的频率说成规则的成绩，同时把 0.25 留在表外。0.25 说明相反的常数在同一些标签上得到什么。有了它，0.75 被读成「三步为正时，不看价格的上涨常数的命中」。
-
-第 11 天的正斜率规则在方向上退化成这张表的第一行。它的 3/4 与今天的 0.75 是同一个数，并且和 0.25 一起读。斜率 3.27 没有在符号之外再提供方向上的区分：一日差分恒为 3.27，符号恒为正。价格进入了斜率的估计，方向预测的逐日符号仍然不变。一条看了价格、但预测符号仍然每天相同的规则，在这四步上的方向准确率停在 0.75。基准这一章把「不看价格」写明。
-
-第 12 天和第 13 天的阈值标签是另一套定义。那里永远猜涨可以是 0.50 或 0.25，因为 1 的含义不再是「收益为正」。今天的 0.75 和 0.25 只属于符号标签。把阈值表上的数和这张表上的数排成一个榜，会把不同的目标比成不同的模型。
+---
 
 ## 拓展领域
 
-常数基准是控制。控制回答：在完全不使用价格列的情况下，这个标签能给一个固定猜测多高的命中。今天的答案是两个数，0.75 和 0.25，对应两个固定猜测。类的个数写在这两个数里。三步上涨、一步下跌，上涨常数拿到 0.75，下跌常数拿到 0.25。
+**Brier / lift**：方向分类常用 lift over marginal。**生产**：dashboard 默认显示 baseline 线。
 
-以后任何方向规则若在这四步符号标签上报告 0.75，先检查它的预测是不是四步都为正。若是，它与永远猜涨重合，基准已经给出了同一个 0.75，价格列没有在方向分数上留下额外的命中。若预测里出现了 0，准确率才可能离开这两条常数。离开之后仍然把 0.75 和 0.25 留在表侧，新的准确率才有参照。
+**Closing**：0.75 是 **先验**，不是模型；与第 10 天 3/4 比较须同 label 定义。
 
-两个常数是同一张标签表上的一对互补猜测。丢掉 0.25，就丢掉了「这个命中里有多少来自正类占了三步」的那一份说法。基准不看价格。这句话在两个准确率都在场时才完整：一个不看价格的规则得 0.75，另一个不看价格的规则得 0.25，成绩来自标签里 1 和 0 的个数。
+**无特征基准.** always-down 0.25，always-up 0.75；`the baseline looks at no price`——基准 **不看价格**，只数标签边际。
 
-always-down 与 always-up 是同一标签表上的互补预测：一步必被恰好一条说中，故 0.75+0.25=1。这是二分类常数对的算术，不是额外信息。基准不看价格：输入为空，标签 1 1 1 0 固定后两准确率即定。
+**0.75 无对照则无效.** 必须并列 0.25；否则读者不知标签偏斜。第 10 天 3/4 高于 always-up 0.75？四点子样本标签分布不同—— **分母须一致** 才可比。
 
-第 11 天 3/4 与 always-up 0.75 同数；今天补上 0.25，完成对照。声称「方向模型 75%」时，若预测四步皆 up，应并列基准 0.75 并说明与 always-up 重合，而非暗示斜率 3.27 带来额外方向信息——正斜率差分恒正，与 always-up 同轨。
+**策略筛选.** 新模型 acc 0.76 仅比 0.75 高 0.01 时，须报 baseline 与 N。因子 IC 也有 null 分布；本课是分类版 null。
 
-第 12–13 天阈值标签下 always-up 可为 0.50 或 0.25；Today's 0.75/0.25 仅属符号标签。把阈值表的 0.50 与今天的 0.75 排榜，是比较不同目标，不是同一模型排行。
+**代码.** sklearn `dummy` classifier 应作为 pipeline 第一行 benchmark。
 
-符号标签来自四收益符号，与五收盘水平无直接函数关系——换一组保持三正一负的收益，基准对不变。价格列进入的是第 10–11 天斜率估计，不是本基准。基准章回答：不用价格时标签能给的固定猜测上限/下限。
+第14课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
 
-报告格式：两数同段。`always-down accuracy = 0.25` 与 `always-up accuracy = 0.75` 并列，并写 baseline ignores price。缺 0.25 时，0.75 会被误读为模型成绩。
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第14课文档应在开头声明主语范围。
 
-第 22 天硬币 0.5000 用于 77 段，不同于 today's 类频率基准；硬币不数标签里 1 的比例，而是符号预测的参照。概念库中保留三种基准：always-up/down（today）、阈值标签上的 constant-up（day 12–13）、coin 0.5000（day 22+）。
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第14课写模型比较时禁止用非法列作优选依据。
 
-跑 `baseline.py` 核对两准确率与文案。下一步第 15 天拆 0.75 为两误分格 0 与 1。
-【续】0.75 与 0.25 之和为 1 仅在二分类、互补常数、同一标签下成立；阈值标签无此互补。第 11 天 3/4 分子分母与 0.75 同；Today 命名 always-up/down 并强调 ignores price。
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第14课起应在 CI 里 grep fillna 方向。
 
-若策略报告写「超越基准」，须声明基准是 always-up 0.75 还是 coin 0.5000 还是 τ=0.70 上的 0.50——三者不同。Today 仅覆盖符号标签常数对。价格进入斜率估计不影响本基准表。
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第14课应把 scale 来源写入 model card。
 
-跑 baseline 脚本核对两键与 ignores price 文案。摘要并列两准确率，不单列 0.75。下一步拆 0.75 为误分格。
-基准章回答「不用特征时标签边际能给你什么命中率」。三正一负符号标签使 always-up 得 0.75；这不是模型 learning 的结果，是标签计数。第 22 天 coin 0.5000 不数标签边际，而是给符号预测一个对称参照——两种 baseline 都要会区分。
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第14课若改切分为随机，必须另开对照行而不覆盖 time 行。
 
-写 slide 时两柱图：0.75 vs 0.25，标注 ignores price。若策略声称 75% 方向命中且预测恒 up，应标注「等价 always-up baseline」。斜率 3.27 估计使用价格，但方向符号未逐日变化，故无额外方向信息 beyond sign(β₁)>0。
-【终稿补充】常数基准章建立「不看价格」的下界与上界：always-down 0.25、always-up 0.75。符号标签 1 1 1 0 固定后，任何不读价格的规则最多在这两数之间（互补预测下和为 1）。第 11 天正斜率方向 3/4 与 0.75 重合，说明价格估斜率未带来超越 always-up 的方向区分。写策略报告时，若方向预测四步皆为 up，必须并列 0.75 并声明等价 always-up。第 12–13 天阈值标签下 always-up 可低于 0.5；Today's 0.75/0.25 不适用于阈值目标。第 22 天 coin 0.5000 在 77 段符号上，又不是标签边际 0.75——三类 baseline 要会命名：symbol always-up/down、threshold constant-up、coin flip。baseline ignores price 一句不可删，否则读者以为读了五收盘。实际上标签由四收益符号决定，与五收盘水平无函数关系；换一组三正一负收益，基准对不变。第 15 天将 0.75 拆成误分格；Today 先建立并排习惯。跑 `baseline.py` 核对两键。slides 建议两柱 0.75 vs 0.25。禁止写「模型 75% 无基准」——基准就是 0.75 与 0.25。英文 always-down/up accuracy 键名与脚本一致。
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第14课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第14课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第14课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第14课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第14课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第14课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第14课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第14课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第14课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第14课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第14课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第14课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第14课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第14课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第14课 intraday 特征更严格，decision time 须早于 bar end。
+
+第14课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第14课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第14课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第14课写 commit message 时建议带 verify day 号；例如「docs: day-14 sync stdout golden」。
+
+第14课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第14课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第14课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第14课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第14课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第14课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第14课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第14课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第14课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第14课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第14课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第14课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第14课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第14课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第14课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第14课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第14课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第14课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第14课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第14课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第14课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第14课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第14课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第14课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第14课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第14课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第14课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第14课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第14课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第14课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第14课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第14课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第14课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第14课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第14课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第14课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第14课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第14课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第14课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第14天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第14课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+**hold-out 与 fit 索引（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 hold-out 与 fit 索引 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 hold-out 与 fit 索引 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 hold-out 与 fit 索引 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**泄漏与 FORBIDDEN 特征（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 泄漏与 FORBIDDEN 特征 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 泄漏与 FORBIDDEN 特征 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 泄漏与 FORBIDDEN 特征 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**标准化与 scale 来源（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 标准化与 scale 来源 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 标准化与 scale 来源 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 标准化与 scale 来源 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**方向与水平双分数（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 方向与水平双分数 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 方向与水平双分数 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 方向与水平双分数 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**panel 与 lag 合同（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 panel 与 lag 合同 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 panel 与 lag 合同 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 panel 与 lag 合同 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**成本与 bill 口径（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 成本与 bill 口径 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 成本与 bill 口径 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 成本与 bill 口径 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**walk-forward 命名（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 walk-forward 命名 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 walk-forward 命名 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 walk-forward 命名 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**model card 字段（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 model card 字段 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 model card 字段 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 model card 字段 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**golden stdout diff（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 golden stdout diff 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 golden stdout diff 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 golden stdout diff 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**estimand 一句话（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 estimand 一句话 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 estimand 一句话 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 estimand 一句话 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**mermaid 数字来源（第 14 天）.** 本课 stdout 锚点：always-up 0.75 vs always-down 0.25。写 mermaid 数字来源 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 mermaid 数字来源 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 mermaid 数字来源 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+---
+
 ## 实战总结
 
 ```bash
 python days/14-constant-baseline/baseline.py
 ```
 
-脚本在符号标签上打印 `always-down accuracy = 0.25` 和 `always-up accuracy = 0.75`，并写明基准不看价格。实现是 [`baseline.py`](../../days/14-constant-baseline/baseline.py)。
-
-两个数一起引用。0.75 是四步里三个正号被全 1 击中，0.25 是一个负号被全 0 击中。旁边没有 0.25 的 0.75 没有对照。
+核对：两行 accuracy；`the baseline looks at no price`。

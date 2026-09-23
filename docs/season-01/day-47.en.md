@@ -18,8 +18,6 @@ The claim is the two sentences together. The line is defined at t = 118, and the
 
 ## Core
 
-The fit uses all 79 adjusted closes, not the 59-session training cut. The cut from days 44 through 46 is not used today. The query is the last abscissa plus 40, printed as 118.
-
 ```text
 query t = 118
 line value = 13.3936
@@ -27,6 +25,8 @@ observed adj close min = 9.8971
 observed adj close max = 12.1679
 outside the observed range = true
 ```
+
+The fit uses all 79 adjusted closes, not the 59-session training cut. The cut from days 44 through 46 is not used today. The query is the last abscissa plus 40, printed as 118.
 
 The test is: the fitted value is below the sample minimum adjusted close, or above the sample maximum. 13.3936 > 12.1679, so the flag is true. The lower end 9.8971 is not crossed. The upper end is.
 
@@ -43,6 +43,8 @@ Support and domain are different notes. Support is the indices the data occupy. 
 Day 41's deletion showed that one jump on 79 points barely moves the slope. The slope is still there, so extrapolation multiplies that slope past the support. A jump that does not twist the slope does not remove 13.3936 at t = 118. The two days are two facts.
 
 13.3936 lies above the maximum 12.1679. The lower end is not crossed: 9.8971 remains below the fitted value. The flag true is decided at the upper end. A query that landed on an index already seen would still leave the affine function defined, and the value could fall inside [9.8971, 12.1679]. Today the query is the last abscissa plus 40, so definition and range show up together: t = 118 has a function value, and that value is not among the prices already seen.
+
+**Extrapolation.** Line 13.3936 lies outside observed adj close range; outside the observed range = true.
 
 ## What the run showed
 

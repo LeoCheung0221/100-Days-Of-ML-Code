@@ -55,3 +55,4 @@ python days/10-direction/direction.py
 The script should print `fitted one-day move = 3.27 on every step`, `direction hits = 3 / 4`, a hit with absolute residual `8.21` on session 4, and a miss with absolute residual `4.66` on session 5. The implementation is [`direction.py`](../../days/10-direction/direction.py).
 
 The line is still least squares on the price level. Direction is read off afterwards. The hits in the table are the full-sample fit scoring its own path, the same kind of object as the training sum of squares that did not count on day 7: the labels already entered the estimate. From day 11 the score becomes the direction hit, and 8.21 is explicitly no longer the score.
+

@@ -16,7 +16,7 @@ Think of two ledgers on the same five residuals. Absolute loss adds distances; s
 
 Day 3 splits `L2` into five shares; session 4's 0.6997 is the same number as today's squared share. Day 4's endpoint chord can beat this line on `L1` and lose on `L2` while staying in the same affine class. Changing the loss can change the winner even when the shape stays "straight line."
 
-Picture five cards labeled with `(t, r_t)`. Shuffling card order does not change the backs—day 9 will show that for `L1` and `L2` on a fixed residual vector. Today the vector is already fixed from day 1.
+With `β̂` fixed from day 1, the residual vector is a sufficient statistic for both `L1` and `L2`; row permutations of the panel do not alter those sums (day 9).
 
 ## Core
 
@@ -71,5 +71,3 @@ python days/02-two-losses/two_losses.py
 The script should print `L1 = sum |r| = 16.66`, `L2 = sum r^2 = 96.339`, and session-4 shares `0.4928` and `0.6997`. The implementation is [`two_losses.py`](../../days/02-two-losses/two_losses.py). The line still comes from `numpy.linalg.lstsq`.
 
 Both losses are in sample. Neither is a holdout score. Hand in the two norms and the two shares. Day 3 splits the sum of squares back into each session. Day 4 compares this line with the endpoint chord, where the two losses can rank the fits in opposite order.
-
-Self-check: both 16.66 and 96.339 present? Shares at four decimals? Do not claim OLS minimizes `L1`. Keep this table as the canonical residual vector for later days.

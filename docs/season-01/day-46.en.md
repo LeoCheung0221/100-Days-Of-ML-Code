@@ -19,10 +19,10 @@ The winner of both columns happens to be the tree. The reading does not change. 
 ## Core
 
 ```text
-model   train_SSE   later_SSE
-line    10.1623     2.9263
-ridge   16.3596     3.2545
-tree    1.3953      2.1488
+model  train_SSE  later_SSE
+line  10.1623  2.9263
+ridge  16.3596  3.2545
+tree  1.3953  2.1488
 still alive on the later stretch = tree
 ```
 
@@ -41,6 +41,8 @@ A ranking after the sample changes is the ranking in the column that changed. Th
 The training triple is 1.3953, 10.1623, and 16.3596, with the line sitting between the other two. The line has one slope. Ridge has that slope pulled by 20000, and the training sum rises to 16.3596. The depth-2 tree has several constants, and the training sum falls to 1.3953. Write the training error cell by cell. Write the later stretch as 2.1488, 2.9263, and 3.2545. The smallest later cell is the tree's 2.1488. Day 45's depth-1 later SSE 0.5669 is smaller than 2.1488, and depth 1 is not in this three-model table.
 
 `still alive = tree` is a conclusion about the later column. It does not rewrite day 45's four cells. Depth 1's later SSE is 0.5669, which is smaller than depth 2's 2.1488. The three-model comparison does not put depth 1 in the table. The tree that is smallest there is the depth-2 tree, relative to the line and to ridge, not relative to depth 1.
+
+**Later stretch winner.** Tree SSE 2.1488 is smallest on the later segment; ridge train SSE 16.3596 is not the score column.
 
 ## What the run showed
 

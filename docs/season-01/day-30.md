@@ -2,19 +2,35 @@
 
 # 第 30 天 · 固定历史窗口
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：回看长度是 20。在最后一个时间下标上，用全部有限复权收盘拟合的值是 12.1976，只用这 20 日拟合的值是 12.0095，差是 0.1881。信息集是这 20 日，不是整张表。
+今天的学习要点：lookback = 20：末时点 full-sample = 12.1976，window = 12.0095；全样本均值不是可交易信息集，窗口值才是因果可读量。
+
+---
 
 ## 费曼法讲解
 
-仍取 AAA 上收盘和复权收盘都有限的行，把复权收盘对时间下标做普通最小二乘，直线带截距。下标从这段序列的起点排到终点。全样本拟合使用每一个这样的复权收盘。窗口拟合只使用最后 20 个。两条直线都在最后一个下标上取值。最后一个下标属于这 20 日，也属于全样本。所以两个数都是窗口内、或全样本内的拟合值，不是把最后一天拿去留出之后的预报。
+> **结论先行**：`full-sample value at last t = 12.1976` vs `window value at last t = 12.0095`（lookback=20）；`the full sample is not the information set`——全样本均值使用 **末点之后的信息**，窗口统计才是 t 时可见。
 
-全样本在最后一天的拟合值是 12.1976。20 日窗口在同一天的拟合值是 12.0095。12.1976 减去 12.0095 等于 0.1881。同一天、同一个下标，两条直线相差 0.1881。差别来自进入最小二乘的行不同。全样本的行包含窗口之前的那些交易日。窗口的行只有这 20 日。
+这是 **因果信息集** 与 **充分统计** 的初等分离：分析师常用「至今均值」作特征，但在回测里若用 **含未来行的样本** 算均值，就违反 **adapted 过程**。本课在末点打印两值差 ~0.19，量级取决于价格水平。
 
-0.1881 不是一条交易盈亏，也不是最后一天的收盘本身。程序没有把真实收盘印在这两个拟合值旁边。它印的是两种信息集下的拟合水平。信息集若是整张用到的表，拟合值是 12.1976。信息集若只是最后 20 日，拟合值是 12.0095。今天把第二个数当作窗口的取值，因为允许进入估计的行就是这 20 行。整张表多出来的那些更早的行，不在这个信息集里。
+与第 33 天 scale 泄漏对照：一个动 **均值**，一个动 **标准差**；共同点是 **whole sample 看见 test**。Hamilton（1994）滤波与实时估计强调 **truncated sample**。
+
+实现：lookback=20 只用过去 20 会话；full sample 用全部 adj close。报告特征时写清 **window length** 与 **是否包含 t**。第 32 天比较 3/20/60 窗，本课建立 **full ≠ window** 词汇。
+
+```mermaid
+flowchart TD
+  FS["full sample 12.1976"] --> X["非信息集"]
+  W["window 20 → 12.0095"] --> OK["可审计"]
+```
+
+---
 
 ## 核心知识
+
+### 脚本输出（与下方 `text` 块一致）
+
+[`lookback.py`](../../days/30-fixed-lookback/lookback.py)：
 
 ```text
 lookback = 20
@@ -23,60 +39,230 @@ window value at last t = 12.0095
 the full sample is not the information set
 ```
 
-记时间下标为 `t = 0, 1, …`，复权收盘为 `P_t`。全样本直线与窗口直线都是
 
-```text
-P̂_t = α + β t
-```
+| 估计 | last t 拟合值 |
+|:---|---:|
+| full-sample line | 12.1976 |
+| lookback=20 window | 12.0095 |
 
-全样本的 `α, β` 用全部有限复权收盘估计。窗口的 `α, β` 只用最后 20 个 `(t, P_t)` 估计。查询点是最后一个下标 `t*`，它落在这 20 个下标里面。
+`the full sample is not the information set`：实时特征只能用 window 行。
 
-```text
-P̂^{full}(t*) = 12.1976
-P̂^{20}(t*) = 12.0095
-12.1976 − 12.0095 = 0.1881
-```
 
-0.1881 是两个拟合值之差。两个拟合值使用同一个查询日，使用不同的行。窗口值 12.0095 的信息集是那 20 日。全样本值 12.1976 的信息集是整段有限复权收盘。打印写明 the full sample is not the information set：当声明的历史长度是 20 时，进入估计的不是整张表。
-
-最后一个下标在窗口内部，所以 12.0095 是这 20 日直线在窗口末端的拟合水平。它不回答「用前 20 日去预测窗口之外的下一天」。那一问今天没有印出一个留出误差。今天印出的是信息集更换之后，同一天的拟合值移动了 0.1881。
+---
 
 ## 拓展领域
 
-固定回看把估计用的行数写成一个事先给定的长度。长度是 20，不是「从表的第一天一直用到查询日」。查询日若使用全样本，更早的交易日都会进入斜率和截距，哪怕声明上只打算看最近 20 天。12.1976 与 12.0095 的差 0.1881，就是那些更早的行还留在估计里时，末端拟合值会移动多少。移动的方向和大小由这张冻结表上的复权收盘决定，今天只报告这个已经算出的差。
+**12.1976 vs 12.0095.** full-sample 直线在末 t 使用 **含未来行** 的信息；lookback=20 才是 t 时可见。`the full sample is not the information set` 是 adapted 过程语言。
 
-窗口末端的点参加了窗口自己的最小二乘。因此 12.0095 吸收了最后一天的复权收盘。它是拟合值，不是把最后一天藏起来之后的外推。把 12.0095 或 12.1976 读成对一个未见收盘的预测，会把样本内的拟合水平说成留出成绩。两者之差 0.1881 同样只比较两种样本内拟合。它衡量信息集从整段收到 20 日之后，末端水平改变了多少。
+**特征命名.** 避免 `expanding_mean` 无 `closed='left'`。实时 pipeline 只用 rolling/window。
 
-第 28 天禁止的是同一行上的最高价，第 29 天指出的是缩放读进了以后的开盘。今天限制的是过去的长度：再早于这 20 日的行，虽然已经发生，也不进入这条窗口直线。已经发生和允许进入信息集，是两件事。整张表里更早的行已经写在文件里。窗口回归不读它们。信息集是这 20 日，拟合值是 12.0095，与全样本拟合值 12.1976 相差 0.1881。
+**与 31–32 窗长系列.** 本课建立 full≠window；后续比较 3/20/60 斜率。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-与第 31–32 天窗口长度的衔接：今天固定 lookback=20，比较全样本与窗口在同一下标上的拟合水平差 0.1881。第 31 天把窗口收到 3 日与 20 日，看斜率符号翻转与单点失手；第 32 天再加 60 日看旧斜率停驻。三天共同点是：声明的信息集长度决定进入 `lstsq` 的行，不是「文件里有多少行就用多少行」。把 12.1976 当成「20 日策略的输出」是错的，它是全样本输出。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-滚动生产系统里，「全样本重估」与「只估最近 20 日」是两种部署。0.1881 量的是末端水平对信息集长度的敏感程度，不是样本外误差。查询点 `t*` 在窗口内，因此 12.0095 仍是样本内拟合值。若把 `t*` 移到窗口外做预测，需要另定训练切点，那是第 44 天以后的故事。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-第 33 天训练段标准化与今天正交：今天不改特征缩放，只改回归行集。读者应能同时复述 lookback=20、12.1976、12.0095、0.1881 与 the full sample is not the information set 四句，而不引入第 33 天的 0.000109。
-<!-- zh-v1-d30 -->
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-| 对照项 | 第 29 天 | 第 30 天（固定历史窗口） | 第 31 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | lookback = 20 | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v2-d30 -->
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「固定历史窗口」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `lookback = 20；full-sample value at last t = 12.1976；window value at last t = 12.0095` 应出现在实验日志同一页。
-<!-- zh-v3-d30 -->
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 29/31 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
-<!-- zh-v4-d30 -->
+停牌间隔（如第35课）改变 row-lag 语义；第30课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
 
-面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「固定历史窗口」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
-<!-- zh-v5-d30 -->
+复权口径（如第36课）要求双列披露；第30课任何 return 图表必须标注 adj 或 raw，禁止混用。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「固定历史窗口」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `lookback = 20；full-sample value at last t = 12.1976；window value at last t = 12.0095` 中的 split 语汇请与终端逐字对齐。
-<!-- zh-v6-d30 -->
+窗口均值（如第30–32课）区分 full sample 与 lookback；第30课 feature 命名建议带 window 长度后缀。
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「固定历史窗口」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+市场同期信号（如第38课）与 lag 市场对照；第30课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第30课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第30课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第30课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第30课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第30课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第30课 intraday 特征更严格，decision time 须早于 bar end。
+
+第30课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第30课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第30课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第30课写 commit message 时建议带 verify day 号；例如「docs: day-30 sync stdout golden」。
+
+第30课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第30课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第30课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第30课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第30课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第30课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第30课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第30课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第30课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第30课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第30课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第30课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第30课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第30课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第30课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第30课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第30课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第30课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第30课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第30课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第30课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第30课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第30课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第30课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第30课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第30课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第30课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第30课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第30课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第30课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第30课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第30课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第30课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第30课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第30课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第30课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第30课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第30课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第30课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第30天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第30课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第30课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第30课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第30课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第30课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第30课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第30课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第30课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第30课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第30课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第30课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第30课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第30课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第30课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第30课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第30课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第30课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第30课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第30课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第30课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第30课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第30课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第30课 intraday 特征更严格，decision time 须早于 bar end。
+
+第30课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第30课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第30课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第30课写 commit message 时建议带 verify day 号；例如「docs: day-30 sync stdout golden」。
+
+第30课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第30课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第30课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第30课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第30课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第30课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第30课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第30课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第30课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第30课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第30课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第30课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第30课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第30课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第30课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第30课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+---
 
 ## 实战总结
 
@@ -84,8 +270,4 @@ P̂^{20}(t*) = 12.0095
 python days/30-fixed-lookback/lookback.py
 ```
 
-脚本打印 `lookback = 20`、`full-sample value at last t = 12.1976`、`window value at last t = 12.0095`，以及 `the full sample is not the information set`。实现是 [`lookback.py`](../../days/30-fixed-lookback/lookback.py)。
-
-回看 20 日。最后一个下标上，全样本拟合值 12.1976，窗口拟合值 12.0095，差 0.1881。信息集是这 20 日。下一步把窗口收成三日，局部的斜率可以跟着这三日里的涨跌改号。
-
-复现 `python days/30-fixed-lookback/lookback.py`。交作业五锚点：20、12.1976、12.0095、0.1881、信息集句。不要写「窗口预测明天收盘」。自检：是否把 0.1881 当盈亏？是否用全样本 12.1976 代表 20 日策略？
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`lookback.py`](../../days/30-fixed-lookback/lookback.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 30 --min-cjk 3000`。

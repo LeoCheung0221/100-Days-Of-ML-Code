@@ -14,7 +14,7 @@ The other answer refuses to copy a row. It may draw only a straight line, slope 
 
 Zero and 8.2 are not "accurate" and "inaccurate" in the same sense. Zero is lookup. 8.2 is what this shape of function cannot avoid. If the function class were "copy the nearest row," in-sample residuals could all be zero on training abscissae. That would still not be the same object as a fitted line.
 
-Picture five cards: the front shows session `t`, the back shows close `y`. At `x = 4` the neighbor flips to session 4 and reads 20.0. Ordinary least squares uses all five cards in the sums that build `XᵀX` and `Xᵀy`, then solves for slope 3.27 and intercept −1.29. Row order is not shuffled today—that is day 9. Today only asks what each estimator says at one query inside the support.
+Each design row is `[x_t, 1]` with response `y_t`. At `x = 4` inside the training support, nearest neighbor is exact retrieval on a tabulated abscissa. OLS minimizes squared error in the affine class; under the Gauss–Markov setup the estimator is BLUE (Aitken, 1935). Row order is not permuted today (day 9).
 
 Day 6 moves the query to `x = 6` with no label; residuals are undefined there. Day 7 holds out session 5 and stops treating training RSS as the score. Do not read today's 0 or 8.2 as holdout performance.
 
@@ -63,5 +63,3 @@ python days/01-line-that-misses/fit_line.py
 The script should print `y = 3.27 x + -1.29`, a nearest-neighbor residual of `0.0`, and a line residual of `8.2`. The implementation is [`fit_line.py`](../../days/01-line-that-misses/fit_line.py). The same numbers are drawn in [`site`](../../site).
 
 Hand in only this comparison. The query belongs to the training set. The neighbor's 0 is not "the model works." The line's 8.2 is not "discard the line." It is the minimum squared residual of the affine class on these five points. Day 2 reports the same residual as both absolute loss and squared loss. Day 6 moves the query off the support. Day 7 holds out session 5 and stops treating the training residual as the score.
-
-Self-check without changing digits: Did you call 0 "predictive accuracy"? Did you call 8.2 a failure instead of the affine optimum at that query? Did you mix holdout language from day 7? Run the script before editing notes; assert NN output 20.0 and `lstsq` coefficients match the printout.

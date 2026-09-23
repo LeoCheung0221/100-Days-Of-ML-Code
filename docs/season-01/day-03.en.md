@@ -65,5 +65,3 @@ python days/03-residual-vector/residual_vector.py
 The script should print the shares `0.0001 0.0189 0.0559 0.6997 0.2254`, the sessions 4+5 total `0.9251`, and the first-three total `0.0749`. The implementation is [`residual_vector.py`](../../days/03-residual-vector/residual_vector.py).
 
 This is still in sample. Neither 96.339 nor the shares is a holdout score. Hand in the coordinate split of the sum of squares. Day 4 changes the line inside the same affine class and asks whether `L1` and `L2` rank the two fits the same way. Day 5 deletes session 4 and records how far the line itself moves. The share says the day is heavy. The displacement says how far it moved the line. Those are two statements.
-
-Self-check: five shares sum to 1.0000 at four decimals? Session 1 not rounded to 0? Do not use this table to rank window RSS from day 8.

@@ -16,13 +16,13 @@ The rule is this one, committed in advance. It is not the rule left over after s
 
 ## Core
 
-The market return and AAA's adjusted return are both simple returns. The position is the sign of the market-return series with the last item dropped, and a zero sign is recorded as long. The gross return is that position times AAA's return series with the first item dropped. The cost is the constant 0.0020, subtracted once from the mean.
-
 ```text
 gross mean return = -0.0024
 round-trip cost = 0.0020
 net mean return = -0.0044
 ```
+
+The market return and AAA's adjusted return are both simple returns. The position is the sign of the market-return series with the last item dropped, and a zero sign is recorded as long. The gross return is that position times AAA's return series with the first item dropped. The cost is the constant 0.0020, subtracted once from the mean.
 
 −0.0024 is the mean holding return before the cost. −0.0044 is the mean after subtracting 0.0020. The two negatives are read gross first, then net. Seeing −0.0024 first shows that the cost's role is not the removal of a positive expectation. A positive expectation would have to appear on the gross line. That line does not show one.
 
@@ -38,15 +38,11 @@ The net mean −0.0044 is lower than the gross mean −0.0024 by the written 0.0
 
 Next, the earlier designs already marked as seeing the future are collected into a list of six lines. Every line is marked future=yes. A higher score on those lines is not recorded as a result.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Gross mean −0.0024, round-trip cost 0.0020, net −0.0044. No positive edge existed before costs.
 
-
-<!-- uniq-exp-en2 -->
-
 Report gross before net; searching rules after seeing −0.0024 is a different experiment than today's pre-committed sign rule.
+
+**Costs.** Net mean −0.0044 after round-trip 0.0020—sign rules and fee-adjusted means are different reports.
 
 ## What the run showed
 

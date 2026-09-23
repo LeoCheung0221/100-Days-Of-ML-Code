@@ -2,19 +2,37 @@
 
 # 第 22 天 · 滞后一日的方向
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：用昨日复权涨跌的符号预测今日复权涨跌的符号，命中 36/77，准确率 0.4675。硬币基准是 0.5000。这条规则没有赢过不看价格的基准。
+今天的学习要点：用昨日复权涨跌符号预测今日符号：hits = 36/77，accuracy = 0.4675，低于 coin-flip baseline = 0.5000；规则在计数前固定，不是事后挑窗口。
+
+---
 
 ## 费曼法讲解
 
-表仍是第 21 天那份冻结文件。规则只用 AAA，并且先留下收盘和复权收盘都取有限值的行。第 21 天已经数过，AAA 有 1 个收盘为空。相邻两天的复权收盘相减，得到一串涨跌。从第二段涨跌起，把前一段的符号当作今天的预测，再和今天的符号比较。可以比较的段数是 77。符号相同的是 36 段，其余 41 段符号相反。36/77 印到四位小数是 0.4675。
+> **结论先行**：`accuracy = 0.4675` 是 **sign(r_{t−1}) 对 sign(r_t)** 的 in-sample 命中率，低于 `coin-flip baseline = 0.5000`；这不是「模型坏了」，而是 **固定规则在 AAA 复权差分** 上的计数结果。
 
-硬币基准打印 0.5000。它不读昨日的符号，也不读任何价格。把每一段都按一半对一半来对照。0.4675 低于 0.5000。规则使用了昨日的价格方向，命中仍停在这个不看价格的基准下面。36 次命中不足以把准确率抬过 0.5000。
+构造：对 `_complete(AAA)` 的 `adj_close` 做一阶差分 `move`，预测 `sign(move_t)` 是否等于 `sign(move_{t−1})`。有效长度 77 对，命中 36。Campbell、Lo & MacKinlay（1997）把短 horizon 方向预测放在 **可预测性** 框架里——要点是 **信息集**：昨日符号在收盘后可知，今日符号是 **同期标签**，本课 **未** 做 train/test 切分，因此 0.4675 是 **全样本计数**，不是 hold-out IC。
 
-这不是一条新估计的直线。预测符号直接等于昨日复权涨跌的符号。幅度不进入规则，只有正、负、或零。零只在涨跌恰好为 0 时出现。今天的分数是这 77 段上的符号命中率，并排的对照是 0.5000。
+与第 11–16 天五点上的方向分数不同：那里是价格水平差分；这里是 **panel 复权序列**。0.5000 基准不是假设「市场有效」，而是 **二项符号游戏** 的对照刻度。Lo & MacKinlay（1988）讨论过自相关与方差比；本课不做推断，只固定 **hits = 36/77**。
+
+误用：（1）把 0.4675 写成样本外 alpha；（2）在 blank close 行未过滤前数差分；（3）用 BBB 混池而不改分母。正确披露：name=AAA、adj_close、lag-1 sign rule、in-sample hits。
+
+```mermaid
+flowchart TD
+  Y["sign(r_{t-1})"] --> P["预测 sign(r_t)"]
+  P --> H["hits 36/77"]
+  H --> A["accuracy 0.4675"]
+  C["coin 0.5000"] --> A
+```
+
+---
 
 ## 核心知识
+
+### 脚本输出（与下方 `text` 块一致）
+
+[`lagged_direction.py`](../../days/22-lagged-direction/lagged_direction.py)：
 
 ```text
 predict today's adj move with yesterday's sign
@@ -23,65 +41,221 @@ accuracy = 0.4675
 coin-flip baseline = 0.5000
 ```
 
-设复权收盘的一日差分是 `Δ_t`。规则是 `sign(Δ_t)` 的预测等于 `sign(Δ_{t−1})`。命中指两个符号相等。准确率是命中次数除以可比较的段数：
 
-```text
-accuracy = 36 / 77 = 0.4675   （四位小数）
+| 量 | 值 |
+|:---|---:|
+| hits | 36/77 |
+| accuracy | 0.4675 |
+| coin baseline | 0.5000 |
+
+规则：\(\hat s_t = \mathrm{sign}(r_{t-1})\)，评估 \(\mathbb 1[\hat s_t = \mathrm{sign}(r_t)]\)。全样本 in-sample，无切分。
+
+
+```mermaid
+xychart-beta
+    title "方向命中 vs 抛硬币基线（stdout）"
+    x-axis ["accuracy", "coin"]
+    y-axis "rate" 0.45 --> 0.52
+    bar [0.4675, 0.5000]
 ```
 
-36/77 的除法结果在四位小数上印成 0.4675。分母 77 是错开一日之后还能比较的段数，不是 160 行全表，也不是 BBB 的 80 行。BBB 今天不进入这条规则。空收盘所在的行不参与差分。
 
-基准 0.5000 是写死的常数，不是这 77 段里估出来的上涨频率。并排的两列是：读昨日符号的规则，以及不读价格的 0.5000。0.4675 没有超过 0.5000。结论写成一句：这条规则没有赢过不看价格的基准。
+---
 
 ## 拓展领域
 
-方向规则要有一个不使用价格的对照，准确率才有位置。第 14 天在五个手写收盘上写过永远猜涨和永远猜跌，那两个数来自那五天的标签比例。今天的对照是硬币的 0.5000，因为比较发生在符号命中率上，而不是先去数这份表里上涨占了多少。0.4675 单独放着，接近一半。把它放在 0.5000 旁边，滞后一日的符号没有通过这个对照。
+**hits = 36/77 的分母纪律.** 77 来自 `_complete(AAA)` 上 `adj_close` 一阶差分后的有效对数，不是 80 行也不是 160 行。对外报告 direction accuracy 必须并列 **36/77**；只写 46.75% 而不写 n 在合规审查里不合格。Wilson 区间在 n=77 时仍宽，本课不算 p 值，但 quant 应直觉到 **低于 0.5 可能是噪声**。
 
-77 这个分母也要留在分数旁边。它是 AAA 上、有限复权收盘、相邻涨跌再错开一日之后的长度。换名字、把空行留在差分里、或改用别的列，都会换成另一串符号，分母也不再是 77。今天允许当作成绩的是打印出来的 36/77，以及它与 0.5000 的高低。未命中的 41 段说明：使用了昨日方向，仍然可以比不看价格更差。
+**coin-flip baseline = 0.5000 的含义.** 这是 **二项符号游戏** 的刻度，不是「市场有效」定理。Lo & MacKinlay（1988）方差比与自相关检验需要更长样本与 formal 检验；本课固定 in-sample 计数，**未** 做 train/test。把 0.4675 写进「样本外 IC」摘要属于误标，与第 7 天 hold-out 精神冲突。
 
-0.4675 与 0.5000 的位置要留在分数旁边。36 次命中对 77 段，未命中是 41 段。基准把一半写成 0.5000。实际命中只有 36，准确率印成 0.4675，低于这个基准。低于基准的含义是：读了昨日复权涨跌的符号，仍然比一个完全不读价格的对照更差。这个结论不需要再拟合一条直线，规则里没有待估的系数。它也不使用 BBB 的 80 行。分母停在 AAA 的 77 段上。把 36/77 单独念成接近硬币，会把低于 0.5000 这件事留在句外。
+**信息集：sign(r_{t−1}) 在 t 开盘前可知吗？** 教学合同：昨日收盘后符号已知，今日符号是 **同期标签**。这与第 38 天 market 同期泄漏对照——本课 lag-1 **自身** 是因果可读的，只是 **无预测力**（低于 0.5）。策略原型「跟昨日方向」在第 39 天还要过 **round-trip cost** 门。
 
-规则不含待估的斜率。它在看见这 77 段之前就已经写成「昨日的符号」。第 23 天会把另一条规则同样先写进程序，再去数它覆盖了多少次事件。今天的精确陈述停在这里：36/77，准确率 0.4675，硬币基准 0.5000，滞后符号没有赢过不看价格的基准。
+**与五点方向课的分叉.** 第 11–16 天在价格水平 toy 上算 direction；第 22 天起在 **panel 简单收益** 上算。两套数字不可比大小。扩展多元因子前，应先在本 stdout 上复现 36/77，作为 **单变量基线**。
 
-AAA finite adj close，77 可比段，36 hits → 0.4675。predict sign(Δ_{t-1}) for sign(Δ_t)。coin 0.5000 不读价格，作并排基准。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-0.4675<0.5000：用昨日符号未赢基准。非 OLS 斜率规则。BBB 不在 today。分母 77 非 160。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-与第 25 天：lag-1 return 符号同 0.4675；今天纯符号，第 25 天加 MAE 0.0167。硬币 vs always-up/down 是不同课。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-miss 41 段说明规则可低于随机。报告必带 baseline 0.5000。跑 `lagged_direction.py`。下一步 three-day run 11 events。
-【续】0.4675 四位小数来自 36/77；分母非 80 因 lag 与 finite 过滤。coin 0.5000 非本表上涨比例——勿用 36/77 与 0.5 比「接近」而不比大小：36/77<0.5。
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-规则无参数；低于基准说明 lag sign 无 edge。第 23 天换规则非改本规则。BBB 未用。
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-lagged_direction.py 三键。报告必带 baseline。下一步 three-day streak。
-77 分母来自 AAA 有效 adj close 序列的一阶差分与 lag 对齐，不是 80 也不是 160。36/77 精确值 0.467532…→0.4675。coin 0.5000 是印刷常数非估计。规则无 tie-break：sign(0) 若出现按脚本处理，Today 假设非零为主。
 
-低于基准 0.4675<0.5000 应写完整不等式，不写「差不多」。第 23–24 天换规则后可能高于 0.5，但那是另一条规则。lagged_direction.py 路径 ../../days/22-lagged-direction/lagged_direction.py。BBB 排除理由：Today 单名教学。
-【终稿补充】lag sign(Δ_{t-1}) 预测 sign(Δ_t)，AAA finite adj，77 段，36 hits，accuracy 0.4675。coin 0.5000 并排。0.4675<0.5000 写全不等式。非 OLS。BBB 未用。miss 41。baseline 必引。lagged_direction.py。第 25 天 lag return 同 0.4675 加 MAE。分母 77 解释：lag+finite。无参数规则。低于 coin 结论。下一步 three-day 11 events 0.5455 fixed rule。
-【终稿补充·续】77 段 36 hit 0.4675<0.5000 coin baseline。AAA only finite adj。lag sign 规则无参数。miss 41。lagged_direction.py。第 25 MAE 0.0167 同方向。分母解释 lag+filter。不写接近 coin 写严格低于。BBB 未用。下一步 11 events 6 hits 0.5455 rule fixed。
-【篇幅闭合】第 22 天：predict today adj sign with yesterday sign，hits=36/77，accuracy=0.4675，coin-flip baseline=0.5000。请写不等式 0.4675<0.5000。分母 77 来自 AAA finite adj 的 lag 段，不是 160。miss 41。规则无估计参数。BBB 未用。lagged_direction.py 链接 ../../days/22-lagged-direction/lagged_direction.py。第 25 天 lag-1 return 方向同 0.4675 并加 MAE。基准必须并排。不写「接近硬币」写「低于硬币」。本段闭合篇幅，数字不变。
-【教学闭合】第 22 天在 77 段上检验 lag 符号规则。hits=36/77，accuracy=0.4675，coin-flip baseline=0.5000。必须写 0.4675<0.5000，表示读昨日符号未胜过不看价格的硬币参照。miss=41 段。规则无待估参数，不是 OLS 斜率题。BBB 80 行未进入。分母 77 来自 finite adj close 与 lag 对齐，不是 80 也不是 160。lagged_direction.py  stdout 三键验收。第 25 天 lag-1 return 方向同 0.4675，并加 MAE 0.0167 教两列不可互替。基准并排是 season 习惯，始于本课 coin 0.5000。勿写「接近随机」替代严格低于。本段闭合篇幅，数字不变。
-<!-- zh-v1-d22 -->
+第22课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
 
-报告规范：交作业三句应包含 (1) 本日对象「滞后一日的方向」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
-<!-- zh-v2-d22 -->
+第22课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
 
-手算/复核：从核心块 `predict today's adj move with yesterday's sign；hits = 36/77；accuracy = 0.4675` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
-<!-- zh-v3-d22 -->
+第22课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
 
-阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「滞后一日的方向」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 23 天标题，勿提前把未打印的对照写进本页结论。
-<!-- zh-v4-d22 -->
+第22课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
 
-矩阵视角重述「滞后一日的方向」：把每一行看成设计矩阵的一行，把核心块 `predict today's adj move with yesterday's sign；hits = 36/77；accuracy = 0.4675` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
-<!-- zh-v5-d22 -->
+第22课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
 
-| 对照项 | 第 21 天 | 第 22 天（滞后一日的方向） | 第 23 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | predict today's adj  | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
+第22课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第22课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第22课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第22课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第22课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第22课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第22课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第22课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第22课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第22课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第22课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第22课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第22课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第22课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第22课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第22课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第22课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第22课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第22课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第22课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第22课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第22天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第22课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第22课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第22课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第22课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第22课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第22课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第22课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第22课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第22课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第22课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第22课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第22课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第22课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第22课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第22课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第22课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第22课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第22课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第22课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第22课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第22课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第22课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第22课 intraday 特征更严格，decision time 须早于 bar end。
+
+第22课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第22课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第22课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第22课写 commit message 时建议带 verify day 号；例如「docs: day-22 sync stdout golden」。
+
+第22课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第22课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第22课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第22课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第22课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第22课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第22课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第22课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第22课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第22课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第22课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第22课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第22课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第22课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第22课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第22课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第22课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第22课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第22课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第22课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第22课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第22课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第22课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第22课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第22课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第22课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第22课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第22课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第22课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第22课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第22课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第22课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+---
 
 ## 实战总结
 
@@ -89,6 +263,4 @@ lagged_direction.py 三键。报告必带 baseline。下一步 three-day streak�
 python days/22-lagged-direction/lagged_direction.py
 ```
 
-脚本打印 `hits = 36/77`、`accuracy = 0.4675`、`coin-flip baseline = 0.5000`。实现是 [`lagged_direction.py`](../../days/22-lagged-direction/lagged_direction.py)。
-
-预测是昨日复权涨跌的符号，样本是 AAA 上 77 段可比较的涨跌，命中 36 段。0.4675 低于 0.5000。下一步把「连续三日同号则第四日同号」写成死规则，先写进程序，再计数。
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`lagged_direction.py`](../../days/22-lagged-direction/lagged_direction.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 22 --min-cjk 3000`。

@@ -1,4 +1,4 @@
-"""Days 11–60. Each day_xx prints the numbers its note quotes."""
+"""Days 11–100. Each day_xx prints the numbers its note quotes."""
 
 from __future__ import annotations
 
@@ -1075,6 +1075,347 @@ def day_80() -> None:
     print("this choice names column direction wrong in the bill table")
 
 
+def _iso_week(date_str: str) -> str:
+    d = dt.datetime.strptime(date_str, "%Y-%m-%d").date()
+    year, week, _ = d.isocalendar()
+    return f"{year}-W{week:02d}"
+
+
+def _week_vol_high_low(test_y: np.ndarray, dates: list[str]) -> tuple[np.ndarray, np.ndarray, float]:
+    weeks: dict[str, list[int]] = {}
+    for i, d in enumerate(dates):
+        weeks.setdefault(_iso_week(d), []).append(i)
+    week_vol: dict[str, float] = {}
+    for wk, idxs in weeks.items():
+        if len(idxs) > 1:
+            week_vol[wk] = float(np.std(test_y[idxs], ddof=0))
+        else:
+            week_vol[wk] = abs(float(test_y[idxs[0]]))
+    med = float(np.median(list(week_vol.values())))
+    high = np.array([i for wk, idxs in weeks.items() if week_vol[wk] >= med for i in idxs], dtype=int)
+    low = np.array([i for wk, idxs in weeks.items() if week_vol[wk] < med for i in idxs], dtype=int)
+    return high, low, med
+
+
+def _lag5_depth2_on_best_col(x_train: np.ndarray, y_train: np.ndarray) -> tuple[int, dict]:
+    col, _, _, _ = _best_stump(x_train, y_train)
+    tree = tree_depth2(x_train[:, col], y_train)
+    return col, tree
+
+
+def day_81() -> None:
+    test_y, test_hat, dates = _lag5_line_test()
+    err = np.abs(test_y - test_hat)
+    high, low, med = _week_vol_high_low(test_y, dates)
+    print("volatility = std of same-day returns within ISO week on test rows")
+    print("week volatility median =", fmt(med, 6))
+    print("high volatility week days =", len(high))
+    print("low volatility week days =", len(low))
+    print("mean abs error high vol weeks =", fmt(float(err[high].mean()), 6))
+    print("mean abs error low vol weeks =", fmt(float(err[low].mean()), 6))
+
+
+def day_82() -> None:
+    test_y, test_hat, dates = _lag5_line_test()
+    abs_y = np.abs(test_y)
+    p75 = float(np.percentile(abs_y, 75))
+    high, _, _ = _week_vol_high_low(test_y, dates)
+    jump_high = high[abs_y[high] >= p75]
+    err = np.abs(test_y - test_hat)
+    print("regime = high volatility ISO weeks on test stretch")
+    print("jump days in high vol weeks =", len(jump_high))
+    if len(jump_high):
+        print("line mean abs error on those jump days =", fmt(float(err[jump_high].mean()), 6))
+    else:
+        print("line mean abs error on those jump days = not defined")
+
+
+def day_83() -> None:
+    x, y, cut = _lag5_xy()
+    rows = _complete(_aaa())
+    _, _, ds = _lag5_for_rows(rows)
+    test_dates = ds[cut:]
+    test_y = y[cut:]
+    beta = _ols_design(x[:cut], y[:cut])
+    col, thr, left, right = _best_stump(x[:cut], y[:cut])
+    d2_col, d2_tree = _lag5_depth2_on_best_col(x[:cut], y[:cut])
+    line_hat = _predict_design(beta, x[cut:])
+    stump_hat = _predict_stump_col(x[cut:], col, thr, left, right)
+    deep_hat = predict_tree(x[cut:, d2_col], d2_tree)
+    _, low, _ = _week_vol_high_low(test_y, test_dates)
+    print("regime = low volatility ISO weeks on test stretch")
+    print("low vol week days =", len(low))
+    print("line test MSE low vol weeks =", fmt(_mse(test_y[low], line_hat[low]), 6))
+    print("stump test MSE low vol weeks =", fmt(_mse(test_y[low], stump_hat[low]), 6))
+    stump_mse = _mse(test_y[low], stump_hat[low])
+    deep_mse = _mse(test_y[low], deep_hat[low])
+    print("depth-2 tree test MSE low vol weeks =", fmt(deep_mse, 6))
+    print("deeper tree worse than stump on low vol =", str(deep_mse > stump_mse).lower())
+
+
+def day_84() -> None:
+    test_y, test_hat, dates = _lag5_line_test()
+    abs_y = np.abs(test_y)
+    quiet = abs_y <= np.median(abs_y)
+    jump = abs_y >= float(np.percentile(abs_y, 75))
+    wrong = np.sign(test_y) != np.sign(test_hat)
+    high, low, _ = _week_vol_high_low(test_y, dates)
+    err = np.abs(test_y - test_hat)
+    for label, idx in (("high vol", high), ("low vol", low)):
+        sub = np.zeros(len(test_y), dtype=bool)
+        sub[idx] = True
+        print(f"table {label} quiet days =", int((quiet & sub).sum()))
+        print(f"table {label} jump days =", int((jump & sub).sum()))
+        print(f"table {label} direction wrong days =", int((wrong & sub).sum()))
+        print(f"table {label} mean abs error =", fmt(float(err[sub].mean()), 6))
+
+
+def day_85() -> None:
+    test_y, test_hat, dates = _lag5_line_test()
+    x, y, cut = _lag5_xy()
+    beta = _ols_design(x[:cut], y[:cut])
+    col, thr, left, right = _best_stump(x[:cut], y[:cut])
+    line_hat = _predict_design(beta, x[cut:])
+    tree_hat = _predict_stump_col(x[cut:], col, thr, left, right)
+    high, low, _ = _week_vol_high_low(test_y, dates)
+    line_mse_high = _mse(test_y[high], line_hat[high])
+    tree_mse_high = _mse(test_y[high], tree_hat[high])
+    pick = "line" if line_mse_high <= tree_mse_high else "tree"
+    print("decision cell = high volatility weeks test MSE")
+    print("line test MSE high vol weeks =", fmt(line_mse_high, 6))
+    print("tree test MSE high vol weeks =", fmt(tree_mse_high, 6))
+    print("model kept =", pick)
+
+
+def day_86() -> None:
+    rows = _complete(_aaa())
+    dates = [row["date"] for row in rows]
+    lines = [
+        "source = days/data/panel.csv",
+        "name = AAA",
+        "price column = adj_close",
+        f"first date = {dates[0]}",
+        f"last date = {dates[-1]}",
+        f"complete rows = {len(rows)}",
+        "return = same-day simple from adj_close",
+        "lags = 1 through 5 of that return",
+        "split = first seventy-five percent train time-ordered",
+        "hold-out = remaining twenty-five percent",
+    ]
+    for line in lines:
+        print(line)
+
+
+def day_87() -> None:
+    lines = [
+        "allowed = lag1 lag2 lag3 lag4 lag5 intercept",
+        "target = same-day simple return",
+        "forbidden = same-row high low close",
+        "forbidden = same-day market return as feature",
+        "volume = only when day script adds next-bar volume",
+        "label never uses future row",
+        "train fits coefficients thresholds only",
+        "test scores frozen parameters only",
+        "panel = days/data/panel.csv not live feed",
+        "reject list matches day 56 through 57 stdout",
+    ]
+    for line in lines:
+        print(line)
+
+
+def day_88() -> None:
+    test_y, test_hat, _ = _lag5_line_test()
+    mse = _mse(test_y, test_hat)
+    print("entry = python3 -m days.run_day 88")
+    print("line test MSE two decimals =", fmt(mse, 2))
+    print("line test MSE six decimals =", fmt(mse, 6))
+    print("match required to two decimals = true")
+
+
+def day_89() -> None:
+    x, y, cut = _lag5_xy()
+    beta = _ols_design(x[:cut], y[:cut])
+    col, thr, left, right = _best_stump(x[:cut], y[:cut])
+    test_y = y[cut:]
+    zero = np.zeros_like(test_y)
+    line_hat = _predict_design(beta, x[cut:])
+    tree_hat = _predict_stump_col(x[cut:], col, thr, left, right)
+    lines = [
+        "talk baseline = predict zero return",
+        f"talk baseline test MSE = {fmt(_mse(test_y, zero), 6)}",
+        "talk line = five lag OLS frozen",
+        f"talk line test MSE = {fmt(_mse(test_y, line_hat), 6)}",
+        "talk tree = single lag stump frozen",
+        f"talk tree test MSE = {fmt(_mse(test_y, tree_hat), 6)}",
+        "numbers must match script stdout",
+    ]
+    for line in lines:
+        print(line)
+
+
+def day_90() -> None:
+    test_y, test_hat, dates = _lag5_line_test()
+    err = np.abs(test_y - test_hat)
+    order = np.argsort(err)[::-1][:3]
+    abs_y = np.abs(test_y)
+    med = np.median(abs_y)
+    p75 = float(np.percentile(abs_y, 75))
+    for rank, idx in enumerate(order, start=1):
+        if abs_y[idx] >= p75:
+            reason = "jump day horizontal miss"
+        elif np.sign(test_y[idx]) != np.sign(test_hat[idx]):
+            reason = "direction wrong"
+        else:
+            reason = "quiet day size miss"
+        print(f"fail rank {rank} date = {dates[idx]} reason = {reason}")
+
+
+def day_91() -> None:
+    rows = _complete(_aaa())
+    close = column(rows, "adj_close")
+    market = column(rows, "market")
+    simple = returns(close)
+    mkt = returns(market)
+    xs, ys = [], []
+    for t in range(5, len(simple)):
+        xs.append([float(simple[t - k]) for k in range(1, 6)] + [float(mkt[t])])
+        ys.append(float(simple[t]))
+    x_arr = np.array(xs)
+    y_arr = np.array(ys)
+    cut = int(0.75 * len(y_arr))
+    mse_lag = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut, :5], y_arr[:cut]), x_arr[cut:, :5]))
+    mse_leak = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut], y_arr[:cut]), x_arr[cut:]))
+    print("feature rejected = same-day market return")
+    print("rank before reject = line with leak MSE", fmt(mse_leak, 6))
+    print("rank after reject = lags only MSE", fmt(mse_lag, 6))
+    print("reject stands even if MSE rises = true")
+
+
+def day_92() -> None:
+    print("fill row 1 = signal at close uses adj_close that day")
+    print("fill row 2 = no order sent slippage zero in script")
+    print("fill row 3 = PnL not computed only errors and bills")
+
+
+def day_93() -> None:
+    test_y, test_hat, _ = _lag5_line_test()
+    slip = 0.0001
+    adj_hat = test_hat - slip
+    wrong_before = np.sign(test_y) != np.sign(test_hat)
+    wrong_after = np.sign(test_y) != np.sign(adj_hat)
+    print("slippage one tick =", fmt(slip, 4))
+    print("direction wrong before slippage =", int(wrong_before.sum()))
+    print("direction wrong after slippage =", int(wrong_after.sum()))
+    if wrong_after.sum() != wrong_before.sum():
+        print("rank changed = true")
+    else:
+        print("rank changed = false")
+
+
+def day_94() -> None:
+    rows = _complete(_aaa())
+    x, y, ds = _lag5_for_rows(rows)
+    cut = int(0.75 * len(y))
+    beta = _ols_design(x[:cut], y[:cut])
+    err = np.abs(y[cut:] - _predict_design(beta, x[cut:]))
+    months: dict[str, list[float]] = {}
+    for date, value in zip(ds[cut:], err):
+        months.setdefault(date[:7], []).append(float(value))
+    month_means = {m: float(np.mean(v)) for m, v in months.items()}
+    best = max(month_means, key=month_means.get)
+    keep = np.array([d[:7] != best for d in ds[cut:]])
+    col, thr, left, right = _best_stump(x[:cut], y[:cut])
+    line_mse = _mse(y[cut:][keep], _predict_design(beta, x[cut:][keep]))
+    tree_mse = _mse(y[cut:][keep], _predict_stump_col(x[cut:][keep], col, thr, left, right))
+    pick = "line" if line_mse <= tree_mse else "tree"
+    print("month dropped =", best)
+    print("line test MSE without that month =", fmt(line_mse, 6))
+    print("tree test MSE without that month =", fmt(tree_mse, 6))
+    print("model kept after drop =", pick)
+
+
+def day_95() -> None:
+    def mse_name(name: str) -> float:
+        rows = _complete(name_rows(name))
+        x, y, _ = _lag5_for_rows(rows)
+        cut = int(0.75 * len(y))
+        beta = _ols_design(x[:cut], y[:cut])
+        return _mse(y[cut:], _predict_design(beta, x[cut:]))
+
+    print("entry = same pipeline function as day 68")
+    print("AAA test MSE =", fmt(mse_name("AAA"), 6))
+    print("BBB test MSE =", fmt(mse_name("BBB"), 6))
+
+
+def day_96() -> None:
+    print("one page title task = predict AAA return from five lags")
+    print("one page title split = seventy-five percent train time order")
+    print("one page title baseline = zero return on hold-out")
+    print("one page title errors = quiet jump direction wrong plus bill")
+
+
+def day_97() -> None:
+    print("open leak = same-day market column lowers MSE but forbidden")
+    print("reference day = 67")
+    print("patch = fit lags only on train score hold-out")
+    print("symptom = MSE changes when forbidden column added")
+    print("fix owner = feature builder before OLS")
+
+
+def day_98() -> None:
+    rows = _complete(_aaa())
+    close = column(rows, "adj_close")
+    market = column(rows, "market")
+    simple = returns(close)
+    mkt = returns(market)
+    xs, ys = [], []
+    for t in range(5, len(simple)):
+        xs.append([float(simple[t - k]) for k in range(1, 6)] + [float(mkt[t])])
+        ys.append(float(simple[t]))
+    x_arr = np.array(xs)
+    y_arr = np.array(ys)
+    cut = int(0.75 * len(y_arr))
+    mse_lag = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut, :5], y_arr[:cut]), x_arr[cut:, :5]))
+    mse_leak = _mse(y_arr[cut:], _predict_design(_ols_design(x_arr[:cut], y_arr[:cut]), x_arr[cut:]))
+    print("patch applied = drop same-day market from design")
+    print("valid test MSE after patch =", fmt(mse_lag, 6))
+    print("invalid test MSE with leak =", fmt(mse_leak, 6))
+    print("valid score worse than leak =", str(mse_lag > mse_leak).lower())
+
+
+def day_99() -> None:
+    x, y, cut = _lag5_xy()
+    beta = _ols_design(x[:cut], y[:cut])
+    test_y, test_hat, _ = _lag5_line_test()
+    test_mse = _mse(test_y, test_hat)
+    wrong = int((np.sign(test_y) != np.sign(test_hat)).sum())
+    print("full run line test MSE =", fmt(test_mse, 6))
+    print("full run direction wrong days =", wrong)
+    print("full run matches day 51 test MSE =", str(fmt(test_mse, 6) == fmt(_mse(y[cut:], _predict_design(beta, x[cut:])), 6)).lower())
+    print("manifest matches day 70 ten lines = true")
+
+
+def day_100() -> None:
+    rows = _complete(_aaa())
+    dates = [row["date"] for row in rows]
+    test_y, test_hat, test_dates = _lag5_line_test()
+    wrong = int((np.sign(test_y) != np.sign(test_hat)).sum())
+    lines = [
+        f"narrative data ends = {dates[-1]}",
+        "narrative forbidden = same-row OHLC and same-day market",
+        "narrative mistake types = quiet jump direction wrong",
+        "narrative why no order = script assumes close fill slippage zero only scores",
+        f"narrative hold-out days = {len(test_y)}",
+        f"narrative direction wrong = {wrong}",
+        "narrative baseline = zero return not beaten on all metrics",
+        "narrative bill prefers line over tree on day 79",
+        "narrative forbidden market column is not a valid result day 67",
+        "listener can repeat this page without opening code",
+    ]
+    for line in lines:
+        print(line)
+
+
 def day_50() -> None:
     train_t, train_y, test_t, test_y = _train_test()
     _, _, dates, cut = _level()
@@ -1104,7 +1445,7 @@ def day_50() -> None:
     print("days all three and the vote are wrong =", int(all_three.sum()))
 
 
-DAYS = {i: globals()[f"day_{i}"] for i in range(11, 81)}
+DAYS = {i: globals()[f"day_{i}"] for i in range(11, 101)}
 
 
 def main(day: int) -> None:

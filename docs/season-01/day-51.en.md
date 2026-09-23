@@ -8,90 +8,50 @@ What you learn today: On AAA, five lagged simple returns predict same-day return
 
 ## Plain-language account
 
-Day 50 still voted on price-level directions; from today the feature chain is five lagged simple returns predicting same-day return.
+Day 50 still scored price-level directions; from here the label is same-day simple return and the features are five lagged simple returns. That is a finite-order AR structure on \(r_t\): estimate on the first seventy-five percent of time-ordered rows, score on the last nineteen hold-out rows only.
 
-Each row is a card: five lags on the left, same-day return on the right. Train is the first seventy-five percent in time order; the line minimizes train squared error.
+Campbell, Lo, and MacKinlay (1997, *The Econometrics of Financial Markets*) frame short-horizon predictability as a statement about the information set and the hold-out contract—not as proof of economic alpha on seventy-three usable days. We report \(\hat\beta\) and test MSE under a fixed split; we do not refit on test.
 
-Weights are not 0.2 each. lag4=−0.1726 has largest magnitude; lag3=0.1094 is largest positive; lag1=−0.1359 is also material.
+Weights are not 0.2 each. lag4=−0.1726 has the largest magnitude; lag3=0.1094 is the largest positive; lag1=−0.1359 is also material. Alternating signs mean the forecast is a blend, not a single-lag story. The intercept 0.0023 adjusts the conditional mean; it is not a sixth lag.
 
-Test MSE 0.000081 uses frozen train coefficients on nineteen hold-out rows. The min–max gap near 0.28 rejects equal weights; alternating signs mean a blend, not lag1 only.
-
-When checking by hand, pair lag4 and lag3 in one table: one pulls predictions down, one up. Re-fit on test and the score moves—that is a split mistake, not economics.
-
-Data come from name AAA in days/data/panel.csv: simple returns from adjusted close ratios minus one. Usable rows start after the fifth return, so five fewer rows than the raw panel. The default split is the first seventy-five percent of those rows in time order for train and the rest for test (often fifty-four train, nineteen test). Same-bar high, low, and close must not explain same-day return; same-day market return is not a valid feature or label unless the day script says otherwise.
+Test MSE 0.000081 is \(\frac{1}{19}\sum (r_t-\hat y_t)^2\) with frozen train coefficients. Same-bar OHLC and same-day market do not belong in \(X_t\) (days 56–57, 67 make that explicit later). This score is not price SSE from days 45–46 and not day 58’s calendar-split 0.000782.
 
 ## Core
 
 ```text
+lags = 1 through 5
 weight lag 1 = -0.1359
 weight lag 2 = 0.0829
 weight lag 3 = 0.1094
 weight lag 4 = -0.1726
 weight lag 5 = -0.0803
 intercept = 0.0023
-weight min = -0.1726  weight max = 0.1094
+weight min = -0.1726 weight max = 0.1094
 test MSE = 0.000081
 ```
 
+Train stacks \(X\in\mathbb{R}^{54\times 6}\) (five lags plus intercept); `lstsq` on train only. Test rows enter the score, not \(X'X\). Shuffling train row order leaves \(\hat\beta\) unchanged (day 9); shuffling time before building lags breaks the design.
 
-Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows are the only score set; coefficients and thresholds are fit on train only.
+| Quantity | Role |
+|---|---|
+| \(\hat w_1,\ldots,\hat w_5,\hat b\) | Frozen after train for most of the lag-5 arc |
+| test MSE 0.000081 | Hold-out mean squared error on returns |
+| Price-tree SSE | Different label and units—do not paste here |
 
-| Idea | Changes this day? | Note |
-|---|---|---|
-| Five-lag line coeffs | Usually frozen | From day 51 train |
-| test MSE 0.000081 | Reprinted on MSE days | Diagnostics use MAE/direction/bill |
-| forbidden OHLC/market | Contract holds | See days 56–57, 67 |
-| train/test rows | Default 54/19 | Day 58 calendar cut excepted |
+## Further
 
-## Core block, line by line
+Lo and MacKinlay (1988, *Review of Financial Studies*) discuss return predictability on broader panels; treat 0.000081 as a teaching benchmark, not a significance claim. Newey and West (1987, *Econometrica*) matter once you attach t-stats to lag regressions—this season reports MSE only.
 
-Day 51 prints 8 contract lines:
+Harvey, Liu, and Zhu (2016) warn that each new feature search raises the bar for out-of-sample claims; log the prespecified AR(5) before comparing trees or volume (days 52–54). Hamilton (1994, *Time Series Analysis*) links stable AR estimation to well-ordered lags—never shuffle dates when constructing \(r_{t-j}\).
 
-- `weight lag 1 = -0.1359`: match the terminal verbatim.
-- `weight lag 2 = 0.0829`: match the terminal verbatim.
-- `weight lag 3 = 0.1094`: match the terminal verbatim.
-- `weight lag 4 = -0.1726`: match the terminal verbatim.
-- `weight lag 5 = -0.0803`: match the terminal verbatim.
-- `intercept = 0.0023`: match the terminal verbatim.
-- `weight min = -0.1726  weight max = 0.1094`: match the terminal verbatim.
-- `test MSE = 0.000081`: match the terminal verbatim.
+Day 52 places a regression stump on the same table; memorize these weights, especially lag4 versus lag3, before reading tree splits.
 
-Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Day 58’s 0.000782 is split-specific; BBB 0.000105 stays beside AAA.
-
-## Further out
-
-In matrix form each row is [lag1,…,lag5,1] with same-day return as y. β̂ is fit on train; test rows only score predictions.
-
-Compatible with day-9 row-order invariance on a fixed design, but never shuffle time when building lags.
-
-Day 52 adds a stump on the same table; 0.000081 is the line ruler on the hold-out stretch, not a direction hit rate.
-
-Log forbidden rules, split, and test MSE together; stdout is authoritative for six-decimal literals.
-
-## How this day connects
-
-Day 50 still voted on price-level directions; today starts the return chain with five lagged simple returns and test MSE 0.000081 as the ruler. Day 52 adds a lag4 stump—memorize weights, especially lag4 versus lag3. Do not paste price SSE from days 45–46. Split roles: one person copies stdout, one explains signs, one verifies the seventy-five percent split counts.
-
-Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics. Unit tests should assert hold-out scores against printed literals. Screenshots should show English keys and six-decimal scores. Use python3; contract integers must not drift.
-
-## What the run showed
+## Lab summary
 
 ```bash
 python3 days/51-five-lag-weights/five_lag_weights.py
 ```
 
-The script should print stdout matching the core block. Implementation: [`five_lag_weights.py`](../../days/51-five-lag-weights/five_lag_weights.py).
+Or: `python3 -c \"from days.run_day import main; main(51)\"`.
 
-Hand in five lag weights and test MSE 0.000081. Next: one stump on the same lags.
-
-Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; lag-5 anchors stay untouched unless you re-run the whole contract.
-
-## Study checks
-
-1. First core line: `weight lag 1 = -0.1359` verbatim.
-2. Does the hook cover every contract line?
-3. Hold-out only—what breaks if you score train rows?
-4. Which lag-5 anchors appear today?
-5. How does day 51 connect to day 51?
-6. Why keep English FORBIDDEN/miss-mode lines verbatim?
-
+Implementation: [`five_lag_weights.py`](../../days/51-five-lag-weights/five_lag_weights.py). Diff stdout against the ```text``` block verbatim. Next: one stump on the same five lags.

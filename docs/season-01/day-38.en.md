@@ -14,13 +14,13 @@ AAA's adjusted return and the market return are both simple returns. The score k
 
 ## Core
 
-Accuracy is the fraction of matching signs. The lag uses the previous item of the market series itself. The label starts at the second item, and the two lengths match.
-
 ```text
 same-day market sign accuracy = 0.6795
 lagged-one-day market sign accuracy = 0.4026
 what disappeared was simultaneous
 ```
+
+Accuracy is the fraction of matching signs. The lag uses the previous item of the market series itself. The label starts at the second item, and the two lengths match.
 
 The information set of 0.6795 includes today's market return. The information set of 0.4026 stops at yesterday's market return. The difference of the two accuracies is 0.2769, and that piece disappears with today's market return. What remains, 0.4026, is the hit rate of the lagged rule on this table. It is below 0.5. A sign hit below one half is not a forecast that becomes usable by widening a threshold. Today's rule was written in advance as "the market sign lagged one day," and the print is 0.4026.
 
@@ -34,15 +34,11 @@ A market quantity known before the close and a market return completed only at t
 
 How much of 0.6795 comes from one session that has already finished can be read by subtraction. Removing the simultaneous alignment takes away 0.2769 and leaves 0.4026. The remainder is below one half. On this table, yesterday's market sign and today's AAA adjusted-return sign disagree on more rows than they agree. Disagreement is not a forecast to send as an order. The simultaneous 0.6795 describes the alignment after the day's market and the day's name have both been realized. Printing the two accuracies together keeps 0.2769 on the word "simultaneous."
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Same-day market sign accuracy 0.6795; lagged 0.4026; 0.2769 was simultaneous. 0.4026 below 0.5 is not a tradable forecast.
 
-
-<!-- uniq-exp-en2 -->
-
 Do not treat 0.6795 as out-of-sample alpha; lagged 0.4026 is the honest tradable-signal read for whole-day market return.
+
+**Simultaneity.** Same-day market 0.6795 vs lagged 0.4026—what disappeared was simultaneous alignment.
 
 ## What the run showed
 

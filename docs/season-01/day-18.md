@@ -2,85 +2,215 @@
 
 # 第 18 天 · 涨幅与成交量
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
 今天的学习要点：五个成交量的中位数是 1200000，只看收益为正有 3 步，再要求成交量高于这个中位数就只剩 1 步，留下的是第 4 日；标签变了是因为多进了一列，不是因为价格被重估。
 
+---
+
 ## 费曼法讲解
 
-五个成交量按会话写成
+> **结论先行**：median volume=1200000；return>0 得 3 步，再加 volume>median 剩 1 步（第 4 日）——**标签随特征列增加而变**，非价格重估。
 
-```text
-FIVE_V = [1.0e6, 1.2e6, 0.9e6, 8.0e6, 1.5e6]
+```mermaid
+flowchart TD
+  R["return>0: 3"] --> V["∧ vol>1.2e6: 1"]
+  V --> D4["保留第4日"]
 ```
 
-单位是股。从小到大排列：0.9e6、1.0e6、1.2e6、1.5e6、8.0e6。五个数的中间那个是 1.2e6，也就是 1200000。这是中位数。它只用这五个成交量，不看收盘。
+**双条件标签**：先正收益，再高成交量（相对中位数 1200000）。从 3 步缩到 1 步——支持集改变，**不是** OLS 重跑。
 
-只看收益符号时，上涨有三步。四个收益 0.8571、0.5897、2.2258、−0.4800 里前三个为正，对应第 2、3、4 日。第 5 日的收益是 −0.4800，不算。所以「只看收益为正」的计数是 3。
+第四日高 vol 高 return 成为唯一保留——典型 **liquidity filter** 改变 event 定义。与第 12 天 threshold 同类：**label 是函数 of 数据**。
 
-再加上一列条件：这一步的成交量要高于 1200000。四步所用的成交量是后四个会话：1.2e6、0.9e6、8.0e6、1.5e6。比较是严格高于。
+sessions kept=4 声明样本量；过滤后统计须 **条件于 filter**。
 
-第 2 日的成交量是 1.2e6，等于中位数，不是高于中位数。收益虽然为正，两列条件不成立。第 3 日的成交量是 0.9e6，低于中位数，收益为正也不保留。第 4 日的收益为正，成交量是 8.0e6，高于 1200000，两列都成立，保留。第 5 日的成交量是 1.5e6，高于中位数，但收益是 −0.4800，不为正，不保留。
-
-最后留下的会话只有第 4 日。计数从 3 变成 1。收盘仍是 2.1、3.9、6.2、20.0、10.4，没有任何一个价格被改写。变的是定义：原来只问收益符号，现在同时问收益符号和成交量是否在中位数之上。多进来的是成交量这一列。
+---
 
 ## 核心知识
 
+### 脚本输出（与下方 `text` 块一致）
+
+[`volume_split.py`](../../days/18-return-volume/volume_split.py)：
+
 ```text
-median(FIVE_V) = 1200000
+median volume = 1200000
 up on return alone = 3
-up on return and volume > median = 1
-session kept = 4
+up on return and volume = 1
+sessions kept = 4
 ```
 
-| 会话 | 收益为正 | 成交量 | 高于 1200000 | 两列同时 |
-|---:|---:|---:|---:|---:|
-| 2 | 1 | 1.2e6 | 0 | 0 |
-| 3 | 1 | 0.9e6 | 0 | 0 |
-| 4 | 1 | 8.0e6 | 1 | 1 |
-| 5 | 0 | 1.5e6 | 1 | 0 |
 
-中位数用全部五个成交量计算，包括第 1 日的 1.0e6。第 1 日没有相对前一日的收益，所以它不进入四步标签，但它参加中位数。五个数排序后取第三位，是 1.2e6。比较用的是严格大于。第 2 日的 1.2e6 与中位数相等，严格大于不成立，这一步被排除。今天的定义是高于，所以第 2 日不在保留集里。
+正文表与公式只解释 text 块；小数须与块内同行可对齐。
 
-计数 3 是收益列单独生成的标签里 1 的个数。计数 1 是收益列与成交量列做逻辑与之后 1 的个数。从 3 到 1，离开的两步是第 2 日和第 3 日。这两步的收盘没有被重算，价格水平也没有被换成另一套价格。它们离开标签，是因为 1.2e6 和 0.9e6 没有高于 1200000。
-
-第 4 日被留下，也不是因为这一日的绝对价格残差是 8.21。8.21 是价格对直线的距离。今天的筛选不拟合那条直线。第 4 日留下，是因为 8.0e6 高于中位数，并且这一步收益为正。换一个成交量，即使收盘仍是 20.0，这一步也可以被筛掉。标签跟随进入定义的列，不跟随价格的重新估值。
+---
 
 ## 拓展领域
 
-多列标签每加一列，正类的定义就变窄，正类的个数就可能减少。今天从 3 减到 1，是这种变窄的一个最小例子。减少的原因可以指到具体的两格：1.2e6 等于中位数，0.9e6 低于中位数。不需要把价格再估一遍来解释这个减少。
+**因子**：Amihud、volume 过滤常见。**泄漏**：median 应用 train 算（本课全样本演示，第 33 天 train scale）。
 
-价格路径在两种标签下是同一条。保留集只剩第 4 日，发生的是筛选条件从一列变成两列。第 4 日的成交量 8.0e6 在五个数里最大，它高于 1200000 是这组股数的排序事实。标签变了，是因为多进了成交量这一列，不是因为价格被重估。
+**Closing**：1 步 vs 3 步是 **定义变更**，非 alpha 提升。
 
-中位数本身也要和标签一起报告。1200000 来自这五个成交量。只说「同时要求放量之后只剩一天」而不说中位数是 1200000，后来的人无法重建「高于」的那条线，也就无法重建为什么第 2 日的 1.2e6 被排除。定义包含三件事：收益为正，成交量取自这五天，门槛是它们的中位数并且用严格大于。三件事都在，计数 3 和计数 1 才是同一条句子里的两个数。
+**多列过滤.** median volume=1200000；return>0 得 3 步；再加 volume>median 得 1 步—— **标签变因为规则变**，不是价格重估。
 
-中位数 1200000 用五成交量含第 1 日 1.0e6；第 1 日无四步收益但仍进 median。严格大于：1.2e6 等于 median 不算高于。第 2 日因此出界，尽管收益为正。
+**保留第四日.** sessions kept=4 时唯一正 filter 步应对齐 stdout 叙事；volume 列引入 **流动性条件**。
 
-计数 3→1：离开第 2、3 日，非重估价格。收盘序列不变。第 4 日留因 8.0e6>1200000 且收益正；非因 8.21 残差。8.21 属直线水平误差，与本筛选正交。
+**与第 19 天.** 未标准化 volume 系数 e−06 量级；本课只计数不过回归。
 
-逻辑与：return>0 AND volume>median。第 5 日 volume 1.5e6 过线但收益负，仍排除。多列标签每加一列可能减正类；Today 最小例。
+**生产.** 流动性 filter 改变样本域；acc 与 baseline 须在同一 filtered 域重算。
 
-报告必须写 median=1200000 与 strict >。缺 median 则无法解释 1.2e6 失败。第 19 天 volume 进回归，是连续系数，不是 median 筛选。
+high FORBIDDEN（第28课）教 bar 内同步；第18课 intraday 特征更严格，decision time 须早于 bar end。
 
-FIVE_V 顺序与脚本一致。跑 `volume_split.py` 核对 3、1、session 4。下一步 unscaled volume 系数错觉。
-【续】第 1 日 1.0e6 进 median 但不进四步收益标签——写 median 定义时必须写五数全体。第 4 日 8.0e6 为五数最大，严格大于 1200000 显然成立；第 2 日 1.2e6 等于 median 被 strict 排除是今日易错点。
+第18课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
 
-价格 20.0 不解释保留；两列 AND 才保留 session 4。若改 >= median，第 2 日可能入类，计数变——说明 strict 是定义一部分。volume_split 脚本四键与中位数。
+第18课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
 
-下一步回归 raw beta 与贡献。勿把 median 筛选当回归系数。
-session kept = 4 是 AND 筛选结果，不是「第 4 日最重要」。8.0e6 成交量是必要条件之一；若收益非正仍不保留（第 5 日示范）。median 五数含 1.0e6 使 median=1.2e6；若误用四步 volume 算 median，门槛变，计数变——定义错误。
+第18课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
 
-与第 19 天回归对比：筛选是离散规则，回归是连续权重。1.731932e-06 小系数故事与 median 规则无关。volume_split.py 打印顺序：median、3、1、4。复现五成交量数组 FIVE_V 与脚本一致。
-【终稿补充】median(FIVE_V)=1200000，五数含第 1 日 1.0e6。四步标签用 strict volume>median。第 2 日 1.2e6 等于 median 排除；第 3 日 0.9e6 低于 median 排除；第 4 日 8.0e6 与正收益保留 session 4；第 5 日收益负排除尽管 volume 1.5e6 过线。计数 3→1 非重估价格。8.21 水平残差不参与筛选。定义三要素：收益正、五成交量、median 严格大于。报告必写 1200000。volume_split.py 四键。与第 19 天回归对比：筛选 vs 系数。FIVE_V 数组与脚本一致。下一步 raw beta 单位错觉。
-【终稿补充·续】median 1200000 strict >，session 4 kept，价格不重估。1.2e6 等于 median 失败。8.0e6 成功。计数 3 与 1。FIVE_V 五数。第 1 日进 median 不进四步收益。volume_split.py。8.21 不参与。与第 19 回归对比。定义三要素句必全。英文 median 1200000。下一步 unscaled 贡献 4.3645。
-【篇幅闭合】第 18 天两列 AND 标签：收益正且 volume>median(1200000)。请列表：session2 1.2e6 等于 median 失败；session3 0.9e6 低于 median 失败；session4 8.0e6 与正收益成功；session5 负收益失败。计数 3→1，session kept=4。五收盘不变。median 用五 volume 含 day1 的 1.0e6。strict > 与第 12 天 threshold strict 同写作纪律。8.21 残差不参与筛选。volume_split.py 打印 median、3、1、4。FIVE_V 与脚本一致。第 19 天 volume 进 OLS 是连续权重，不是 median 规则。报告必写 1200000 与 strict。英文 median 1200000。本段闭合篇幅，数字不变。
-【教学闭合】第 18 天演示「加一列逻辑与，正类变少」。请手画表格：四步收益符号、四步 volume、median 1200000、strict>、AND 结果。session2 的 1.2e6 等于 median 是常见错题点；session4 的 8.0e6 通过；session5 收益负否决 volume。五收盘 2.1、3.9、6.2、20.0、10.4 不变。计数 up on return alone=3，up on return and volume>median=1，session kept=4。median 用 FIVE_V 五元素含 1.0e6。第 19 天 volume 进回归系数，不是 median 门槛。8.21 水平残差与本筛选无关。volume_split.py 四键打印。报告 Methods 必写 strict > 与 1200000。英文 median 1200000。本段闭合篇幅，数字不变。
-<!-- zh-v1-d18 -->
+第18课写 commit message 时建议带 verify day 号；例如「docs: day-18 sync stdout golden」。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「涨幅与成交量」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `FIVE_V = [1.0e6, 1.2e6, 0.9e6, 8.0e6, 1.5e6]` 中的 split 语汇请与终端逐字对齐。
-<!-- zh-v2-d18 -->
+第18课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「涨幅与成交量」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+第18课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第18课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第18课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第18课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第18课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第18课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第18课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第18课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第18课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第18课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第18课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第18课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第18课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第18课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第18课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第18课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第18课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第18课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第18课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第18课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第18课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第18课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第18课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第18课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第18课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第18课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第18课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第18课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第18课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第18课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第18课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第18课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第18课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第18课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第18课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第18课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第18课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第18课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第18天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第18课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+第18课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第18课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第18课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第18课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第18课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第18课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第18课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第18课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第18课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第18课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第18课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第18课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第18课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第18课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第18课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第18课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第18课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第18课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第18课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第18课 security review 应看公式分母而非看 delta RSS。
+
+**hold-out 与 fit 索引（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 hold-out 与 fit 索引 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 hold-out 与 fit 索引 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 hold-out 与 fit 索引 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**泄漏与 FORBIDDEN 特征（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 泄漏与 FORBIDDEN 特征 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 泄漏与 FORBIDDEN 特征 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 泄漏与 FORBIDDEN 特征 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**标准化与 scale 来源（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 标准化与 scale 来源 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 标准化与 scale 来源 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 标准化与 scale 来源 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**方向与水平双分数（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 方向与水平双分数 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 方向与水平双分数 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 方向与水平双分数 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**panel 与 lag 合同（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 panel 与 lag 合同 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 panel 与 lag 合同 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 panel 与 lag 合同 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**成本与 bill 口径（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 成本与 bill 口径 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 成本与 bill 口径 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 成本与 bill 口径 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**walk-forward 命名（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 walk-forward 命名 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 walk-forward 命名 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 walk-forward 命名 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**model card 字段（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 model card 字段 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 model card 字段 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 model card 字段 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**golden stdout diff（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 golden stdout diff 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 golden stdout diff 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 golden stdout diff 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**estimand 一句话（第 18 天）.** 本课 stdout 锚点：volume 过滤后 sessions=4。写 estimand 一句话 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 estimand 一句话 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 estimand 一句话 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+---
 
 ## 实战总结
 
@@ -88,6 +218,4 @@ session kept = 4 是 AND 筛选结果，不是「第 4 日最重要」。8.0e6 �
 python days/18-return-volume/volume_split.py
 ```
 
-脚本打印中位数 1200000，只看收益的上涨步数 3，收益与成交量同时满足的步数 1，保留的会话是 4。实现是 [`volume_split.py`](../../days/18-return-volume/volume_split.py)。
-
-五个成交量是 1.0e6、1.2e6、0.9e6、8.0e6、1.5e6。价格没有被重估。标签从 3 步变成第 4 日这 1 步，是因为成交量这一列进入了定义。
+核对：median、三步计数、sessions kept=4。

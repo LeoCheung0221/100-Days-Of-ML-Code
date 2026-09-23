@@ -18,21 +18,15 @@ The scale of λ is read against Σt². The sum of squares of 79 session indices 
 
 ## Core
 
-The estimation sample is the 79 adjusted closes from day 41, blank row already dropped. There is no train cut. The penalty is written into the Gram matrix:
-
-```text
-(XᵀX)₁₁  ←  Σt² + 20000
-(XᵀX)₂₂  ←  n          (intercept, unpenalized)
-```
-
-The linear system is then solved. The intercept is a free parameter. Its equation contains no λ.
-
 ```text
 lambda = 20000, penalty on the slope only
-ols slope   = 0.0299
+ols slope = 0.0299
 ridge slope = 0.0201
-tilt reduction = 0.0299 − 0.0201 = 0.0098
 ```
+
+The estimation sample is the 79 adjusted closes from day 41, blank row already dropped. There is no train cut. The penalty is written into the Gram matrix:
+
+The linear system is then solved. The intercept is a free parameter. Its equation contains no λ.
 
 0.0299 is day 41's slope 0.029901 printed to four decimals. Same ordinary least-squares fit, coarser print. The ridge value 0.0201 is a new estimate. The reduction 0.0098 is the difference of those two printed slopes. Report it with both operands.
 
@@ -50,10 +44,9 @@ Shrinkage is not deletion. Day 41 removed 2024-02-28 and the slope stayed 0.0299
 
 The penalty changes the slope, and the intercept refits around that new slope, but the script does not print the intercept. Today's reported numbers are 0.0299 and 0.0201, not a ridge equation with an intercept attached. The 0.0098 is a gap in the slope. The levels separate after the lines leave their crossing. That reading is day 49: at the jump index both the line and ridge are 11.0315, and ten sessions later they are 11.3305 and 11.2326. Today the penalty stays on the slope entry, and λ stays at 20000.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 lambda 20000 penalty on slope only; OLS 0.0299, ridge 0.0201, tilt reduction 0.0098.
+
+**Ridge scale.** λ=20000 on the slope cell only; 0.0299 vs 0.0201 on the same 79 closes.
 
 ## What the run showed
 

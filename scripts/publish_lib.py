@@ -242,25 +242,6 @@ def patch_root_readme(
     head: str, day: int, local_readme: str, *, bump_runnable: bool, english: bool = False
 ) -> str:
     out = head
-    if bump_runnable:
-        out = re.sub(
-            r"第 1 日至第 \d+ 日已可运行",
-            f"第 1 日至第 {day} 日已可运行",
-            out,
-            count=1,
-        )
-        out = re.sub(
-            r"Days 1 through \d+ run",
-            f"Days 1 through {day} run",
-            out,
-            count=1,
-        )
-        out = re.sub(
-            r"Days 1–\d+ are runnable",
-            f"Days 1–{day} are runnable",
-            out,
-            count=1,
-        )
     link = extract_root_readme_link_line(local_readme, day, english=english)
     if not link:
         return out

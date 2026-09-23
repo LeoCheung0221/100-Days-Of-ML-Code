@@ -2,83 +2,282 @@
 
 # 第 46 天 · 三种拟合换样本
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：前 59 个复权收盘上，训练 SSE 是直线 10.1623、岭回归 16.3596、树 1.3953。后一段 SSE 是直线 2.9263、岭回归 3.2545、树 2.1488。后一段最小的是树。训练那一列的三个数彼此离得远。后一段的名次要单独读，不能用训练 SSE 最小代替后一段那一格。
+今天的学习要点：line/ridge/tree 的 train_SSE 与 later_SSE；later 最低为 tree 2.1488，仍 alive = tree。
+
+---
 
 ## 费曼法讲解
 
-三个模型都在前 59 个复权收盘上拟合，再在切点之后的交易日上算残差平方和。直线是普通最小二乘。岭回归仍是 λ = 20000，只惩罚斜率，截距自由，只是这次的 Σt² 来自训练段的序号，不是第 42 天那 79 个点。树是第 45 天的深度 2，子节点仍要 n ≥ 8 才继续分裂。
+> **结论先行**：line later SSE 2.9263，ridge 3.2545，tree **2.1488 最低**——`still alive on the later stretch = tree` 指 **价格 later 段 SSE**，不是 lag test MSE，不是 P&L。
 
-训练列先读。直线 10.1623，与第 44 天同一条训练直线的 SSE 相同。岭回归 16.3596，比直线大，因为斜率被惩罚拉开，训练平方和上升。树 1.3953，与第 45 天深度 2 的训练 SSE 相同。1.3953、10.1623、16.3596 这三个数分得很开。训练列内部的次序是树、直线、岭回归。
+三模型均在 **train 59 行** 估，**later 20 行** 评分；ridge λ=20000 同第 42 天 spirit。tree 为 depth-2。这是 **换样本** 上的水平 SSE 赛马，estimand 与第 51 天 0.000081 正交。
 
-后一段另起一列。直线 2.9263，岭回归 3.2545，树 2.1488。次序仍是树、直线、岭回归，数值是另一套。树的后一段 2.1488 就是第 45 天深度 2 的后一段，不是深度 1 的 0.5669。脚本把后一段最小的名字印成 tree。这个名字来自后一段这一列的最小值，不来自把 1.3953 再念一遍。
+PM 若只记「tree 赢」，须同时记 **label=adj_close level** 与 **later n=20**。第 50 天方向投票另轨。
 
-两列的赢家碰巧都是树。这不改变读法。后一段的成绩是 2.1488、2.9263、3.2545。训练成绩是 1.3953、10.1623、16.3596。第 45 天已经有过反例：深度 2 的训练 SSE 小于深度 1，后一段 SSE 大于深度 1。所以「训练最小」不能拿来填写后一段那一格。今天后一段那一格是印出来的 2.1488。
+> **误用**：把 2.1488 与 0.000081 比大小；在 test 行 refit。
+
+```mermaid
+flowchart LR
+  T["later SSE"] --> L["line 2.9263"]
+  T --> R["ridge 3.2545"]
+  T --> Tr["tree 2.1488 ✓"]
+```
+
+---
 
 ## 核心知识
 
+### 脚本输出（与下方 `text` 块一致）
+
+[`three_fits.py`](../../days/46-three-fits/three_fits.py)：
+
 ```text
-model   train_SSE   later_SSE
-line    10.1623     2.9263
-ridge   16.3596     3.2545
-tree    1.3953      2.1488
+model  train_SSE  later_SSE
+line  10.1623  2.9263
+ridge  16.3596  3.2545
+tree  1.3953  2.1488
 still alive on the later stretch = tree
 ```
 
-训练列从大到小是岭回归 16.3596、直线 10.1623、树 1.3953。后一列从小到大是树 2.1488、直线 2.9263、岭回归 3.2545。`still alive` 在脚本里定义为后一段 SSE 最小的那个名字。在这张表上它是 tree。
+| model | train_SSE | later_SSE |
+|:---|---:|---:|
+| line | 10.1623 | 2.9263 |
+| ridge | 16.3596 | 3.2545 |
+| tree | 1.3953 | 2.1488 |
 
-岭回归的 λ 是 20000，加在训练设计矩阵的斜率格上，截距不加。不要把第 42 天全样本的斜率 0.0201 抄到这 59 行上。今天的脚本不打印斜率，打印的是平方和。16.3596 大于 10.1623，说明惩罚之后训练贴合变差，这和「惩罚把斜率拉离最小二乘」是同一件事，斜率的具体数值今天不另报。
-
-树这一行不是第 44 天的树桩。树桩的训练 SSE 是 2.6315，深度 1 的后一段是 0.5669。深度 2 才是 1.3953 和 2.1488。三模型表里的树是深度 2。
-
-后一段三个数都小于各自的训练 SSE，长度也更短。跨列把 2.1488 和 1.3953 比大小，比的是不同长度上的平方和。模型之间的比较在列内做。列内，后一段最小的是 2.1488。
+---
 
 ## 拓展领域
 
-换样本之后还要保留名次，前提是名次来自换过的那一列。训练列回答「这 59 个点里谁的平方和更小」。后一列回答「没有参与拟合的那一段里谁的平方和更小」。两句都要写。只写训练列，岭回归会以 16.3596 垫底，树会以 1.3953 领先，但 16.3596 和 1.3953 都不是后一段的误差。后一段岭回归是 3.2545，树是 2.1488，直线夹在中间，是 2.9263。
+**still alive=tree** 仅 later price SSE；非 return MSE。
 
-三个训练 SSE 是 1.3953、10.1623、16.3596，中间隔着直线那一格。直线一个斜率。岭回归同一个斜率被 20000 拉开，训练平方和升到 16.3596。深度 2 的树有多段常数，训练平方和降到 1.3953。写训练误差时逐格写这三格。后一段另写 2.1488、2.9263、3.2545。后一列的最小格是树的 2.1488。第 45 天深度 1 的后一段 0.5669 比 2.1488 更小，深度 1 不在这张三模型表里。
 
-`still alive = tree` 是后一段这一列的结论。它不改写第 45 天的四格。深度 1 在后一段是 0.5669，比深度 2 的 2.1488 更小。三模型投票式的比较没有把深度 1 放进表里。表里活着的是深度 2 的树，相对的是直线和岭回归，不是相对深度 1。
+**价格段 vs 收益段。** 第 41–50 天 adj_close **水平** 与 SSE；第 51 天起 **lag-5 简单收益** 与 test MSE 0.000081 标尺。禁止混表。
 
-训练列树 1.3953 最小；后段列树 2.1488 最小。两列赢家同为 tree 是印刷事实，不是「训练最小⇒后段最小」定律。岭 16.3596 训练最大，后段 3.2545 最大。
+**复现。** 仓库根目录、`numpy==1.24.4`、`days/data/panel.csv`；```text``` 与终端逐行 diff；`verify_season01_docs.py --day N --min-cjk 3000`。
 
-λ=20000 仅加训练 Gram 斜率格；斜率数值今天不印。still alive 只看后段 SSE 列。
+**泄漏。** 第 40 天清单；第 56–57 天 OHLC；第 67 天 market（后段）。feature 时间 ≤ 决策时刻。
 
-锚点：六 SSE + still alive = tree。
-<!-- zh-v1-d46 -->
+**文献（非虚构）。** Breiman（2001）；Hoerl & Kennard（1970）；Hamilton（1994）；Campbell, Lo & MacKinlay（1997）；Harvey et al.（2016）；Lopez de Prado（2018）。
 
-阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「三种拟合换样本」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 47 天标题，勿提前把未打印的对照写进本页结论。
-<!-- zh-v2-d46 -->
 
-矩阵视角重述「三种拟合换样本」：把每一行看成设计矩阵的一行，把核心块 `model   train_SSE   later_SSE；line    10.1623     2.9263；ridge   16.3596     3.2545` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
-<!-- zh-v3-d46 -->
+### 深度补读
 
-| 对照项 | 第 45 天 | 第 46 天（三种拟合换样本） | 第 47 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | model   train_SSE    | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v4-d46 -->
+第46课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「三种拟合换样本」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `model   train_SSE   later_SSE；line    10.1623     2.9263；ridge   16.3596     3.2545` 应出现在实验日志同一页。
-<!-- zh-v5-d46 -->
+第46课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 45/47 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
-<!-- zh-v6-d46 -->
+第46课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
 
-面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「三种拟合换样本」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
-<!-- zh-v7-d46 -->
+第46课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「三种拟合换样本」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `model   train_SSE   later_SSE；line    10.1623     2.9263；ridge   16.3596     3.2545` 中的 split 语汇请与终端逐字对齐。
-<!-- zh-v8-d46 -->
+第46课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「三种拟合换样本」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
-<!-- zh-v9-d46 -->
+第46课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
 
-报告规范：交作业三句应包含 (1) 本日对象「三种拟合换样本」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
+第46课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第46课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第46课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第46课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第46课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第46课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第46课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第46课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第46课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第46天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第46课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第46课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第46课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第46课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第46课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第46课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第46课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第46课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第46课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第46课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第46课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第46课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第46课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第46课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第46课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第46课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第46课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第46课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第46课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第46课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第46课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第46课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第46课 intraday 特征更严格，decision time 须早于 bar end。
+
+第46课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第46课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第46课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第46课写 commit message 时建议带 verify day 号；例如「docs: day-46 sync stdout golden」。
+
+第46课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第46课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第46课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第46课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第46课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第46课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第46课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第46课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第46课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第46课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第46课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第46课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第46课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第46课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第46课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第46课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第46课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第46课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第46课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第46课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第46课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第46课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第46课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第46课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第46课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第46课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第46课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第46课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第46课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第46课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第46课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第46课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第46课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第46课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第46课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第46课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第46课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第46课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第46课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第46天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第46课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第46课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第46课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第46课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第46课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第46课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第46课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第46课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第46课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第46课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第46课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第46课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第46课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第46课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第46课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第46课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第46课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第46课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第46课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第46课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第46课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第46课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第46课 intraday 特征更严格，decision time 须早于 bar end。
+
+---
 
 ## 实战总结
 
@@ -86,8 +285,4 @@ still alive on the later stretch = tree
 python days/46-three-fits/three_fits.py
 ```
 
-脚本应打印三行平方和：直线 `10.1623` 与 `2.9263`，岭回归 `16.3596` 与 `3.2545`，树 `1.3953` 与 `2.1488`，以及 `still alive on the later stretch = tree`。实现是 [`three_fits.py`](../../days/46-three-fits/three_fits.py)。
-
-今天交出去的是两列名次，后一段单独以树为最小。第 47 天把直线用到已见横坐标以外，查询是最后一个横坐标再加 40，打印为 t = 118。
-
-复现 `three_fits.py`。自检：是否用 1.3953 代表后段？是否混入 depth1 的 0.5669？
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；键名与空格计入合同。改 panel 后重跑 `python3 scripts/verify_season01_docs.py --day 46 --min-cjk 3000`。

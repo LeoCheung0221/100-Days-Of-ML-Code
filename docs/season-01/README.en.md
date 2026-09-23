@@ -2,7 +2,7 @@
 
 # Phase I · Models
 
-Note: days 1 through 80 have notes, linked in the table. The remaining days are titles only.
+Note: days 1 through 100 have notes and runnable scripts, linked in the table.
 
 Back to the [front page](../../README.en.md).
 
@@ -115,28 +115,28 @@ Back to the [front page](../../README.en.md).
 | 78 | Lower the threshold and speak almost every day | The average looks mild and the expensive mistakes remain. Both tables sit together |
 | 79 | Rerank the line and the tree under the new tariff | The winner on average error can lose here |
 | 80 | Name the mistake you are willing to carry | The choice has to point at one column of the tariff |
-| 81 | Separate high-volatility weeks from low ones | Define volatility first, then split the error |
-| 82 | In the high-volatility weeks, count the line's jumps | The count has to be there |
-| 83 | In the low-volatility weeks, see whether the tree is memorizing noise | Set it against the deeper tree, on this table |
-| 84 | Three mistakes and two volatility regimes, one count table | This table replaces the average error for the rest of the season |
-| 85 | Keep one model by citing that table | The decision may cite only one cell |
+| [81　Volatility weeks](day-81.en.md) | Separate high-volatility weeks from low ones | Define volatility first, then split the error |
+| [82　Jumps in high-vol weeks](day-82.en.md) | In the high-volatility weeks, count the line's jumps | The count has to be there |
+| [83　Trees on low-vol weeks](day-83.en.md) | In the low-volatility weeks, see whether the tree is memorizing noise | Set it against the deeper tree, on this table |
+| [84　Regime error table](day-84.en.md) | Three mistakes and two volatility regimes, one count table | This table replaces the average error for the rest of the season |
+| [85　Pick model from table](day-85.en.md) | Keep one model by citing that table | The decision may cite only one cell |
 
 ## 86 – 100 · Tell another engineer
 
 | Day | Session | What you learn today |
 |---|---|---|
-| 86 | Ten lines for the start date, end date, and source | Those ten lines alone must locate the same data |
-| 87 | Ten lines for why each column is allowed | This matches the program's refusal list |
-| 88 | Run it a second way | The error matches to two decimal places |
-| 89 | Baseline, line, and tree side by side in the telling | The telling may not contain a number the program did not print |
-| 90 | Three missed days, one cause each | Each cause is one of the three mistake kinds |
-| 91 | Refuse one feature and attach the ranking before and after | A refusal needs two numbers |
-| 92 | Write "if this were filled" as three lines of assumption | Profit does not appear in the assumption |
-| 93 | Add one minimum unit of slippage and rank again | If the ranking moves, the telling changes. If it does not, say so |
-| 94 | Delete the favorite month and remake the keep-or-drop decision | If the decision flips, the later one stands |
-| 95 | Another stock, the same function | Dates and the three missed days change. The procedure does not |
-| 96 | One page: task, split, baseline, three mistakes | All four headings are on that page |
-| 97 | From that page, name one hole still open | The hole has to point at a day's repair |
-| 98 | Close that hole and run again | The score may get worse. The worse number stays in the telling |
-| 99 | Run the whole procedure once more | The numbers in the telling match this output |
-| 100 | Tell the failure from that page | A listener can repeat: through which date, what is forbidden, which three mistakes, and why there is no order |
+| [86　Dates and source](day-86.en.md) | Ten lines for the start date, end date, and source | Those ten lines alone must locate the same data |
+| [87　Allowed columns](day-87.en.md) | Ten lines for why each column is allowed | This matches the program's refusal list |
+| [88　Alt entry point](day-88.en.md) | Run it a second way | The error matches to two decimal places |
+| [89　Talk track three models](day-89.en.md) | Baseline, line, and tree side by side in the telling | The telling may not contain a number the program did not print |
+| [90　Three failure days](day-90.en.md) | Three missed days, one cause each | Each cause is one of the three mistake kinds |
+| [91　Reject a feature](day-91.en.md) | Refuse one feature and attach the ranking before and after | A refusal needs two numbers |
+| [92　Three fill lines](day-92.en.md) | Write "if this were filled" as three lines of assumption | Profit does not appear in the assumption |
+| [93　One-tick slippage](day-93.en.md) | Add one minimum unit of slippage and rank again | If the ranking moves, the telling changes. If it does not, say so |
+| [94　Drop best month](day-94.en.md) | Delete the favorite month and remake the keep-or-drop decision | If the decision flips, the later one stands |
+| [95　Second name again](day-95.en.md) | Another stock, the same function | Dates and the three missed days change. The procedure does not |
+| [96　One-page four titles](day-96.en.md) | One page: task, split, baseline, three mistakes | All four headings are on that page |
+| [97　Open leak item](day-97.en.md) | From that page, name one hole still open | The hole has to point at a day's repair |
+| [98　Patch the leak](day-98.en.md) | Close that hole and run again | The score may get worse. The worse number stays in the telling |
+| [99　Full rerun](day-99.en.md) | Run the whole procedure once more | The numbers in the telling match this output |
+| [100　Failure narrative](day-100.en.md) | Tell the failure from that page | A listener can repeat: through which date, what is forbidden, which three mistakes, and why there is no order |

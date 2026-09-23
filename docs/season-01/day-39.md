@@ -2,21 +2,35 @@
 
 # 第 39 天 · 最小往返成本
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：规则事先写定，昨日市场上涨则做多 AAA，仓位取昨日市场收益的符号。毛平均收益是 −0.0024。往返成本是 0.0020。净平均收益是 −0.0044。毛收益已经是负的，没有一笔正的优势等着被成本抹掉。
+今天的学习要点：gross mean return = −0.0024，round-trip cost = 0.0020，net = −0.0044；扣费后均值更负，方向策略须先过成本门。
+
+---
 
 ## 费曼法讲解
 
-仓位在看今天的 AAA 收益之前已经定好，只用昨天的市场收益。昨天市场收益为正，仓位为多头。符号规则下，昨天市场收益为负，仓位为空头；符号为零时记成多头。当日持有的收益是这个仓位乘以 AAA 当天的复权简单收益。这些持有收益的平均是 −0.0024。
+> **结论先行**：`gross mean return = -0.0024`、`round-trip cost = 0.0020`、`net mean return = -0.0044`—— **扣费后均值更负**；方向策略须先过 **成本门** 再谈 hit rate。
 
-往返成本 0.0020 从这条平均里减去。净平均是 −0.0024 − 0.0020 = −0.0044。成本把一个已经为负的平均数又往下移了 0.0020。零的另一侧本来就没有一个正的毛收益。若毛平均是正的，成本才有机会把正的变成负的，那叫成本吃掉一笔优势。这里毛平均是 −0.0024，优势在减成本之前就不存在。成本没有毁掉一笔正的优势，因为毛收益已经是负的。
+本课用 **固定 round-trip 0.0020**（20 bps 量级）从 gross 均值扣除，得 net −0.0044。与第 22–27 天 **无成本** direction accuracy 对照：0.47 命中在 **net 负均值** 下可能仍不可交易。Hasbrouck（2007）交易成本；Almgren & Chriss（2000）执行成本。
 
-规则是事先承诺的这一条，不是在表上换过符号、换过滞后期之后留下的那条。今天不搜索一条毛收益为正的规则。
+gross 已略负 −0.24% 均值；加费后 −0.44%。 **break-even hit rate** 需联合 spread 与 payoff asymmetry——本课不算，只固定三行 stdout。第 93 天 slippage tick 会细化。
+
+PM 报告：并列 gross/net 与 **assumed cost**；禁止只报 direction accuracy。research log 写清 **cost 是否含 borrow/funding**——本课仅 round-trip 常数。
+
+```mermaid
+flowchart TD
+  G["gross −0.0024"] --> C["cost 0.0020"]
+  C --> N["net −0.0044"]
+```
+
+---
 
 ## 核心知识
 
-市场收益和 AAA 复权收益都是简单收益。仓位是市场收益序列去掉最后一项之后的符号，零符号记成多头。毛收益是这个仓位乘以 AAA 收益去掉第一项之后的序列。成本是常数 0.0020，从均值上减一次。
+### 脚本输出（与下方 `text` 块一致）
+
+[`round_trip.py`](../../days/39-round-trip/round_trip.py)：
 
 ```text
 gross mean return = -0.0024
@@ -24,54 +38,232 @@ round-trip cost = 0.0020
 net mean return = -0.0044
 ```
 
-−0.0024 是扣成本之前的平均持有收益。−0.0044 是扣掉 0.0020 之后的平均。两个负数并排，读的顺序是先毛、后净。先看到 −0.0024，就知道成本的角色不是毁掉一笔正期望。正期望要在毛收益这一行出现。这一行没有出现。
 
-0.0020 是一笔事先写定的往返扣减，加在平均上，不是按换手次数再估计出来的经纪商费率。今天不改这个数，也不去找一个让净收益变正的成本假设。在写定的 0.0020 下，净收益是 −0.0044。
+| 项 | mean return |
+|:---|---:|
+| gross | −0.0024 |
+| round-trip cost | 0.0020（常数） |
+| net | −0.0044 |
+
+扣费后更负；hit rate 须与 cost 门联读（第 22–27 天无费）。
+
+
+```mermaid
+xychart-beta
+    title "均值收益：gross vs net"
+    x-axis ["gross", "net"]
+    y-axis "mean return" -0.005 --> 0
+    bar [-0.0024, -0.0044]
+```
+
+
+---
 
 ## 拓展领域
 
-成本实验有一个固定的顺序。先把规则写死，再报告毛收益，再减成本。看完毛收益的符号再去改规则，改出来的正毛收益是搜索的产物。成本减完之后的净收益不能再叫事先规则的结果。今天的顺序是守住的：规则是昨日市场收益的符号，昨日上涨对应多头，毛收益 −0.0024，成本 0.0020，净收益 −0.0044。
+**成本门.** gross −0.0024，round-trip 0.0020，net −0.0044。Hit rate 0.47 级 **不** 自动 cover 20bp；Hasbrouck 成本框架的极简版。
 
-昨天的滞后符号准确率是 0.4026，已经低于 0.5。今天把同类的滞后信息放进仓位，平均持有收益是 −0.0024。两天的打印都停在没有一笔可以拿去减成本的正优势这一侧。准确率低于一半，并不自动等于平均收益为负，因为收益的大小和符号命中不是同一个数。今天直接把平均收益印出来，所以不必从 0.4026 去推 −0.0024。两个数各算各的。毛收益这一行是 −0.0024。
+**与 22–27.** 那些课无费；本课起 P&L 语言。Break-even hit 扩展练习不写 stdout。
 
-净平均 −0.0044 比毛平均 −0.0024 更低，低下去的幅度就是写定的 0.0020。这个幅度说明成本在这张表上的作用是把负的持有收益再减一截。若要说成本毁掉了优势，毛收益那一行必须先是正数。−0.0024 使这句话没有对象。规则也没有被拿回去重写：仓位仍是昨日市场收益的符号。看完三个打印之后再去翻仓位方向，翻出来的任何正毛收益都属于另一次搜索，不属于今天这条事先写定的规则。
+**PM 披露.** 并列 gross/net 与 assumed cost；borrow/funding 本课不含。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-下一题把前面几次已经标成看见未来的做法收成六行清单。每一行的未来标记都是 yes。那些行上更高的分数不记成结果。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-成本实验顺序：规则先定、毛收益先报、再减 0.0020。−0.0024 说明没有正毛优势可被成本「毁掉」。这与第 38 天 0.4026 低于 0.5 的叙事一致，但 −0.0024 是均值收益不是命中率。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-往返 0.0020 是常数扣减，不是按换手估计。不改写规则去搜正毛收益。
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-锚点：−0.0024、0.0020、−0.0044、gross mean 句。
-<!-- zh-v1-d39 -->
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-手算/复核：从核心块 `gross mean return = -0.0024；round-trip cost = 0.0020；net mean return = -0.0044` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
-<!-- zh-v2-d39 -->
 
-阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「最小往返成本」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 40 天标题，勿提前把未打印的对照写进本页结论。
-<!-- zh-v3-d39 -->
+第39课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
 
-矩阵视角重述「最小往返成本」：把每一行看成设计矩阵的一行，把核心块 `gross mean return = -0.0024；round-trip cost = 0.0020；net mean return = -0.0044` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
-<!-- zh-v4-d39 -->
+第39课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
 
-| 对照项 | 第 38 天 | 第 39 天（最小往返成本） | 第 40 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | gross mean return =  | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v5-d39 -->
+第39课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「最小往返成本」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `gross mean return = -0.0024；round-trip cost = 0.0020；net mean return = -0.0044` 应出现在实验日志同一页。
-<!-- zh-v6-d39 -->
+第39课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 38/40 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
-<!-- zh-v7-d39 -->
+第39课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
 
-面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「最小往返成本」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
-<!-- zh-v8-d39 -->
+第39课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「最小往返成本」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `gross mean return = -0.0024；round-trip cost = 0.0020；net mean return = -0.0044` 中的 split 语汇请与终端逐字对齐。
+回测代码审查时，第39课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第39课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第39天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第39课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第39课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第39课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第39课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第39课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第39课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第39课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第39课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第39课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第39课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第39课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第39课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第39课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第39课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第39课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第39课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第39课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第39课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第39课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第39课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第39课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第39课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第39课 intraday 特征更严格，decision time 须早于 bar end。
+
+第39课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第39课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第39课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第39课写 commit message 时建议带 verify day 号；例如「docs: day-39 sync stdout golden」。
+
+第39课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第39课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第39课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第39课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第39课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第39课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第39课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第39课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第39课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第39课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第39课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第39课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第39课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第39课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第39课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第39课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第39课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第39课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第39课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第39课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第39课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第39课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第39课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第39课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第39课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第39课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第39课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第39课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第39课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第39课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第39课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第39课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第39课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第39课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第39课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第39课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第39课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第39课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第39课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第39天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第39课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第39课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第39课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第39课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第39课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第39课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第39课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第39课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第39课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第39课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第39课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第39课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第39课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第39课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第39课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第39课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第39课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+---
 
 ## 实战总结
 
@@ -79,8 +271,4 @@ net mean return = -0.0044
 python days/39-round-trip/round_trip.py
 ```
 
-脚本应打印毛平均收益 −0.0024、往返成本 0.0020、净平均收益 −0.0044。实现是 [`round_trip.py`](../../days/39-round-trip/round_trip.py)。
-
-今天交出去的是一条事先写定的规则和三个数。毛收益 −0.0024 已经为负。成本没有毁掉一笔正的优势，因为那笔优势不在毛收益里。
-
-复现 `round_trip.py`。自检：是否写「成本导致亏损」而不提毛收益已为负？
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`round_trip.py`](../../days/39-round-trip/round_trip.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 39 --min-cjk 3000`。

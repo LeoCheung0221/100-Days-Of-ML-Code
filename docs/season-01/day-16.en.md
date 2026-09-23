@@ -64,3 +64,4 @@ python days/16-up-score/up_score.py
 The script prints the slope 3.27, `P(up) = sigmoid(slope) = 0.9634`, and states that the same score is attached to every step. The implementation is [`up_score.py`](../../days/16-up-score/up_score.py).
 
 The value 0.9634 comes from the slope, not from the step-by-step differences among the four returns. The affine one-day difference is constantly 3.27, so this score for up cannot rank the four steps by confidence.
+

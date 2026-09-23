@@ -72,5 +72,3 @@ python days/05-without-day-4/without_day4.py
 The script should print `delta slope = -1.1729` and the displacement `-3.5186` at `x = 4`. The implementation is [`without_day4.py`](../../days/05-without-day-4/without_day4.py).
 
 The full-sample line is not discarded. It is the line the refit is compared with. The in-sample `RSS = 96.339` is still the day-1 sum of squares, not today's result. Today's result is the displacement. Day 6 places the query at `x = 6`, where there is no label and the residual is undefined.
-
-Self-check: 11.7286 not labeled holdout? Table displacements authoritative over hand-multiplied −1.1729? Deletion diagnostics distinguished from day 7 holdout?

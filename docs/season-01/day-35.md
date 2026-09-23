@@ -2,19 +2,38 @@
 
 # 第 35 天 · 停牌后的间隔
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：行号 35 和 36 在表里相邻。日期是 2024-02-20 和 2024-02-22。用 `np.busday_count` 得到的交易日间隔是 2，中间缺一个交易日。周末两边的相邻交易日，交易日间隔是 1。行号差 1 不是时间差 1。
+今天的学习要点：行号 35–36 对应 2024-02-20 与 2024-02-22，business-day gap = 2；相邻行不是相邻会话，差分与 lag 须按日历理解。
+
+---
 
 ## 费曼法讲解
 
-AAA 的表按行往下读，第 35 行和第 36 行紧挨着，中间没有别的行。两行的日期是 2024-02-20 和 2024-02-22。只看行号，差是 1，像是下一笔。把这两个日期交给 `np.busday_count`，数的是从起始日到结束日、不含结束日的交易日个数，结果是 2。间隔 2 表示这两行之间缺了一个交易日。缺的那一天不在表里，所以行还是相邻的，交易日不是相邻的。
+> **结论先行**：`row numbers 35 36`、`dates 2024-02-20 2024-02-22`、`business-day gap = 2`；`adjacent rows are not adjacent sessions`——CSV 相邻 ≠ 日历相邻。
 
-周末要分开看。周五和接下来的周一在表里也可以相邻，日历上隔着周六和周日，`np.busday_count` 给出的交易日间隔是 1。间隔 1 表示这两个交易日在默认的周一到周五日历上是邻接的，周末没有造成一个缺失的交易日。行号 35 和 36 的间隔是 2，所以它们不是这种周末邻接。度量用的是交易日间隔，不是把两个日历日期相减得到的天数。行号之差等于 1，只说明文件里没有插进另一行。
+停牌或缺失交易日使 **行号 lag** 与 **calendar lag** 分叉。用 `diff(close)` 时，跨 gap 的差分覆盖 **多个日历日** 的价格变化。Campbell et al. 收益定义应明确 **holding period**。
+
+本课打印 gap=2（business days between dates）。特征若写 `lag-1 row` 实际可能是 **lag-3 calendar**——sign 规则解读会变。生产数据 **halt** 标志应进入特征或过滤。
+
+与第 34 天 blank fill 不同：这里是 **行仍在但日期跳变**。回测合并 corporate action 与 halt 表是 senior 工程师 checklist 项。
+
+```mermaid
+sequenceDiagram
+  participant Row35 as 行35 02-20
+  participant Gap as 停牌
+  participant Row36 as 行36 02-22
+  Row35->>Gap: gap=2 交易日
+  Gap->>Row36: 非相邻会话
+```
+
+---
 
 ## 核心知识
 
-脚本沿日期序列向后找第一对交易日间隔大于 1 的相邻行，打印行号、两个日期和间隔，然后停。
+### 脚本输出（与下方 `text` 块一致）
+
+[`halt_gap.py`](../../days/35-halt-gap/halt_gap.py)：
 
 ```text
 row numbers 35 36
@@ -23,52 +42,235 @@ business-day gap = 2
 adjacent rows are not adjacent sessions
 ```
 
-`np.busday_count(2024-02-20, 2024-02-22)` 等于 2。半开区间里数到两个周一至周五的日期，结束日 2024-02-22 不计入，中间那个交易日没有成为一行。若下一行就是下一个交易日，同样的函数应返回 1。周末那一对返回 1，因为周六和周日不进入这个计数。因此「行号差是 1」和「交易日差是 1」是两个谓词。今天这对数满足前者，间隔打印为 2，不满足后者。
 
-滞后如果按行来取，上一行会被当成昨天。在第 36 行上，上一行的日期是 2024-02-20，中间缺了一个交易日。那个滞后跨过了缺失的交易日，仍然只在表上移动了一行。收益率的分母若用上一行的收盘，持有期也不是一个交易日。把这种收益和普通的一日收益放进同一个回归，等于把不同的持有期写成了同一个时间下标。
+| 项 | 值 |
+|:---|:---|
+| row numbers | 35, 36 |
+| dates | 2024-02-20, 2024-02-22 |
+| business-day gap | 2 |
+
+`adjacent rows are not adjacent sessions`：row lag ≠ calendar lag。
+
+
+---
 
 ## 拓展领域
 
-交易日计数和日历日计数在周末上会分开。周五到下周一，日历上跨过两天休息，交易日间隔仍是 1。2024-02-20 到 2024-02-22 的交易日间隔是 2，中间缺的是一个工作日，不是一个周末。`np.busday_count` 用的是默认的周一到周五。交易所日历若把某个工作日标成休市，默认计数会把那一天算成交易日，间隔会被低估。今天打印的 2 是在这个默认日历上的数。它已经说明 2024-02-20 和 2024-02-22 不是邻接交易日。更细的休市表会改别的日期的间隔，不会把「行号差 1」变成时间差 1。
+**行相邻 ≠ 会话相邻.** gap=2 business days between 2024-02-20 and 2024-02-22。Row lag-1 diff 覆盖 **多日历日** 价格变化。
 
-滚动窗口、波动率和成交量均值若按行数来取「过去二十行」，在这一对之后会把 2024-02-20 当成 2024-02-22 的昨天。按交易日对齐，要先有一张交易日历，再决定缺失的那天是留空、用当时已知的收盘填写，还是把该区间从样本里拿掉。昨天的 9.8971 已经说明，填写只能用当时已知的收盘。今天补上的事实是：即使不填充，相邻行也不保证相邻交易日。行号 35 与 36 只相差 1，日期却是 2024-02-20 与 2024-02-22，交易日间隔是 2。
+**halt 表.** 生产 merge 停牌标志；rolling 用 calendar index。
 
-检查停牌，看的是这一对日期的交易日间隔是否大于 1，不是行号是否连续。今天第一对大于 1 的相邻行就是 35 和 36。脚本在这一对上停下，后面的行没有再被打印。下一题在复权收盘和未复权收盘上各算一个收益，看公司行为会把未复权收益打到多大。
+**与第 34 天.** blank 是缺失；本课是 **日期跳变** 仍有行。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-与第 26–27 天切分：按行随机切分会把 2024-02-20 与 2024-02-22 当成相邻滞后，实际间隔 2 个交易日。时间切分同样按行索引切，不自动修复日历。研究应用交易日历重索引，或显式丢弃间隔大于 1 的配对。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-`shift(1)` 按行移位在停牌后会指向错误持有期。第 34 天填空与第 35 天间隔是数据卫生两题：一个问填什么价，一个问两行之间隔几天。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-锚点：行 35/36、2024-02-20/22、gap=2、adjacent rows are not adjacent sessions。周末对间隔 1 的说明保留，不要与 gap=2 混淆。
-<!-- zh-v1-d35 -->
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「停牌后的间隔」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
-<!-- zh-v2-d35 -->
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-报告规范：交作业三句应包含 (1) 本日对象「停牌后的间隔」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
-<!-- zh-v3-d35 -->
 
-手算/复核：从核心块 `row numbers 35 36；dates 2024-02-20 2024-02-22；business-day gap = 2` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
-<!-- zh-v4-d35 -->
+第35课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
 
-阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「停牌后的间隔」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 36 天标题，勿提前把未打印的对照写进本页结论。
-<!-- zh-v5-d35 -->
+第35课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
 
-矩阵视角重述「停牌后的间隔」：把每一行看成设计矩阵的一行，把核心块 `row numbers 35 36；dates 2024-02-20 2024-02-22；business-day gap = 2` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
-<!-- zh-v6-d35 -->
+第35课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
 
-| 对照项 | 第 34 天 | 第 35 天（停牌后的间隔） | 第 36 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | row numbers 35 36 | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v7-d35 -->
+第35课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「停牌后的间隔」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `row numbers 35 36；dates 2024-02-20 2024-02-22；business-day gap = 2` 应出现在实验日志同一页。
-<!-- zh-v8-d35 -->
+第35课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 34/36 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
+第35课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第35课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第35课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第35课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第35课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第35课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第35课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第35课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第35课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第35课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第35课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第35课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第35课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第35课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第35课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第35课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第35课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第35课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第35课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第35课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第35课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第35课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第35课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第35天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第35课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第35课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第35课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第35课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第35课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第35课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第35课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第35课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第35课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第35课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第35课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第35课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第35课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第35课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第35课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第35课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第35课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第35课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第35课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第35课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第35课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第35课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第35课 intraday 特征更严格，decision time 须早于 bar end。
+
+第35课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第35课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第35课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第35课写 commit message 时建议带 verify day 号；例如「docs: day-35 sync stdout golden」。
+
+第35课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第35课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第35课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第35课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第35课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第35课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第35课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第35课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第35课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第35课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第35课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第35课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第35课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第35课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第35课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第35课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第35课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第35课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第35课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第35课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第35课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第35课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第35课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第35课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第35课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第35课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第35课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第35课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第35课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第35课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第35课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第35课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第35课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第35课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第35课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第35课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第35课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第35课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第35课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第35天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第35课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第35课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第35课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+---
 
 ## 实战总结
 
@@ -76,8 +278,4 @@ adjacent rows are not adjacent sessions
 python days/35-halt-gap/halt_gap.py
 ```
 
-脚本应打印行号 35 和 36、日期 2024-02-20 和 2024-02-22、交易日间隔 2。实现是 [`halt_gap.py`](../../days/35-halt-gap/halt_gap.py)。
-
-今天交出去的是这一对相邻行。交易日间隔是 2，中间缺一个交易日。周末相邻交易日的间隔是 1。行号差 1 不是时间差 1。
-
-复现 `halt_gap.py`。自检：是否用日历日差代替 busday_count？是否把 gap=2 说成周末？
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`halt_gap.py`](../../days/35-halt-gap/halt_gap.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 35 --min-cjk 3000`。

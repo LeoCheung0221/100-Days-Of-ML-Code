@@ -18,17 +18,18 @@ The claim covers this one comparison. The slope stays 0.029901. The intercept an
 
 ## Core
 
-The series is AAA adjusted close. A row is kept only when close and adjusted close are both finite. After the blank row is dropped, the length is 79. The script's abscissa runs from 0 through the last kept session. An adjusted return is the relative change between adjacent adjusted closes, so the return series is one step shorter than the price series. The jump is the largest absolute return, shifted back onto the price row. The date is 2024-02-28.
-
 ```text
-adjusted return that day        = 0.1349
-slope with the jump             = 0.029901
-slope without the jump          = 0.029901
-intercept with the jump         = 9.8654
-intercept without the jump      = 9.8528
-fitted at the jump, with        = 11.0315
-fitted at the jump, without     = 11.0189
+jump date = 2024-02-28
+adjusted return that day = 0.1349
+slope with the jump = 0.029901
+slope without the jump = 0.029901
+intercept with the jump = 9.8654
+intercept without the jump = 9.8528
+fitted at the jump, with = 11.0315
+fitted at the jump, without = 11.0189
 ```
+
+The series is AAA adjusted close. A row is kept only when close and adjusted close are both finite. After the blank row is dropped, the length is 79. The script's abscissa runs from 0 through the last kept session. An adjusted return is the relative change between adjacent adjusted closes, so the return series is one step shorter than the price series. The jump is the largest absolute return, shifted back onto the price row. The date is 2024-02-28.
 
 To six decimals the slope gap is 0. The printed intercept gap is 9.8654 − 9.8528 = 0.0126, the same as the printed fitted gap 11.0315 − 11.0189. The two locations stay separate on the page. The intercept is the reading at abscissa 0. 11.0315 is the reading at the jump index. Those gaps coincide when the printed slope does not move. Report the printed columns.
 
@@ -43,6 +44,8 @@ The size of a one-day return and that day's leverage on the slope are different 
 A deletion diagnostic in a book of returns splits the same way. The first sentence is the return, here 0.1349. The second is the coefficient move: the slope is unchanged at six decimals, and the intercept moves by 0.0126. The third, only if the day was set aside before the fit, is a holdout error. Today has no third sentence. Seeing the jump and then deleting it produces influence.
 
 A longer sample is not a theorem. A different abscissa, or many large moves packed into a short run of indices, can still move a slope. Those experiments are not run today. The printout belongs to this one deletion: the slope stays at 0.029901, and the movement that remains is in the intercept.
+
+**Jump leverage.** Slope unchanged at six decimals with/without the jump; fitted level at the jump moves.
 
 ## What the run showed
 

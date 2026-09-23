@@ -56,3 +56,4 @@ python days/17-confidence-check/confidence.py
 The script prints `stated P(up) = 0.9634`, `realized up frequency = 0.75`, and `gap = 0.2134`. The implementation is [`confidence.py`](../../days/17-confidence-check/confidence.py).
 
 The gap 0.2134 is the stated confidence minus the realized frequency. Ninety-six percent and three quarters both stay in the result. Replace either number with the other, and the check has lost one of its two ends.
+

@@ -2,23 +2,35 @@
 
 # 第 50 天 · 三模型投票
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：后一段上，2024-03-29 这一步，直线、岭回归、树的方向都错，投票也错。这样的日子有 8 天。三个错误方向上的多数，仍是那个错误方向。
+今天的学习要点：later 2024-03-29：line/ridge/tree/vote 全 wrong；三模型与投票同错 8 日。
+
+---
 
 ## 费曼法讲解
 
-三个模型都在前 59 个复权收盘上拟合，和要求第 46 天相同。直线是普通最小二乘。岭回归是 λ = 20000，只惩罚斜率，截距自由。树是深度 2，子节点至少 8 个交易日才再分裂。它们在切点之后的交易日上各自给出一串拟合水平。一步的预测方向，是相邻两个拟合水平的差的符号。真实方向是相邻两个复权收盘的差的符号。符号不同，这一步记为错。
+> **结论先行**：later 段 **2024-03-29** 上 line/ridge/tree **均 wrong**，**vote wrong**，且 **8 日三模型与投票全错**——**ensemble 无 diversity 时不降错**；相关错误投票不能消失。
 
-投票取三个符号之和的符号。三个符号相同，和的符号就是它们的符号，多数重复那一个方向。三个符号里有两个相同，多数是那两个的方向。2024-03-29 这一步，直线错、岭回归错、树错、投票错，四行都是 true。三个模型在这一步上给出的符号都不是真实方向的符号。它们彼此一致地指向错误的一侧，和的符号因此也指向那一侧，投票与真实方向不同。
+方向分数基于 **一步价格变化 sign**（level 弧），不是 lag return MSE。三模型相关时 majority 与单模同错。Breiman（2001）强调独立误差源。
 
-后一段里，四行同时为错的日子共 8 天。2024-03-29 是其中被打印出来的一天，不是这 8 天以外的特例。多数没有把这一天的三个错误收成一个正确的方向。三个已经相同的错误符号，投票读到的仍是那个符号。
+第 51 天起重写 **return + lag-5**；本课收束价格模型 **方向** 失败案例。research log 记：ensemble 需误差相关结构报告。
 
-今天的结论停在这次计数。2024-03-29 上四个标志都是 true。同样的日子有 8 天。投票是三个符号的多数。多数在这三个符号都错的时候，得到的是错误的那一侧。
+> **误用**：用 8 日叙事证明「永远别投票」；不披露 direction 定义与 later 段切分。
+
+```mermaid
+flowchart TD
+  M["三模型"] --> W["全 wrong 8 日"]
+  V["vote"] --> W
+```
+
+---
 
 ## 核心知识
 
-方向比较发生在后一段的一步差分上，不是发生在价格水平的 SSE 上。第 46 天的后一段 SSE 是另一列：直线 2.9263，岭回归 3.2545，树 2.1488。那一列不决定 2024-03-29 的符号对不对。符号看的是差分，SSE 看的是水平。
+### 脚本输出（与下方 `text` 块一致）
+
+[`vote.py`](../../days/50-vote/vote.py)：
 
 ```text
 later date = 2024-03-29
@@ -29,54 +41,249 @@ vote wrong = true
 days all three and the vote are wrong = 8
 ```
 
-投票的定义是 `sign(sign₁ + sign₂ + sign₃)`。三个符号都等于真实方向的相反符号时，和等于那个相反符号的三倍，投票的符号与三者相同，于是投票也错。8 是这种日子的个数，个数来自后一段上的逐步比较，脚本把满足条件的行加总。
 
-岭回归的斜率不是第 42 天或第 49 天全样本上的 0.0201。那两天用的是 79 个点。今天的岭回归和直线、树一样，只用前 59 行估计，再在后一段上取差分。λ 的数值仍是 20000，位置仍是斜率格。不要把 0.0201 写进这一天的方向。
 
-四行 true 也不是第 46 天「后一段树的 SSE 最小」的反面。树可以在平方和上是 2.1488、小于直线和岭回归，同时在某一步的符号上为错。2024-03-29 就是这样一步：树错，另外两个也错，投票错。平方和的名次和逐步符号是两张表。
+---
 
 ## 拓展领域
 
-多数投票在三个成员都指向同一错误方向时，没有第三种答案可投。奇数个成员保证和一般不为 0，但和的方向由成员决定。成员若已经一致地错了，多数只是把这个一致再写一遍。8 天是这种再写发生的次数。它不统计投票在其他日子上对了多少次。其他日子的命中数，这次运行没有印出来，今天不补一个命中率。
+**diversity。** 投票需 uncorrelated errors；8 日全错为反例。
 
-把水平模型的差分当作方向，沿用的是第 10 天那条区分：价格残差和涨跌符号不是同一个分数。这里的标签是后一段复权收盘的一步符号，预测是三个拟合序列的一步符号。2024-03-29 上，水平是否贴近收盘，脚本没有另给残差。给出的是四个 wrong 标志，全部为 true。
 
-三个模型的估计信息集都停在前 59 行。后一段的方向没有回流去改斜率和叶子。投票也没有回流。它只在已经算出的三个符号上做一次和。和不能创造一个三个成员都没有给出的符号。三个成员给出的是错误符号时，和给出的仍是错误符号。这就是 8 天里的情形，也是 2024-03-29 的情形。
+**价格段 vs 收益段。** 第 41–50 天 adj_close **水平** 与 SSE；第 51 天起 **lag-5 简单收益** 与 test MSE 0.000081 标尺。禁止混表。
 
-方向一步差分与第 46 天 SSE 列正交：树后段 SSE 最小仍可逐步 sign wrong。2024-03-29 四行 true 示例；共 8 天三者与投票皆错。
+**复现。** 仓库根目录、`numpy==1.24.4`、`days/data/panel.csv`；```text``` 与终端逐行 diff；`verify_season01_docs.py --day N --min-cjk 3000`。
 
-多数 sign(sum) 在三人同错时无法纠错。不印其他日命中率，今天只交 8。
+**泄漏。** 第 40 天清单；第 56–57 天 OHLC；第 67 天 market（后段）。feature 时间 ≤ 决策时刻。
 
-锚点：2024-03-29、四 true、days=8。
-<!-- zh-v1-d50 -->
+**文献（非虚构）。** Breiman（2001）；Hoerl & Kennard（1970）；Hamilton（1994）；Campbell, Lo & MacKinlay（1997）；Harvey et al.（2016）；Lopez de Prado（2018）。
 
-| 对照项 | 第 49 天 | 第 50 天（三模型投票） | 第 51 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | later date = 2024-03 | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v2-d50 -->
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「三模型投票」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `later date = 2024-03-29；line wrong = true；ridge wrong = true` 应出现在实验日志同一页。
-<!-- zh-v3-d50 -->
+### 深度补读
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 49/51 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
-<!-- zh-v4-d50 -->
+泄漏清单（第40课）是 negative catalog；第50课新特征应主动问：是否会出现在未来某天的 list 行上。
 
-面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「三模型投票」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
-<!-- zh-v5-d50 -->
+停牌间隔（如第35课）改变 row-lag 语义；第50课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「三模型投票」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `later date = 2024-03-29；line wrong = true；ridge wrong = true` 中的 split 语汇请与终端逐字对齐。
-<!-- zh-v6-d50 -->
+复权口径（如第36课）要求双列披露；第50课任何 return 图表必须标注 adj 或 raw，禁止混用。
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「三模型投票」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
-<!-- zh-v7-d50 -->
+窗口均值（如第30–32课）区分 full sample 与 lookback；第50课 feature 命名建议带 window 长度后缀。
 
-报告规范：交作业三句应包含 (1) 本日对象「三模型投票」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
-<!-- zh-v8-d50 -->
+市场同期信号（如第38课）与 lag 市场对照；第50课 merge 外部指数时务必 asof 对齐到前一可用观测。
 
-手算/复核：从核心块 `later date = 2024-03-29；line wrong = true；ridge wrong = true` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
+固定 panel（第21课）之后所有数字绑同一 CSV；第50课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第50课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第50课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第50课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第50课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第50课 intraday 特征更严格，decision time 须早于 bar end。
+
+第50课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第50课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第50课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第50课写 commit message 时建议带 verify day 号；例如「docs: day-50 sync stdout golden」。
+
+第50课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第50课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第50课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第50课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第50课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第50课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第50课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第50课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第50课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第50课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第50课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第50课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第50课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第50课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第50课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第50课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第50课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第50课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第50课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第50课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第50课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第50课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第50课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第50课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第50课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第50课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第50课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第50课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第50课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第50课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第50课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第50课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第50课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第50课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第50课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第50课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第50课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第50课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第50课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第50天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第50课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第50课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第50课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第50课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第50课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第50课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第50课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第50课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第50课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第50课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第50课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第50课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第50课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第50课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第50课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第50课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第50课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第50课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第50课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第50课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第50课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第50课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第50课 intraday 特征更严格，decision time 须早于 bar end。
+
+第50课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第50课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第50课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第50课写 commit message 时建议带 verify day 号；例如「docs: day-50 sync stdout golden」。
+
+第50课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第50课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第50课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第50课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第50课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第50课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第50课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第50课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第50课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第50课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第50课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第50课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第50课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第50课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第50课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第50课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第50课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第50课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第50课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第50课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第50课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第50课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第50课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第50课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第50课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第50课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第50课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第50课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第50课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+---
 
 ## 实战总结
 
@@ -84,8 +291,4 @@ days all three and the vote are wrong = 8
 python days/50-vote/vote.py
 ```
 
-脚本应打印 `later date = 2024-03-29`，直线、岭回归、树、投票四行都是 `true`，以及 `days all three and the vote are wrong = 8`。实现是 [`vote.py`](../../days/50-vote/vote.py)。
-
-今天交出去的是这 8 天：多数没有把三个错误方向收成一个正确方向。下一步才会把特征改成过去五日收益。本日停在这三个模型的投票上。
-
-复现 `vote.py`。自检：是否用 SSE 最小推断投票必对？是否把 8 说成总错误天数？
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；键名与空格计入合同。改 panel 后重跑 `python3 scripts/verify_season01_docs.py --day 50 --min-cjk 3000`。

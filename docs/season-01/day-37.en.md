@@ -14,14 +14,14 @@ On this run the reason can sit on the date. The random draw samples rows. AAA's 
 
 ## Core
 
-Direction accuracy is the fraction of test rows on which the label's sign matches the fitted value's sign. The fit is least squares with an intercept. The feature is the same-day market return, written on the same day as the label.
-
 ```text
 pooled AAA and BBB
 random-split test accuracy = 0.7234
 time-split test accuracy = 0.6170
 the random split can train and test on the same date
 ```
+
+Direction accuracy is the fraction of test rows on which the label's sign matches the fitted value's sign. The fit is least squares with an intercept. The feature is the same-day market return, written on the same day as the label.
 
 Days 26 and 27 are one name, and the feature is the lagged own return. There the random split is 0.4583 and the time split is 0.5417. A single name has one row per day, so a random draw of rows cannot pick "the other name on the same day." After BBB is pooled in, a day has two rows, and a random split can put that day on both sides. "A random split can look better" refers to today's split, the one that can share a date across names.
 
@@ -35,15 +35,11 @@ A shared date plus a same-day market feature lets a test row see a market return
 
 Next stays with AAA, lines up the sign of the market return with the sign of the adjusted return, and then lags the market sign by one day, so the part of the accuracy that was simultaneous can be seen to drop. The gap between 0.7234 and 0.6170 has today's explanation only when the two names are drawn in one sample.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Pooled names: random test 0.7234, time 0.6170; random split can share a date across names. Single-name day 26–27 ordering does not generalize.
 
-
-<!-- uniq-exp-en2 -->
-
 When names are pooled, random splits can leak calendar information across symbols; time split 0.6170 uses a different protocol than single-name day 27.
+
+**Pooled leak.** Random 0.7234 can train and test on the same calendar date across names—do not replace day 27's single-name pair.
 
 ## What the run showed
 

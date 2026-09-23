@@ -2,63 +2,224 @@
 
 # 第 7 天 · 留出第五日
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
 今天的学习要点：只用前四日拟合。直线在第五日是 22.05，残差 −11.65。最近邻复制第四日的 20.0，残差 −9.6。训练残差平方和 42.05 可以打印，不作成绩。
 
+---
+
 ## 费曼法讲解
 
-第 6 天的第六日没有标签，所以没法评分。今天把标签找回来，但找回来的方式有规矩：第五日的收盘 10.4 不进入正规方程，也不进入最近邻的候选。拟合只看见 `(1, 2.1)`、`(2, 3.9)`、`(3, 6.2)`、`(4, 20.0)`。考的只有第五日。
+> **结论先行**：fit t=1..4 得 y=5.60x−5.95，training RSS=42.05 **不作成绩**；exam t=5：OLS 22.05 残差 −11.65，1-NN 复制 20.0 残差 −9.6——**留出标签进评分、不进拟合**。
 
-前四日里，第四日的 20 很重。直线被它抬起来，变成 `ŷ = 5.60x − 5.95`。代到第五日是 `5.60 × 5 − 5.95 = 22.05`。10.4 减 22.05 等于 −11.65，直线高估了 11.65。最近邻在前四日里找离 5 最近的横坐标，那是 4，标签是 20.0。10.4 − 20.0 = −9.6。就这一个留出点而言，最近邻的绝对误差更小。
+```mermaid
+flowchart TD
+  T["fit t=1..4"] --> O["OLS 5.60x-5.95"]
+  T --> R["train RSS=42.05"]
+  R --> X["not the score"]
+  E["exam t=5 y=10.4"] --> P1["OLS: 22.05, e=-11.65"]
+  E --> P2["NN: 20.0, e=-9.6"]
+```
 
-这一个点上的比较不能升级成「最近邻是更好的函数类」。最近邻在训练点上可以零残差，因为它会抄标签。直线在前四日上的残差平方和是 42.05。这个数今天可以印出来，让人看见拟合在训练段里有多紧，但它不是成绩。成绩只有第五日上的残差。把 42.05 的下降说成模型变好，是把已经看见的点又考了一次。
+**Hold-out 一行**：前四日拟合，第五日 `(5,10.4)` 仅评分。斜率 5.60 截距 −5.95 与 full-sample 3.27/−1.29 不同——**训练窗改变 estimand**。training RSS=42.05 脚本声明 **不是 score**；忌把 train loss 当 walk-forward 成绩。
 
-前四日里第四日的 20 把斜率抬到 5.60。这条线在第五日继续按这个斜率走，走到 22.05，比最近邻复制来的 20.0 离 10.4 更远。最近邻没有斜率，它停在最后一个训练标签上。两种外推今天都错在高估，一个高 11.65，一个高 9.6。高估的方向相同，距离不同。距离的比较停在这一天。
+Exam：OLS 预测 22.05，真值 10.4，残差 −11.65（过冲）。1-NN 复制 t=4 的 20.0，残差 −9.6——**in-support 检索仍可用**，但 query 是 t=5 不在 fit 集（标签未用于 fit，特征 x=5 在 fit 横坐标内）。
 
-与第 1 天：第 1 天全五点 in-sample，OLS 在 x=4 残差 8.2。本日 OLS 用四日系数在 x=5 留出 −11.65。与第 5 天：删第四日是诊断位移；本日第四日仍参与拟合。与第 8 天：窗口滑动改信息集但本日不是窗口课；第 8 天 fifth 日不进任何三日窗口。与第 9 天：打乱行序不改四日 OLS 系数与留出残差（配对 intact）。
+比较 −11.65 vs −9.6：NN 在绝对误差上更小，但不意味着 NN 更优估计器——**单点 hold-out** 方差极大。第 27 天 time split 将系统化此逻辑。
 
-留出像「封卷后只改第五日答题卡」：前四日进 `X,y` 建 `β̂`，第五日只出现在评分端。42.05 是考场内的草稿分，不能当高考成绩。脚本若漏打「RSS not score」，应在文档 PR 里补上——本课靠这句区分 in-sample 与 holdout 语言，与第 1 天全样本 RSS 96.339 的语境不同。
+误用：把 42.05 写入「模型 RMSE」；用 full-sample 线评 t=5。正确：分 train diagnostic vs exam row。
+
+---
 
 ## 核心知识
 
+### 脚本输出（与下方 `text` 块一致）
+
+[`holdout_day5.py`](../../days/07-holdout-day-5/holdout_day5.py)：
+
 ```text
-拟合： (1, 2.1), (2, 3.9), (3, 6.2), (4, 20.0)
-考试： (5, 10.4)
+fit on t=1..4: y = 5.60 x + -5.95
+training RSS = 42.05
+training RSS is not the score
+exam t=5  y=10.4
+ols says 22.05, residual -11.65
+nearest neighbor copies t=4, value 20.0, residual -9.6
 ```
 
-前四日的普通最小二乘是 `ŷ = 5.60x − 5.95`。训练残差平方和是 42.05，本日不作数。
 
-| 估计器 | 在 x = 5 的输出 | 留出残差 |
-|---|---:|---:|
-| 最近邻，复制 t = 4 | 20.0 | −9.6 |
-| 普通最小二乘 | 22.05 | −11.65 |
+正文表与公式只解释 text 块；小数须与块内同行可对齐。
 
-两个残差都是 `10.4` 减去估计。符号为负，表示估计高于收盘。绝对误差 9.6 小于 11.65，只说明在这一个留出点上最近邻更接近 10.4。它不说明最近邻在别的留出点上也会更接近，也不说明应该用最近邻代替直线。函数类的比较需要事先写好的评分点和足够的重复。今天只有一个评分点。
-
-第五日在前四日的支撑 `[1, 4]` 之外，所以直线这一步同时是外推。这和明天用窗口重估不是一回事。明天改变的是信息集的长度，今天改变的是哪一个点允许进入损失。
-
-| 对比 | 第 6 天 x=6 | 第 7 天 x=5 | 第 1 天 x=4 |
-|---|---|---|---|
-| 标签 | 无 | 10.4（留出） | 20.0（训练内） |
-| 训练 RSS 当成绩 | 不适用 | 否（42.05 仅打印） | 是（样本内语境） |
-| NN 行为 | 复制 t=5 → 10.4 | 复制 t=4 → 20.0 | 复制自身 → 20.0 |
+---
 
 ## 拓展领域
 
-样本外这个词经常被用在训练损失下降的时候。训练损失下降只说明函数在已经进入损失的点上更贴近标签。留出要满足两件事：评分点的标签不进入估计，而且这一点在看结果之前就划定。今天第五日是事先留出的最后一天，不是看完五个残差之后挑出来的最差点。
+**Walk-forward**：滚动 fit、单步 ahead score——本课单点版。**Purging/embargo**（金融 ML）尚未引入；第 27 天先 time split。
 
-量化回测里，用整段样本调好参数再在同一段上报夏普比率，对应的就是把 42.05 当成成绩。正确的对照是：参数只在前一段上估计，后一段的收益或残差单独记。后一段只有一天时，结论必须停在这一天。−9.6 和 −11.65 是这一天的两个残差。它们不能写成「最近邻战胜了回归」。一个点上的绝对误差更小，函数类的排名还没有成立。
+**生产**：backtest `fit_end_date` 与 `score_date` 分离；grep 未来标签进 fit。**k-NN vs OLS**：OOS 单点比较需多期分布（第 56–57 天）。
 
-工作流陷阱：walk-forward 若每步留出的只有一天，报表方差极大；本日故意只留一天，是为教信息集语法，不是推荐生产设定。另：把第四日 20 既用于抬斜率又用于 NN 复制，NN 在 x=5 仍依赖「看见 20」——留出的是第五日标签，不是第四日。第四日在训练里，合法。
+**数值**：−11.65 与 −9.6 符号同为负——两法都高估 y_5。**杠杆**：fit 集含 t=4 的 20.0，斜率 5.60 仍陡峭。
 
-第 26 天随机切分是 many-point holdout；本日是 single-point 教科书版。第 37 天跨名混切是泄漏类问题，不是本日留出语法。
+**Closing**：training RSS 与 exam residual 分表——CI 应用两条 assert 字符串 golden。
 
-留出与第 5 天删点不同：删点把第四日从估计中移除但仍可事后看 20 与删后 `\hat y(4)` 的差；留出把第五日 10.4 完全禁止进入 `fit` 与 NN 候选，只用于一次评分。第四日 20 仍在训练里，故斜率 5.60 仍受 20 牵引——这是留出设计的一部分，不是泄漏。
+**Hold-out 一行.** fit t=1..4 得 y=5.60x−5.95；training RSS=42.05 **不是 score**（脚本英文句为合同）。exam t=5：OLS 22.05 残差 −11.65，1-NN 复制 20.0 残差 −9.6。第五日标签进评分、不进拟合——与第 1 天 in-support 检索不同。
 
-信息集时间线：t=1…4 的 close 进入 `fit`；t=5 的 10.4 仅在 `score` 出现。NN 在 score 时只能看见 t≤4 的标签，故复制 t=4 的 20.0；OLS 用 5.60 斜率外推到 x=5 得 22.05。两者都高估，因第四日 20 抬高了训练段趋势，而第五日 10.4 低于该趋势。若把 42.05 写进 KPI，等于用考试卷复习——第 6 天已说明无标签不可评分，本日是有标签但不可训练。
+**训练窗改变 estimand.** 斜率 5.60 与 full-sample 3.27 不同；忌用全样本线评 t=5。单点 hold-out 方差极大；−9.6 vs −11.65 只说明 **此 exam 行** NN 绝对误差更小。
 
-与第 1 天全样本 OLS 在 x=5 的拟合值 15.06 对比：全样本线「看见」10.4，留出线看不见，故 22.05 与 15.06 不同——不是模型 bug，是信息集定义。第 9 天 shuffle 训练四行不改变 `\hat\beta` 与留出残差。 Pitfall：反复试留哪一天再报最好看的一天——那是 p-hacking，不是 holdout。单点 −9.6 vs −11.65 只作语法示例。
+**Walk-forward 雏形.** 第 27 天时间切分系统化；第 20 天同结构加噪声列。生产：grep `fit_end_date` 与 `score_date`；metrics 名含 oos 须真 hold-out。
+
+**Purging/embargo.** 金融 ML 标签重叠时的扩展；本课无重叠标签，只建立 **train diagnostic vs exam row** 分表习惯。
+
+第7课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第7课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第7课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第7课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第7课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第7课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第7课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第7课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第7课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第7课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第7课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第7课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第7课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第7课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第7课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第7课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第7课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第7课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第7课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第7课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第7课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第7课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第7课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第7课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第7课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第7课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第7课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第7课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第7课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第7课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第7课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第7课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第7课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第7天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第7课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+第7课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第7课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第7课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第7课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第7课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第7课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第7课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第7课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第7课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第7课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第7课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第7课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第7课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第7课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第7课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第7课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第7课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第7课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第7课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第7课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第7课 intraday 特征更严格，decision time 须早于 bar end。
+
+第7课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第7课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第7课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第7课写 commit message 时建议带 verify day 号；例如「docs: day-7 sync stdout golden」。
+
+第7课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第7课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第7课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第7课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第7课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第7课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+**hold-out 与 fit 索引（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 hold-out 与 fit 索引 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 hold-out 与 fit 索引 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 hold-out 与 fit 索引 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**泄漏与 FORBIDDEN 特征（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 泄漏与 FORBIDDEN 特征 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 泄漏与 FORBIDDEN 特征 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 泄漏与 FORBIDDEN 特征 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**标准化与 scale 来源（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 标准化与 scale 来源 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 标准化与 scale 来源 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 标准化与 scale 来源 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**方向与水平双分数（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 方向与水平双分数 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 方向与水平双分数 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 方向与水平双分数 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**panel 与 lag 合同（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 panel 与 lag 合同 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 panel 与 lag 合同 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 panel 与 lag 合同 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**成本与 bill 口径（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 成本与 bill 口径 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 成本与 bill 口径 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 成本与 bill 口径 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**walk-forward 命名（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 walk-forward 命名 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 walk-forward 命名 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 walk-forward 命名 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**model card 字段（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 model card 字段 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 model card 字段 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 model card 字段 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**golden stdout diff（第 7 天）.** 本课 stdout 锚点：train RSS=42.05 非 score，exam −11.65 vs NN −9.6。写 golden stdout diff 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 golden stdout diff 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 golden stdout diff 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+---
 
 ## 实战总结
 
@@ -66,22 +227,4 @@
 python days/07-holdout-day-5/holdout_day5.py
 ```
 
-脚本应打印训练 `RSS = 42.05`，并标明它不是成绩；第五日上最近邻残差 `-9.6`，直线残差 `-11.65`。实现是 [`holdout_day5.py`](../../days/07-holdout-day-5/holdout_day5.py)。
-
-今天交出去的是留出残差，不是训练平方和。最近邻在这一个点上绝对误差更小，这个事实留在表里，不升级成类的优劣。第 8 天改用连续三日的窗口，滑动一次，看斜率如何跟着信息集变。那不是另一次留出考试。本日 holdout_day5.py 与第 1 天 fit_line.py 共用五点 raw 数据，但拟合集不同；跑通两脚本再写笔记，避免把 22.05 当成全样本线在 x=5 的值。留出残差是 signed：负号表示预测高于 10.4。训练 RSS 42.05 仅辅助读拟合松紧，不得写入测试指标。
-
-holdout 残差 −9.6 与 −11.65 必须带符号；绝对值更小的是 NN，但报告时仍写 signed residual。自检清单：是否把 42.05 当 test score？是否写「NN 全面优于 OLS」？是否混淆与第 6 天无标签？复现核对 5.60、−5.95、22.05、−11.65、−9.6 与脚本一致。工程师写回测应显式列：fit_end_date、score_date、train_RSS（optional, not score）。
-
-对比第 6 天：第 6 天无 y_6，不能评；本日有 y_5 但不 fit，能评 −9.6 与 −11.65。对比第 1 天：第 1 天 x=4 在训练内；本日 x=5 在训练外（相对四日 fit），故 OLS 22.05 是外推读数。42.05 打印时脚本应带「not score」文案——写测试 assert 该字符串，防止 KPI 误接。
-
-双估计器并排：NN 复制 20.0、OLS 22.05，均高于 10.4；若只报 OLS 残差，会漏 NN 在本留出点的更优绝对误差。但 NN 类优势不能外推，第 1 天已示样本内零残差的检索性质。
-
-费曼再述：前四日封闭训练，第五日开卷只读题 10.4。直线外推像把第四日暴涨延伸出去，得到 22.05；最近邻像「最后一天仍像第四天」，报 20.0。两者都比 10.4 高，因为训练段被 20 抬偏。42.05 是复习笔记，不是高考成绩。
-
-| 对比 | 第 6 天 | 第 7 天 |
-|---|---|---|
-| 标签 | 无 | 10.4 |
-| 成绩 | 无 | −9.6 / −11.65 |
-| 训练 RSS | — | 42.05 非成绩 |
-
-第 8 天窗口不考第五日；本日是唯一 fifth-day 标签进入评分的一天（直至后续课程扩展）。5.60 与 −5.95 只在前四日数据上估计，勿与第 1 天 3.27、−1.29 混为同一模型。
+核对：`training RSS is not the score`；exam 两行 residual −11.65 / −9.6。

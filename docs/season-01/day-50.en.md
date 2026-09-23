@@ -18,8 +18,6 @@ The claim stops at this count. On 2024-03-29 all four flags are true. The same p
 
 ## Core
 
-The direction comparison is on one-step differences along the later stretch, not on the SSE of the price level. Day 46's later SSE is a different column: line 2.9263, ridge 3.2545, tree 2.1488. That column does not decide whether the sign on 2024-03-29 is right. The sign reads a difference. SSE reads a level.
-
 ```text
 later date = 2024-03-29
 line wrong = true
@@ -28,6 +26,8 @@ tree wrong = true
 vote wrong = true
 days all three and the vote are wrong = 8
 ```
+
+The direction comparison is on one-step differences along the later stretch, not on the SSE of the price level. Day 46's later SSE is a different column: line 2.9263, ridge 3.2545, tree 2.1488. That column does not decide whether the sign on 2024-03-29 is right. The sign reads a difference. SSE reads a level.
 
 The vote is `sign(sign₁ + sign₂ + sign₃)`. When all three signs equal the opposite of the actual direction, the sum equals three times that opposite sign, the vote's sign matches the three, and the vote is wrong. 8 is the number of such days. The count adds the rows on the later stretch that meet the condition.
 
@@ -42,6 +42,8 @@ A majority vote has no third answer available when all three members point to th
 Taking the difference of a level model as a direction keeps the distinction from day 10: a price residual and the sign of the move are not the same score. The label here is the one-step sign of adjusted close on the later stretch. The prediction is the one-step sign of each fitted path. On 2024-03-29 the script does not add a residual for how close the level sat to the close. It gives four wrong flags, all true.
 
 The information set of each estimate stops at the first 59 rows. Directions on the later stretch do not flow back into the slope or the leaves. The vote does not flow back either. It sums three signs that have already been computed. The sum cannot create a sign that none of the three members produced. When the three members produce the wrong sign, the sum produces the wrong sign. That is the case on the 8 days, and it is the case on 2024-03-29.
+
+**Vote failure.** Eight days all three models and the vote are wrong—consensus does not fix systematic direction error.
 
 ## What the run showed
 

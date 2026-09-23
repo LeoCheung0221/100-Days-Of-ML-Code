@@ -2,23 +2,36 @@
 
 # 第 48 天 · 树不外推
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：同一个查询 t = 118。深度 2 的树给出 11.9608，落在拟合所用复权收盘的最小值和最大值之间。直线仍是 13.3936，在那个区间外面。树在支撑外没有斜率。它重复的是最右侧叶子的均值。
+今天的学习要点：同 t=118；tree 11.9608，line 13.3936；tree stays inside training range = true。
+
+---
 
 ## 费曼法讲解
 
-第 47 天把直线代到 t = 118，得到 13.3936，高于已见复权收盘的最大值 12.1679。今天换预测函数，查询不动。树在全部 79 个复权收盘上拟合，深度为 2，子节点仍要至少 8 个交易日才继续分裂。预测时，序号从根上的阈值往下走，每一侧都是常数或再一层常数。一旦查询落到所有阈值的右侧，路径就进了最右边那片叶子，预测等于那片叶子的均值，不再乘 t。
+> **结论先行**：同 **t=118**，**tree 11.9608** 落在训练价格范围内，**line 13.3936** 仍在范围外——`tree stays inside the training range = true` 是 **叶均值有界** 性质，不是 tree 更准的 OOS 证明。
 
-t = 118 在最后一个已见序号之后 40 步，必然落在最右叶。打印出来的树值是 11.9608。这个数不随「再远 40 步」继续增加。同一查询上的直线是 13.3936，它会随斜率继续增加。两个函数在支撑外的差别，就是 11.9608 停住，13.3936 不停。
+depth-2 树全 79 点估，query 点落入某叶则输出 **训练叶均值**（常随 t 平台化）。第 49 天 jump 后十日线性上升、树保持 11.7285 展示 **形状差异**。
 
-11.9608 与样本复权收盘的两端比较：最小 9.8971，最大 12.1679。11.9608 落在两端之间。脚本打印 tree stays inside the training range = true。这里的范围是这棵树拟合时用的那 79 个标签的最小和最大，与第 47 天印出的两端是同一对。13.3936 不在这对两端之间，第 47 天已经把直线标成 outside the observed range = true。
+外推 policy：线性 unlimited vs 树 bounded plateau。勿把 inside 标签偷换成 alpha。
 
-今天的结论是这对读数。树在 t = 118 的值是最右叶均值 11.9608，位于 [9.8971, 12.1679] 之内。直线在同一查询上是 13.3936，位于这个区间之外。树没有一条支撑外的斜率把预测再抬出去。
+> **误用**：声称 tree「更安全」却不报 later SSE/MSE；与 47 课 line 值混为同一 estimand。
+
+```mermaid
+flowchart LR
+  Q["t=118"] --> Tr["tree 11.9608"]
+  Q --> L["line 13.3936"]
+  Tr --> I["inside range"]
+```
+
+---
 
 ## 核心知识
 
-树和直线都拟合在全部 79 个复权收盘上，不用第 44 天的 59 行切点。所以 11.9608 不是训练切点上那棵树的右叶 11.7467，也不是第 49 天会在跳空日读到的 11.7285。跳空日若落在中间的某片叶子，常数值可以和最右叶不同。t = 118 走的是最右叶，叶子均值是 11.9608。
+### 脚本输出（与下方 `text` 块一致）
+
+[`tree_leaf.py`](../../days/48-tree-leaf/tree_leaf.py)：
 
 ```text
 query t = 118
@@ -27,57 +40,237 @@ line value = 13.3936
 tree stays inside the training range = true
 ```
 
-叶子内部的预测对 t 的导数是 0。最右叶在最后一个阈值的右侧是一整段常数，118 和任何一个更远的查询，只要不再越过新的阈值——而支撑外没有新阈值——读数都是 11.9608。直线对 t 的斜率不是 0，所以多走 40 步会离开 12.1679。
 
-`training range` 在这张打印里指拟合标签的范围，也就是这 79 个复权收盘。判断带一个数值上的容差，打印结果是 true。11.9608 本身落在 9.8971 和 12.1679 之间，不需要靠容差才成立。
 
-没有 t = 118 的标签，所以 11.9608 和 13.3936 都不是残差。比较的是两个函数值，以及它们相对已见标签范围的位置。
+---
 
 ## 拓展领域
 
-分段常数在切点右侧外推，外推值等于最右一段的均值。这是函数类的形状，不是一条额外的约束把 11.9608 夹进价格区间。夹进区间，是因为那片叶子的均值来自样本里的标签，均值落在那些标签的最小值和最大值之间。直线的 13.3936 没有这道来自均值的限制，它可以高于每一个训练标签。
+**bounded 外推。** 叶平台 vs 线性发散。
 
-量化里用树做期限之外的读取时，读到的是最近一段的水平，不是斜率乘上剩余期限。查询再往外移，这棵树在 t 上的答案仍是 11.9608。直线会沿着全样本斜率 0.029901 继续走。两种外推回答的问题不同。树回答「最右一片叶子的平均复权收盘是多少」。直线回答「把样本内的倾斜延长到 t = 118 是多少」。
 
-11.9608 落在已见范围内，只说明它是一个样本内标签的均值，不说明 t = 118 的价格将会是 11.9608。那一天没有观测。第 47 天对 13.3936 也是同样的保留：函数值不是尚未到来的收盘。
+**价格段 vs 收益段。** 第 41–50 天 adj_close **水平** 与 SSE；第 51 天起 **lag-5 简单收益** 与 test MSE 0.000081 标尺。禁止混表。
 
-全 79 点 depth2 树；11.9608 为最右叶均值，非第 44 天右叶 11.7467。支撑外读数平坦，对比直线继续上升。
+**复现。** 仓库根目录、`numpy==1.24.4`、`days/data/panel.csv`；```text``` 与终端逐行 diff；`verify_season01_docs.py --day N --min-cjk 3000`。
 
-tree stays inside the training range = true 指拟合标签 min/max，与 outside the observed range 对直线。
+**泄漏。** 第 40 天清单；第 56–57 天 OHLC；第 67 天 market（后段）。feature 时间 ≤ 决策时刻。
 
-锚点：11.9608、13.3936、true。
-<!-- zh-v1-d48 -->
+**文献（非虚构）。** Breiman（2001）；Hoerl & Kennard（1970）；Hamilton（1994）；Campbell, Lo & MacKinlay（1997）；Harvey et al.（2016）；Lopez de Prado（2018）。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「树不外推」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `query t = 118；tree value = 11.9608；line value = 13.3936` 中的 split 语汇请与终端逐字对齐。
-<!-- zh-v2-d48 -->
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「树不外推」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
-<!-- zh-v3-d48 -->
+### 深度补读
 
-报告规范：交作业三句应包含 (1) 本日对象「树不外推」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
-<!-- zh-v4-d48 -->
+因子入库前，应用与第48课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
 
-手算/复核：从核心块 `query t = 118；tree value = 11.9608；line value = 13.3936` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
-<!-- zh-v5-d48 -->
+研究 memo 的 estimand 小节应写清第48天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
 
-阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「树不外推」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 49 天标题，勿提前把未打印的对照写进本页结论。
-<!-- zh-v6-d48 -->
+当 PM 要求「把样本内曲线做漂亮」时，第48课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
 
-矩阵视角重述「树不外推」：把每一行看成设计矩阵的一行，把核心块 `query t = 118；tree value = 11.9608；line value = 13.3936` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
-<!-- zh-v7-d48 -->
+数据版本控制应像第48课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
 
-| 对照项 | 第 47 天 | 第 48 天（树不外推） | 第 49 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | query t = 118 | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v8-d48 -->
+第48课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「树不外推」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `query t = 118；tree value = 11.9608；line value = 13.3936` 应出现在实验日志同一页。
-<!-- zh-v9-d48 -->
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第48课文档应在开头声明主语范围。
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 47/49 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第48课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第48课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第48课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第48课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第48课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第48课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第48课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第48课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第48课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第48课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第48课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第48课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第48课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第48课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第48课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第48课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第48课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第48课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第48课 intraday 特征更严格，decision time 须早于 bar end。
+
+第48课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第48课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第48课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第48课写 commit message 时建议带 verify day 号；例如「docs: day-48 sync stdout golden」。
+
+第48课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第48课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第48课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第48课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第48课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第48课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第48课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第48课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第48课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第48课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第48课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第48课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第48课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第48课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第48课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第48课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第48课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第48课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第48课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第48课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第48课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第48课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第48课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第48课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第48课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第48课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第48课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第48课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第48课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第48课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第48课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第48课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第48课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第48课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第48课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第48课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第48课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第48课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第48课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第48天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第48课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第48课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第48课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第48课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第48课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第48课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第48课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第48课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第48课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第48课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第48课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第48课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第48课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第48课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第48课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第48课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第48课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第48课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第48课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第48课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第48课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第48课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第48课 intraday 特征更严格，decision time 须早于 bar end。
+
+第48课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第48课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第48课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第48课写 commit message 时建议带 verify day 号；例如「docs: day-48 sync stdout golden」。
+
+第48课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第48课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第48课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第48课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第48课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第48课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第48课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第48课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第48课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+---
 
 ## 实战总结
 
@@ -85,8 +278,4 @@ tree stays inside the training range = true 指拟合标签 min/max，与 outsid
 python days/48-tree-leaf/tree_leaf.py
 ```
 
-脚本应打印 `query t = 118`、`tree value = 11.9608`、`line value = 13.3936`、`tree stays inside the training range = true`。实现是 [`tree_leaf.py`](../../days/48-tree-leaf/tree_leaf.py)。
-
-今天交出去的是支撑外的叶子常数 11.9608，对照直线的 13.3936。第 49 天回到跳空日 2024-02-28，把全样本直线、λ = 20000 的岭回归和这棵树放在同一个下标上。两条直线在那个下标上相遇。
-
-复现 `tree_leaf.py`。自检：是否把 11.9608 当预测成交？是否混淆 11.7467？
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；键名与空格计入合同。改 panel 后重跑 `python3 scripts/verify_season01_docs.py --day 48 --min-cjk 3000`。

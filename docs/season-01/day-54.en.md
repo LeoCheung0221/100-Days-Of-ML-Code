@@ -24,6 +24,9 @@ Explain 0.000121>0.000081 as higher hold-out error with contemporaneous volume, 
 
 ## Core
 
+
+Copy stdout literally: English keys, spacing, signs, and printed decimals. The ```text``` block must diff clean against the day script.
+
 ```text
 test MSE five lags only = 0.000081
 test MSE five lags and volume = 0.000121
@@ -40,13 +43,6 @@ Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows 
 | forbidden OHLC/market | Contract holds | See days 56–57, 67 |
 | train/test rows | Default 54/19 | Day 58 calendar cut excepted |
 
-Day 54 prints 4 contract lines:
-
-- `test MSE five lags only = 0.000081`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `test MSE five lags and volume = 0.000121`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `MSE rise when volume removed = -0.000040`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `volume helped on the test stretch = false`: match the terminal verbatim—keys, spacing, signs, six decimals.
-
 Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
 
 ## Further out
@@ -58,8 +54,6 @@ Day 70 recap repeats that volume did not help—consistent with false today.
 Next: three-model MSE and miss-mode sentences.
 
 Baseline five lags 0.000081; with volume 0.000121; rise −0.000040; helped=false. Day 70 recap repeats volume did not help. Train R² is not delivery evidence.
-
-Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
 
 Day 55 compares miss modes across line, ridge, and tree; today installs the volume-false anchor. Log false beside split and AAA.
 

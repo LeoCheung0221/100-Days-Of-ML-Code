@@ -56,3 +56,4 @@ python days/23-three-day-run/three_day_run.py
 The script prints `events = 11`, `hits = 6`, `accuracy = 0.5455`, and `the rule is fixed before the count`. The implementation is [`three_day_run.py`](../../days/23-three-day-run/three_day_run.py).
 
 The rule is three equal adjusted-move signs, none of them zero, and the fourth is predicted to match. Eleven events produce 6 hits, accuracy 0.5455. The condition was not changed after the result. Next the same rule scores only the later stretch. The earlier accuracy is printed and is not the score.
+

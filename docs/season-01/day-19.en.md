@@ -67,3 +67,4 @@ python days/19-unscaled-volume/unscaled.py
 The script prints the raw time coefficient 1.482253, the raw volume coefficient 1.731932e-06, the mean absolute contributions 4.4468 and 4.3645, and the standardized coefficients 2.7049 and 4.7815. The implementation is [`unscaled.py`](../../days/19-unscaled-volume/unscaled.py).
 
 The coefficient 1.731932e-06 is a price coefficient per share. After it multiplies a volume counted in shares, the mean absolute contribution is 4.3645, on the same price scale as time's 4.4468. After standardization the volume coefficient 4.7815 is larger than the time coefficient 2.7049. The small raw coefficient is a units illusion, not evidence that volume can be dropped.
+

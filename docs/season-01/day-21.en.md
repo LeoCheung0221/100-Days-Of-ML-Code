@@ -53,3 +53,4 @@ python days/21-fixed-table/fixed_table.py
 The script prints `path = days/data/panel.csv`, `rows = 160`, `second read matches = true`, AAA dates from 2024-01-02 through 2024-04-23, `AAA blank closes = 1`, and `the table is not resampled`. The implementation is [`fixed_table.py`](../../days/21-fixed-table/fixed_table.py).
 
 Today hands in the identity of the table: 160 rows, AAA and BBB with 80 sessions each, one blank AAA close, two reads of the file text that match, and no resampling at runtime. Next, yesterday's adjusted-move sign calls today, beside the coin-flip baseline 0.5000.
+

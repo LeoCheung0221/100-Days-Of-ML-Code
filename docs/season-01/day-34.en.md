@@ -14,14 +14,14 @@ AAA has a row dated 2024-02-01 whose close is not a finite number. The close on 
 
 ## Core
 
-The blank is located by a close that is not finite. The date prints as 2024-02-01. The fill does not estimate and does not interpolate between the two neighbors. It takes the adjacent close.
-
 ```text
 blank date = 2024-02-01
 fill from the previous close = 10.1047
 fill from the next close = 9.8971
 the next close sees the future
 ```
+
+The blank is located by a close that is not finite. The date prints as 2024-02-01. The fill does not estimate and does not interpolate between the two neighbors. It takes the adjacent close.
 
 The previous-close fill places 10.1047 on 2024-02-01. The next-close fill places 9.8971 on the same row. If a backtest may use new information only after that session's close, the previous close is a price that has already happened, and the next close appears on the following session. Filling with 9.8971 puts the next session inside the blank day's inputs. This is the same kind of problem as yesterday's whole-sample scale: a number that was not yet allowed to be seen enters the input used to build the sample. Yesterday that number was hidden inside 0.002470 and 0.019265. Today the number is 9.8971.
 
@@ -37,10 +37,9 @@ After 9.8971 is written onto 2024-02-01, the row is finite again, and a later si
 
 Once the two candidate prices stand side by side, the blank day has not yet been written into a price path. 10.1047 is the close already printed on the previous row. 9.8971 is the close that appears only on the next row. A research note that keeps only the filled series shows a later reader a finite close and hides which row the fill came from. The script keeps the date and both prices so the choice on 2024-02-01 stays in the print. Choosing 10.1047 uses a price that has already happened. Choosing 9.8971 uses the next close. Both numbers are printed, and the second one sees the future.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Blank 2024-02-01: fill 10.1047 from previous close vs 9.8971 from next close; the next close sees the future.
+
+**Fill direction.** Previous close 10.1047 is causal; next close 9.8971 sees the future.
 
 ## What the run showed
 

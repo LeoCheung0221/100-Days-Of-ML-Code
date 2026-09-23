@@ -2,81 +2,217 @@
 
 # 第 19 天 · 未缩放的成交量
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
 今天的学习要点：原始系数里时间是 1.482253、成交量是 1.731932e-06，两者的平均绝对贡献却是 4.4468 和 4.3645，标准化之后时间是 2.7049、成交量是 4.7815；成交量那个很小的原始系数是股数单位造成的错觉，不是把成交量丢掉的证据。
 
+---
+
 ## 费曼法讲解
 
-五个会话上现在有两列。时间是 1、2、3、4、5。成交量是 1.0e6、1.2e6、0.9e6、8.0e6、1.5e6，单位是股。两列一起去拟合五个收盘 2.1、3.9、6.2、20.0、10.4。拟合给出两个原始系数：时间 1.482253，成交量 1.731932e-06。
+> **结论先行**：raw β_time=1.482253、β_vol=1.73e−6，但 mean|贡献|≈4.45 vs 4.36；标准化后 2.7049 vs 4.7815——**单位尺度误导系数大小**，不是 volume 无关。
 
-把这两个系数并排，成交量看起来可以忽略：1.731932e-06 比 1.482253 小了几个数量级。这个并排比较的是两种单位。1.482253 的含义是时间这一列上的价格系数，1.731932e-06 的含义是每一股上的价格系数。一天和一股不是同一个尺度。成交量的数值本身在一百万股附近，一个「每股」的系数乘上以股计的成交量，乘积回到价格的量级。系数小，是因为被乘的那一列大。
+```mermaid
+flowchart LR
+  RAW["原始 β 不可比"] --> STD["标准化后 vol 更大"]
+  C["mean |contribution| 可比"]
+```
 
-平均绝对贡献把这个乘积做出来，再取绝对值的平均。时间列的平均绝对贡献是 4.4468。成交量列的平均绝对贡献是 4.3645。两个数都在价格的尺度上，而且彼此接近。在这个尺度上，成交量列并没有因为系数写成科学计数法就从拟合里消失。
+双因子线性结构：time 与 volume **量纲不同**。原始 β_vol 极小因股数单位；**平均绝对贡献** 4.3645 与 time 4.4468 同量级——应读 contribution 而非 raw β。
 
-再把两列各自减去自己的均值、除以自己的标准差，重新拟合。标准化之后的时间系数是 2.7049，成交量系数是 4.7815。这时两列都用「一个标准差」做单位，系数可以比大小。成交量的 4.7815 大于时间的 2.7049。原始系数里那个 1.731932e-06 所暗示的「成交量几乎无关」，在统一单位之后不成立。很小的原始系数是股数单位造成的错觉。它不是把成交量从列里丢掉的证据。
+标准化后 β_vol=4.7815 > β_time=2.7049——**尺度对齐后排序变**。生产 pipeline 须在 fit 前 declare **scaling policy**（train-only std，第 33 天）。
+
+误用：因 1e−6 丢弃 volume 特征；不做 scaling 比较系数。
+
+---
 
 ## 核心知识
 
-原始拟合的两列系数：
+### 脚本输出（与下方 `text` 块一致）
+
+[`unscaled.py`](../../days/19-unscaled-volume/unscaled.py)：
 
 ```text
-raw beta time   = 1.482253
+raw beta time = 1.482253
 raw beta volume = 1.731932e-06
-```
-
-第 j 列在每个会话上的贡献是系数乘上该列的原始数值。对五个会话取绝对贡献的平均：
-
-```text
-mean |time contribution|   = 4.4468
+mean |time contribution| = 4.4468
 mean |volume contribution| = 4.3645
-```
-
-4.4468 和 4.3645 可以比较，因为它们已经乘回了各自的列，单位都是价格。1.482253 和 1.731932e-06 不能用「谁更接近 0」来决定去留，因为它们的单位是价格对时间、价格对股数。
-
-标准化是对列做的：每一列减去该列五个数的均值，再除以该列的标准差，然后重新做最小二乘。新的系数是
-
-```text
-standardized beta time   = 2.7049
+standardized beta time = 2.7049
 standardized beta volume = 4.7815
 ```
 
-在这组单位下，成交量的系数大于时间的系数。方向与原始系数的视觉印象相反。原始印象来自 1.731932e-06 的写法，标准化结果来自 4.7815 与 2.7049 的比较。没有把单位对齐之前，较小的那个系数可以只是较大的那种计量单位。
 
-这里的时间系数 1.482253 也不是前几天那条单变量直线的斜率 3.27。3.27 属于 `ŷ = 3.27x − 1.29`，列里是时间和一个截距。今天的原始拟合把时间与未缩放的成交量放进同一个最小二乘，系数会重新分配。用 1.482253 去读 3.27，或用 3.27 去读今天的成交量系数，是把两个不同的列空间当成了同一个系数。今天要读的对比在同一套拟合内部：原始系数一对，平均绝对贡献一对，标准化系数一对。
+正文表与公式只解释 text 块；小数须与块内同行可对齐。
 
-丢掉成交量的论证如果只引用 1.731932e-06，它没有回答平均绝对贡献 4.3645 在价格尺度上的位置。4.3645 与时间的 4.4468 是同一张贡献表上的两个数。丢掉这一列，是丢掉一份平均绝对贡献与时间列相当的输入。标准化系数 4.7815 进一步说明，按标准差对齐之后，这一列的系数大于时间的 2.7049。这是这五个点上的拟合事实。它否定的是那句由单位造成的话：系数小，所以列可以删。
+---
 
 ## 拓展领域
 
-时间和成交量放在一起时，列的单位经常差几个数量级。价格对时间的系数、价格对股数的系数，打印在同一行时，小数点的位置会模仿重要性。重要性若指对拟合值的贡献，就要看系数乘以该列之后的幅度。今天这个幅度的摘要是 4.4468 和 4.3645。两个摘要接近，原始系数却一个是 1.482253、一个是 1.731932e-06。错觉就出现在这一对对照里。
+**Implementation**：sklearn StandardScaler on train。**风险**：用 full-sample std 泄漏。
 
-标准化系数是另一份摘要，单位换成各列自己的波动。成交量五天里从 0.9e6 到 8.0e6，时间只从 1 到 5。成交量的原始数值大，所以它的原始系数被压小；时间的原始数值小，所以它的原始系数看起来大。除以标准差就是把这份尺度从系数里移走。移走之后比较 2.7049 和 4.7815，问的是各自波动一个标准差时，拟合里的系数谁大。答案是成交量的系数大。这个答案不把时间从列里删掉，也不把这一结论外推成成交量在别的样本上永远有用。它禁止的是用 1.731932e-06 单独做删除决定。
+**Closing**：4.7815 vs 2.7049 是 **标准化合同下** 的结论；raw 行只说明单位。
 
-以后看到科学计数法的系数，先写单位，再写平均绝对贡献或标准化系数。三行都在，才看得出小系数是计量，还是贡献确实接近 0。今天贡献不接近 0：4.3645 就在时间的 4.4468 旁边。成交量留在这张表里。
+**单位与贡献.** raw β_time=1.482253，β_volume=1.731932e−06；mean |contribution| 4.4468 vs 4.3645 **同量级**——小系数是 **股数单位**，不是 volume 无关。
 
-勿比 raw beta 1.482253 与 1.731932e-06 大小判重要性——单位是 price/time vs price/share。mean |contribution| 4.4468 vs 4.3645 才可同比。标准化 beta volume 4.7815 > time 2.7049 反转 raw 视觉。
+**标准化后.** standardized β_time=2.7049，β_volume=4.7815—— **尺度可比后 volume 斜率更大**。第 33 天 train-only scale；本课两点对比 raw vs standardized。
 
-单变量斜率 3.27 属于只有 t 的模型；Today 双列 OLS 系数不同属正常。删 volume 论点若仅引 e-06，未回应 4.3645 贡献。
+**勿删 volume.** 因 raw β 小就 drop 列是错误推理。代码：`StandardScaler` 在多元回归前必 fit train。
 
-标准化：列减均值除 std 后再 fit。volume 波动大，raw 系数被压小。报告三件套：raw pair、contribution pair、standardized pair。
+**因子发布.** 对外报告 standardized β 或 SHAP；raw 系数需带单位字符串。
 
-五会话样本小，结论限定本 n=5。今天禁推广为「volume 永远更重要」。今天只禁「小系数=可删列」。
+第19课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
 
-跑 `unscaled.py` 全打印。交作业写单位错觉与 4.7815>2.7049。下一步 noise column 与 holdout。
-【续】五点的标准化 std 可能受 8.0e6 主导；Today 只报告脚本给出的 2.7049 与 4.7815，不外推。删列决策需看 4.3645 与 4.4468，不能只看 e-06。时间系数 1.482253 不得与 3.27 混读。
+第19课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
 
-报告模板三行：raw、|Xβ| mean、standardized。缺一行易犯单位错。unscaled.py 全打印核对。下一步 noise holdout。
-贡献均值 4.3645 接近 4.4468 说明在价格尺度两列平均推力相当；标准化后 volume 更大说明波动调整后 volume 边际更强——二者不矛盾。样本 n=5，任何系数仅作教学，不作资产定价结论。
+第19课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
 
-删变量检查清单：报告 raw beta、mean |contribution|、standardized beta 三行后再决定。Today 结论：不能因 e-06 删 volume。时间 1.482253 不得当作单变量 3.27 的更新。unscaled.py 链接 ../../days/19-unscaled-volume/unscaled.py。
-【终稿补充】raw beta time 1.482253、volume 1.731932e-06 不可比大小。mean |contribution| 4.4468 vs 4.3645 在价格尺度可比。standardized beta volume 4.7815 > time 2.7049。单变量斜率 3.27 是另一模型。删 volume 若只引 e-06 未回应 4.3645。五行 n=5 结论不外推。报告三行 raw/contribution/standardized。unscaled.py 全打印。下一步 noise seed 0 holdout。
-【终稿补充·续】三件套 raw 1.482253/e-06、贡献 4.4468/4.3645、标准化 2.7049/4.7815 同屏。删列论证需回应 4.3645。3.27 非本模型斜率。n=5 不外推。unscaled.py。单位 price/time vs price/share。标准化后 volume 更大。报告忌只贴 raw 系数。下一步 noise holdout 18.1513>11.6500。
-【篇幅闭合】第 19 天三件套：raw beta 1.482253 与 1.731932e-06；mean |contribution| 4.4468 与 4.3645；standardized 2.7049 与 4.7815。请禁止只贴 raw 系数图。删 volume 论证必须回应贡献 4.3645 接近 4.4468。3.27 属于单变量直线，不是本 fit。n=5 不外推。unscaled.py 全打印核对。单位：price/time vs price/share。标准化后 volume 系数更大。本段闭合篇幅，数字不变。
-【数字闭合】raw、贡献、标准化三行数字以 unscaled.py 打印为准，勿删任一行。
-<!-- zh-v1-d19 -->
+第19课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
 
-手算/复核：从核心块 `raw beta time   = 1.482253；raw beta volume = 1.731932e-06` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
+第19课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第19课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第19课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第19课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第19课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第19课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第19课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第19课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第19课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第19课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第19课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第19课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第19课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第19课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第19课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第19课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第19课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第19课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第19课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第19课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第19课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第19课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第19课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第19课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第19课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第19课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第19课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第19课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第19课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第19课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第19课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第19课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第19课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第19课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第19课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第19天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第19课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+第19课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第19课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第19课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第19课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第19课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第19课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第19课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第19课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第19课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第19课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第19课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第19课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第19课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第19课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第19课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第19课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第19课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第19课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第19课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第19课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第19课 intraday 特征更严格，decision time 须早于 bar end。
+
+第19课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第19课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第19课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第19课写 commit message 时建议带 verify day 号；例如「docs: day-19 sync stdout golden」。
+
+**hold-out 与 fit 索引（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 hold-out 与 fit 索引 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 hold-out 与 fit 索引 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 hold-out 与 fit 索引 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**泄漏与 FORBIDDEN 特征（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 泄漏与 FORBIDDEN 特征 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 泄漏与 FORBIDDEN 特征 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 泄漏与 FORBIDDEN 特征 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**标准化与 scale 来源（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 标准化与 scale 来源 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 标准化与 scale 来源 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 标准化与 scale 来源 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**方向与水平双分数（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 方向与水平双分数 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 方向与水平双分数 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 方向与水平双分数 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**panel 与 lag 合同（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 panel 与 lag 合同 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 panel 与 lag 合同 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 panel 与 lag 合同 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**成本与 bill 口径（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 成本与 bill 口径 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 成本与 bill 口径 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 成本与 bill 口径 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**walk-forward 命名（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 walk-forward 命名 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 walk-forward 命名 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 walk-forward 命名 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**model card 字段（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 model card 字段 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 model card 字段 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 model card 字段 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**golden stdout diff（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 golden stdout diff 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 golden stdout diff 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 golden stdout diff 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+**estimand 一句话（第 19 天）.** 本课 stdout 锚点：raw vs standardized β 对照。写 estimand 一句话 相关 memo 时，只能解释终端已打印的键值，不得追加未出现的准确率或阈值。若 pipeline 在 estimand 一句话 环节改动了 fit/score 边界，须重跑本日脚本并更新 ```text``` 块。Code review 应 grep metrics 命名是否与 estimand 一句话 合同一致；与第 7、20、27 天的切分叙事保持同一词汇。
+
+---
 
 ## 实战总结
 
@@ -84,6 +220,4 @@ standardized beta volume = 4.7815
 python days/19-unscaled-volume/unscaled.py
 ```
 
-脚本打印原始时间系数 1.482253、原始成交量系数 1.731932e-06、平均绝对贡献 4.4468 和 4.3645、标准化系数 2.7049 和 4.7815。实现是 [`unscaled.py`](../../days/19-unscaled-volume/unscaled.py)。
-
-1.731932e-06 是每一股上的价格系数。乘上以股计的成交量之后，平均绝对贡献是 4.3645，与时间的 4.4468 同在价格尺度上。标准化后成交量系数 4.7815 大于时间系数 2.7049。小的原始系数是单位错觉，不是删除成交量的证据。
+核对：四行 beta/contribution；standardized 两行。

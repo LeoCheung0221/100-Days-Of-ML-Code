@@ -24,6 +24,9 @@ Price-level trees from days 44–48 share the one-cut intuition but not the SSE 
 
 ## Core
 
+
+Copy stdout literally: English keys, spacing, signs, and printed decimals. The ```text``` block must diff clean against the day script.
+
 ```text
 split column = lag 4
 threshold = -0.020177
@@ -41,14 +44,6 @@ Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows 
 | forbidden OHLC/market | Contract holds | See days 56–57, 67 |
 | train/test rows | Default 54/19 | Day 58 calendar cut excepted |
 
-Day 52 prints 5 contract lines:
-
-- `split column = lag 4`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `threshold = -0.020177`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `left mean = 0.0319  right mean = -0.0014`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `train MSE = 0.000378`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `test MSE = 0.000174`: match the terminal verbatim—keys, spacing, signs, six decimals.
-
 Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
 
 ## Further out
@@ -60,8 +55,6 @@ Day 53 varies tree seeds; line weights should stay fixed.
 Flexibility did not win on test: 0.000174>0.000081.
 
 The stump splits lag4 at −0.020177; train MSE 0.000378 tempts overfitting stories but test 0.000174 loses to the line at 0.000081. Day 53 perturbs tree seeds; line weights should not move. Sketch a step function versus a weighted sum in your notes.
-
-Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
 
 At scoring time each test row compares lag4 to the threshold and picks a constant prediction—no refit on test. Work one row by hand: lag4 −0.03 lands left with ŷ=0.0319; lag4 0.01 lands right with ŷ=−0.0014.
 

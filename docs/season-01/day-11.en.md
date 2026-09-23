@@ -68,3 +68,4 @@ python days/11-direction-labels/labels.py
 The script prints `score = direction hits 3/4` and `day 4 absolute price residual = 8.21`, and it states that this residual is not the score. The day-5 absolute residual is 4.66, and the direction misses. The implementation is [`labels.py`](../../days/11-direction-labels/labels.py).
 
 The line is still `ŷ = 3.27x − 1.29` on the five closes. What changes today is the score column: the direction hit 3/4 enters the score, and 8.21 leaves it. Because the slope is positive, the printed 3/4 is the rule that calls up on every step.
+

@@ -61,3 +61,4 @@ python days/12-threshold/threshold.py
 The script prints the threshold 0.70, the four returns 0.8571, 0.5897, 2.2258, and −0.4800, the labels 1 0 1 0, and `constant-up accuracy = 0.50`. The implementation is [`threshold.py`](../../days/12-threshold/threshold.py).
 
 The prediction is still up on every step. On day 11 this same rule against the sign labels scored 0.75. Today, against the labels cut at 0.70, it scores 0.50. What changes is the class of the step whose return is 0.5897. A citation of 0.50 writes 0.70 in the same definition.
+

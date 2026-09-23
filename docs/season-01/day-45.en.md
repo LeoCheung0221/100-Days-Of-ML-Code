@@ -18,8 +18,6 @@ The claim stops at the table. Depth 2 has the smaller training SSE. Depth 2 has 
 
 ## Core
 
-The training cut is still the first 59 adjusted closes. The later stretch is the remaining sessions. Both trees are fit only on the training stretch.
-
 ```text
 train SSE depth1 = 2.6315
 later SSE depth1 = 0.5669
@@ -27,12 +25,9 @@ train SSE depth2 = 1.3953
 later SSE depth2 = 2.1488
 ```
 
-Subtract inside each column:
+The training cut is still the first 59 adjusted closes. The later stretch is the remaining sessions. Both trees are fit only on the training stretch.
 
-```text
-train:  2.6315 − 1.3953 = 1.2362   (depth 2 smaller)
-later:  2.1488 − 0.5669 = 1.5819   (depth 2 larger)
-```
+Subtract inside each column:
 
 The child rule is in the implementation: a further stump runs only when `n ≥ 8`. Otherwise the child is a leaf and predicts its side mean. Depth 1 does not take that second split. Its training SSE 2.6315 matches day 44's stump, because it is that tree.
 
@@ -48,15 +43,11 @@ Adding depth, leaves, or features often moves training loss down. On a stretch t
 
 The smaller later SSE belongs to depth 1, not depth 2. A rule that reads only the training column selects the layer at 1.3953, and that layer's later SSE is 2.1488, which is larger than 0.5669. The column used by the selection rule is the column the result belongs to.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Depth 2 train SSE 1.3953 but later SSE 2.1488 rises vs depth 1 later 0.5669.
 
-
-<!-- uniq-exp-en2 -->
-
 Pick depth using the column you will actually deploy on; train SSE alone would favor depth 2 while later SSE favors depth 1 on this print.
+
+**Depth trade-off.** Depth2 fits train tighter but later SSE 2.1488 loses to depth1's 0.5669 on the later stretch.
 
 ## What the run showed
 

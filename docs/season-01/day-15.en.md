@@ -67,3 +67,4 @@ python days/15-two-mistakes/mistakes.py
 The script prints `up called down = 0` and `down called up = 1`. Folding those two cells into one rate gives the accuracy 0.75, that is `(4 − 0 − 1) / 4`. The implementation is [`mistakes.py`](../../days/15-two-mistakes/mistakes.py).
 
 The 0.75 can stay in the summary, and it cannot be the only thing that stays. Up called down is 0. Down called up is 1. Both cells appear in the result.
+

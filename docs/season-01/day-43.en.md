@@ -18,8 +18,6 @@ The claim is this. The neighbor set behind 11.6932 does not contain 2024-02-28. 
 
 ## Core
 
-The series is still the 79 AAA adjusted closes. Neighbors are the five rows with smallest |t − t_query|. The sort is stable, so equal distances keep their original order: the query, then the previous session, then the next, then two sessions back, then two sessions forward.
-
 ```text
 query date = 2024-03-20
 neighbor dates = 2024-03-20 2024-03-19 2024-03-21 2024-03-18 2024-03-22
@@ -27,6 +25,8 @@ jump date in the neighbors = false
 local mean = 11.6932
 ols at the query = 11.4800
 ```
+
+The series is still the 79 AAA adjusted closes. Neighbors are the five rows with smallest |t − t_query|. The sort is stable, so equal distances keep their original order: the query, then the previous session, then the next, then two sessions back, then two sessions forward.
 
 11.6932 − 11.4800 = 0.2132 is the gap between the two printed readings. The local mean has no coefficient. The line's value at the query is slope times the query index plus intercept, and those coefficients come from all 79 rows. Membership of the jump date is a set test. The print is false.
 
@@ -42,15 +42,11 @@ The full-sample line cannot refuse that row. The normal equations sum over every
 
 The five neighbors include the query, so this is not the holdout of day 7. A holdout removes the query from the estimate and only then talks about error. Today's local mean counts the query inside 11.6932. Treating that number as an out-of-sample score uses the wrong information set. An out-of-sample cut arrives with the first 59 training sessions on day 44.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Local mean 11.6932 vs OLS 11.4800 at 2024-03-20; jump date not in five neighbors.
 
-
-<!-- uniq-exp-en2 -->
-
 Local mean includes the query day in the five neighbors; it is not a holdout score like day 7.
+
+**Local vs global.** Five-day local mean 11.6932 vs OLS 11.4800 at 2024-03-20; jump not in neighbors.
 
 ## What the run showed
 

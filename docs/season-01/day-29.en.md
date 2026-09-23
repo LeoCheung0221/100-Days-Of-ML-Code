@@ -27,23 +27,9 @@ the leaky scale is a function of later opens
 
 Let `open` be the open on every row. The leaky feature is
 
-```text
-z_t = (close_t − mean(open)) / std(open)
-```
-
 `mean(open)` and `std(open)` use every open in the series, including opens after `t`. The past feature is defined from index 5 onward:
 
-```text
-z_t^{past} = (close_t − mean(close_{s < t})) / std(close_{s < t})
-```
-
 The window is the closes before that row. The return `r` is fit by in-sample least squares with an intercept, once on `z` and once on `z^{past}`. The mask is the rows, among those used in the regression, on which `z^{past}` is finite. Both RSS values share it.
-
-```text
-RSS(r ~ z) = 0.2642
-RSS(r ~ z^{past}) = 0.2650
-difference = 0.0008
-```
 
 The difference is 0.0008. The two sums of squares sit next to each other. Whether the scale leaks depends on whether later opens are among the arguments of `z_t`. They are, so this is a leaky scale. The ordering of 0.2642 and 0.2650 does not enter that judgment, and it does not promote the lower one into a better score. The shared mask keeps the two sums of squares from becoming incomparable through a different row count. Once they are comparable, the identification still comes from the definition, not from 0.0008.
 
@@ -54,6 +40,8 @@ A standardization looks like nothing more than subtracting a mean and dividing b
 The sum of squares can barely move. 0.2642 and 0.2650 differ by 0.0008. A reading that watches only for a clear fall in RSS would treat the two columns as similar fits. In definition they are not the same: one is a function of every open, and the other is a function of past closes. Similar sums of squares do not cancel that difference. Day 28 used a large fall, 3.6518, to show same-day information. Today uses a small difference, 0.0008, to show a second sentence: leakage can be identified while the sum of squares barely changes.
 
 The mask has to be the same, or else 0.0008 itself would mix in a difference of row counts. The past-only scale is undefined at the start of the series. The leaky scale is defined everywhere. If the leaky scale were allowed to use those opening rows and the past-only scale were not, the two RSS values would no longer be sums over the same returns. The program takes the mask on which the past-only scale is finite, and both regressions sit on that mask. So 0.2642 and 0.2650 are two sums of squares on the same rows. Their difference does not announce which fit is better. What announces the leak is that the scale read in later opens.
+
+**Quiet leakage.** RSS 0.2642 vs 0.2650 differs by 0.0008 yet future=yes. Audit the information source, not the gain magnitude.
 
 ## What the run showed
 

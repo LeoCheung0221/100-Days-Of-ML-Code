@@ -67,5 +67,3 @@ python days/08-three-day-window/three_day_window.py
 The script should print `y = 2.0500 x + -0.0333`, the slope `8.0500` after the slide, and `delta slope = 6.0000`. The implementation is [`three_day_window.py`](../../days/08-three-day-window/three_day_window.py).
 
 Hand in one change of information set and the change in slope. The two sums of squares are not a ranking. Day 9 keeps the set fixed and only shuffles the order of the five rows, to see whether batch least squares follows row order.
-
-Self-check: delta slope 6.0000? Both windows named? RSS not used as a leaderboard? Session 5 excluded from both windows?

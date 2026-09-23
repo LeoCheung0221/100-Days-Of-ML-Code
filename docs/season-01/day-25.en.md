@@ -52,3 +52,4 @@ python days/25-two-scores/two_scores.py
 The script prints `direction accuracy = 0.4675`, `mean absolute return error = 0.0167`, and `days with a small price error and the wrong sign = 9`, and it states that a sign decision trusts the direction accuracy. The implementation is [`two_scores.py`](../../days/25-two-scores/two_scores.py).
 
 The lag-1 return forecast hands in two columns: direction 0.4675, and mean absolute return error 0.0167. On 9 days the absolute error is at most the median and the sign is wrong. The score for a sign decision is 0.4675. Next the rows are split at random into train and test, and that test accuracy is only a control.
+

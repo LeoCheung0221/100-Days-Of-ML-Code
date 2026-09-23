@@ -10,7 +10,7 @@ What you learn today: the five pairs stay intact and only the row order changes,
 
 Day 8 changed which sessions entered the equation. The window moved from `{1, 2, 3}` to `{2, 3, 4}`, and the slope jumped from 2.0500 to 8.0500 because the close of 20 on session 4 entered the information set. Today the set is fixed: the same five points `(1, 2.1)` through `(5, 10.4)`. Only the row order in the file changes.
 
-Picture five cards: the front shows the session index, the back shows the close. Shuffling the deck changes stack order, not which back belongs to which front. The script order `[2, 4, 3, 0, 1]` means the old row 3 sits on top, still labeled session 3 with 6.2. Peeling a back and gluing it to another front would be a different experiment. Today does not break pairs.
+Each row pairs `(x_t, y_t)`. Permuting rows applies a permutation matrix `P` to `(X, y)` in lockstep; normal equations use `XᵀX`, invariant under row reorder when pairs stay intact. The script order `[2, 4, 3, 0, 1]` only re-stacks rows; it does not re-label sessions.
 
 Ordinary least squares accumulates sums. Each row contributes terms to `XᵀX` and `Xᵀy`. Addition is commutative, so permuting rows permutes terms inside those sums without changing the totals, as long as each row still carries its own `[t, 1]` and its own `y`. The printed line remains `ŷ = 3.2700x − 1.2900` and RSS remains 96.3390. Differences of `1.332e-15` on the slope and `1.421e-14` on RSS are floating-point noise at roughly `1e-14`. They are not an economic shift in the fit.
 
@@ -63,3 +63,4 @@ Expect `3.2700 x + -1.2900`, `RSS = 96.3390`, and the two near-zero deltas. Code
 Hand in three checks: pairs intact; `β̂` and RSS match day 1; deltas at `1e-14` mean zero. Do not write "shuffle removes time"; write "time is in column t, not in row index." Day 10 reads direction from the same line; a large level residual and a direction miss can land on different sessions.
 
 Before claiming "we shuffled the data," specify whether you permuted rows of a fixed design or destroyed time when constructing features. Those are different operations; only the first is what today's script demonstrates.
+

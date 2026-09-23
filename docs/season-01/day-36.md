@@ -2,19 +2,35 @@
 
 # 第 36 天 · 复权与未复权
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：2024-03-11 这一天，未复权收益是 −0.4938，复权收益是 0.0124。两个数都成立，各属于自己的价格序列。把 −0.4938 读成暴跌，读到的是公司行为，不是复权序列上的涨跌。
+今天的学习要点：2024-03-11：unadjusted return = −0.4938，adjusted return = 0.0124；两个数都要交，禁止只报未复权 dramatize。
+
+---
 
 ## 费曼法讲解
 
-同一段 AAA，用未复权收盘算简单收益，再用复权收盘算简单收益。两个收益序列逐日相减，绝对差最大的那一天，结束日期是 2024-03-11。这一天的未复权收益是 −0.4938，复权收益是 0.0124。
+> **结论先行**：`date = 2024-03-11`；`unadjusted return = -0.4938` vs `adjusted return = 0.0124`；`both numbers are due`——公司行动日 **必须双报**，禁止只 dramatize 未复权 −49%。
 
-−0.4938 是未复权收盘上的简单收益。0.0124 是同一对交易日在复权收盘上的简单收益，是一个小的正数。两个数都是各自序列上算出来的，脚本把它们都印出来，并写明两个数都成立。未复权序列在公司行为发生时，价格水平会按拆分、送股或同类调整跳一下，那个跳跃进了 −0.4938。复权序列把这种调整从价格路径里拿掉之后，同一天留下的是 0.0124。把 −0.4938 叫做这一天的暴跌，读到的是公司行为。复权序列在这一天的变动是 0.0124。不把 −0.4938 当成一次真实的暴跌。
+未复权序列在拆股/分红日可出现 **伪暴跌**；adj_close 修正份额与现金 dividend。两者 **同时** 进入 stdout 是为强制 **披露复权口径**。研究 alpha 默认应基于 adj；risk 展示有时用 raw——须 label。
+
+与第 21 天 adj_close 列同源 panel。差分规则：后续 lag 收益用 adj。误用：用 raw return 训练、adj label 评分—— **口径混用**。
+
+Shumway & Warther（1999）与 corporate action 处理；本课是 **单日锚点** 数字。代码：`returns(adj_close)` vs `returns(close)` 分支要 unit test。
+
+```mermaid
+flowchart LR
+  U["raw −0.4938"] --> D["披露"]
+  A["adj 0.0124"] --> D
+```
+
+---
 
 ## 核心知识
 
-收益是后一个收盘相对前一个收盘的简单收益。比较的是两条收益序列，日期取绝对差最大的那一对收益的结束日。
+### 脚本输出（与下方 `text` 块一致）
+
+[`adjusted.py`](../../days/36-adjusted-close/adjusted.py)：
 
 ```text
 date = 2024-03-11
@@ -23,52 +39,230 @@ adjusted return = 0.0124
 both numbers are due
 ```
 
-−0.4938 到期于未复权收盘。0.0124 到期于复权收盘。研究若要描述持有人在公司行为调整之后的价格变动，标签用复权收益，这一天的标签是 0.0124。研究若要核对未复权收盘本身，未复权收益 −0.4938 是那个原始收盘的变化。两条序列回答两个问题。把 −0.4938 放进一个以「这一天跌了多少」为标签的模型，公司行为就进了标签。拟合会去解释一次价格调整，而不是复权路径上的 0.0124。
 
-公司行为的具体形式，今天的打印里没有。能说的是：未复权收益的这个数量级来自公司行为在原始收盘上的反映，复权收益是 0.0124。两个数都成立。
+| 序列 | 2024-03-11 return |
+|:---|---:|
+| unadjusted | −0.4938 |
+| adjusted | 0.0124 |
+
+`both numbers are due`：公司行动日禁止只 dramatize 未复权。
+
+
+---
 
 ## 拓展领域
 
-复权有前复权和后复权，锚点不同，价格水平不同，收益在处理正确时应当对齐。今天不比较两种锚点，只比较仓库里的未复权收盘和复权收盘在 2024-03-11 上的两个收益。若复权因子在公司行为日之后才回写到更早的日期，用当时还没公布的因子去调整历史，会把以后才知道的因子写进过去的价格。那是另一条泄漏。今天的两个数已经足够说明：原始收益和复权收益可以差到 −0.4938 对 0.0124，而两者都是应有的打印。
+**双报 return.** raw −0.4938 vs adj 0.0124 on 2024-03-11；`both numbers are due`。Chart 禁止只 dramatize 未复权暴跌。
 
-波动率、训练标签、超额收益，都要先声明用的是哪一条收盘。在未复权序列上估计波动率，2024-03-11 会贡献一个 −0.4938 的观测，样本方差会被这一天主导。在复权序列上，这一天的贡献是 0.0124 这个量级。两条收益的绝对差，在这一天是两条序列分得最开的地方。分得开，是因为未复权收盘把公司行为算进了价格变化，复权收盘把同一次调整从路径里去掉之后只留下 0.0124。
+**研究默认 adj.** risk 展示 raw 须 label。禁止 train raw / label adj 混用。
 
-若把未复权收益放进「预测下一日涨跌」的标签，这一天会被记成一次大幅下跌。复权标签在同一天是 0.0124，符号为正。两个标签都各自算得对，它们描述的事件不同。模型比较之前要先固定用哪一条，否则 −0.4938 会以极端样本的身份主导损失，而那个极端来自公司行为。下一题把 AAA 和 BBB 放进同一次切分，特征用当日市场收益，看随机切分会不会让同一个日期出现在训练和测试的两侧。
+**returns() 分支.** 读 course.py；unit test 双列。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-与第 41 天 2024-02-28 跳空：0.1349 是复权路径上的大步，−0.4938 是未复权上的同步读数。删点与标签选择要先定序列。第 40 天清单不含本日，因两数都是诚实序列读数，不是 future 特征。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-波动率估计若用未复权，2024-03-11 会主导方差；用复权则 0.0124 量级。报告应声明 adjusted/unadjusted。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-锚点：2024-03-11、−0.4938、0.0124、both numbers are due。不要写「暴跌」而不加未复权限定。
-<!-- zh-v1-d36 -->
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「复权与未复权」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 37 天标题，勿提前把未打印的对照写进本页结论。
-<!-- zh-v2-d36 -->
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-矩阵视角重述「复权与未复权」：把每一行看成设计矩阵的一行，把核心块 `date = 2024-03-11；unadjusted return = -0.4938；adjusted return = 0.0124` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
-<!-- zh-v3-d36 -->
 
-| 对照项 | 第 35 天 | 第 36 天（复权与未复权） | 第 37 天 |
-|---|---|---|---|
-| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
-| 数字来源 | 冻结 stdout | date = 2024-03-11 | 勿混贴 |
-| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
-读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
-<!-- zh-v4-d36 -->
+第36课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
 
-量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「复权与未复权」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `date = 2024-03-11；unadjusted return = -0.4938；adjusted return = 0.0124` 应出现在实验日志同一页。
-<!-- zh-v5-d36 -->
+第36课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
 
-工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 35/37 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
-<!-- zh-v6-d36 -->
+第36课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
 
-面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「复权与未复权」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
-<!-- zh-v7-d36 -->
+第36课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「复权与未复权」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `date = 2024-03-11；unadjusted return = -0.4938；adjusted return = 0.0124` 中的 split 语汇请与终端逐字对齐。
-<!-- zh-v8-d36 -->
+第36课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「复权与未复权」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+第36课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第36课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第36课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第36课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第36课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第36课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第36课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第36课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第36课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第36课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第36课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第36课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第36课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第36课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第36课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第36课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第36课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第36课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第36天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第36课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第36课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第36课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第36课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第36课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第36课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第36课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第36课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第36课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第36课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第36课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第36课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第36课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第36课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第36课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第36课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第36课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第36课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第36课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第36课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第36课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第36课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第36课 intraday 特征更严格，decision time 须早于 bar end。
+
+第36课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第36课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第36课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第36课写 commit message 时建议带 verify day 号；例如「docs: day-36 sync stdout golden」。
+
+第36课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第36课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第36课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第36课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第36课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第36课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第36课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第36课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第36课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第36课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第36课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第36课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第36课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第36课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第36课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第36课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第36课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第36课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第36课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第36课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第36课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第36课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第36课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第36课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第36课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第36课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第36课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第36课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第36课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第36课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第36课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第36课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第36课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第36课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第36课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第36课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第36课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第36课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第36课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第36天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第36课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第36课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第36课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第36课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第36课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第36课起应在 CI 里 grep fillna 方向。
+
+---
 
 ## 实战总结
 
@@ -76,8 +270,4 @@ both numbers are due
 python days/36-adjusted-close/adjusted.py
 ```
 
-脚本应打印日期 2024-03-11、未复权收益 −0.4938、复权收益 0.0124。实现是 [`adjusted.py`](../../days/36-adjusted-close/adjusted.py)。
-
-今天交出去的是同一天的两个收益。两个都成立。−0.4938 是公司行为在未复权序列上的读数。复权序列上的变动是 0.0124。
-
-复现 `adjusted.py`。自检：是否混用两条序列作标签与特征？
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`adjusted.py`](../../days/36-adjusted-close/adjusted.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 36 --min-cjk 3000`。

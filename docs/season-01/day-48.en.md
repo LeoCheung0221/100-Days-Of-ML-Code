@@ -18,14 +18,14 @@ The claim is the pair of readings. At t = 118 the tree's value is the rightmost 
 
 ## Core
 
-The tree and the line are both fit on all 79 adjusted closes, not on day 44's 59-row cut. So 11.9608 is not the right leaf 11.7467 of the stump on the training cut, and it is not the 11.7285 that day 49 will read on the jump date. If the jump date falls in an interior leaf, that constant can differ from the rightmost leaf. t = 118 takes the rightmost leaf, and the leaf mean is 11.9608.
-
 ```text
 query t = 118
 tree value = 11.9608
 line value = 13.3936
 tree stays inside the training range = true
 ```
+
+The tree and the line are both fit on all 79 adjusted closes, not on day 44's 59-row cut. So 11.9608 is not the right leaf 11.7467 of the stump on the training cut, and it is not the 11.7285 that day 49 will read on the jump date. If the jump date falls in an interior leaf, that constant can differ from the rightmost leaf. t = 118 takes the rightmost leaf, and the leaf mean is 11.9608.
 
 Inside a leaf the prediction has derivative 0 in t. To the right of the last threshold the rightmost leaf is one constant, so 118 and any farther query — there is no new threshold outside the support — both read 11.9608. The line's slope in t is not 0, so another 40 steps can leave 12.1679.
 
@@ -41,10 +41,9 @@ When a tree is read past the end of a sample, the reading is the level of the la
 
 11.9608 lying inside the observed range means it is a mean of labels in the sample. It does not mean the price at t = 118 will be 11.9608. That session was not observed. Day 47 keeps the same reservation about 13.3936: a function value is not a close that has not arrived.
 
-
-<!-- uniq-exp-en-27-50 -->
-
 Same t: tree 11.9608 flat leaf vs line 13.3936; tree stays inside training range.
+
+**Tree leaf.** 11.9608 stays inside training range at the same query t as day 47's line.
 
 ## What the run showed
 

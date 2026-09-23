@@ -59,5 +59,3 @@ python days/04-endpoint-chord/endpoint_chord.py
 The script should print the chord `ŷ = 2.075x + 0.025` and the losses in the table. The implementation is [`endpoint_chord.py`](../../days/04-endpoint-chord/endpoint_chord.py).
 
 Hand in one rank reversal inside one affine class. Do not call the chord always worse, and do not call it always better. It cannot win on squared loss, by definition. It can win on absolute loss, and here that win is 12.0000 against 16.6600. Day 5 removes session 4 from the estimation sample and records how far the line moves. That move is not an exam score.
-
-Self-check: all four loss cells present? Session-4 \|r\| not substituted for full norms? Model card lists class, coefficient rule, training loss, and reported loss.

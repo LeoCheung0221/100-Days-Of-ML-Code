@@ -55,3 +55,4 @@ python days/22-lagged-direction/lagged_direction.py
 The script prints `hits = 36/77`, `accuracy = 0.4675`, and `coin-flip baseline = 0.5000`. The implementation is [`lagged_direction.py`](../../days/22-lagged-direction/lagged_direction.py).
 
 The prediction is yesterday's adjusted-move sign. The sample is 77 comparable moves on AAA, with 36 hits. 0.4675 is below 0.5000. Next the rule "three equal signs, then the fourth matches" is written into the program, and only then counted.
+

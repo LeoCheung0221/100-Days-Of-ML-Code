@@ -69,3 +69,4 @@ python days/13-threshold-sensitivity/sensitivity.py
 The script prints the constant-up accuracies 0.75, 0.50, and 0.25 at the thresholds 0.50, 0.70, and 0.90. The implementation is [`sensitivity.py`](../../days/13-threshold-sensitivity/sensitivity.py).
 
 The three accuracies come from one constant prediction and one series of returns. The threshold rises from 0.50 to 0.90, a rise of 0.40, and the accuracy falls from 0.75 to 0.25, a fall of 0.50. A single accuracy hides the cut it used.
+

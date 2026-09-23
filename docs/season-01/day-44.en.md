@@ -18,23 +18,17 @@ This comparison lives on the training stretch. Sessions after the cut are not in
 
 ## Core
 
-The cut is `int(0.75 × 79) = 59`. Training uses the first 59 rows of the index and of adjusted close. The later stretch is held back. Day 45 is where a sum of squares is computed on that stretch.
-
-The stump search sorts the training index, tries a midpoint threshold wherever two adjacent indices differ, sets each side mean to the sample mean of that side, and keeps the threshold with the smallest sum of the two sums of squares. The prediction is
-
-```text
-ŷ(t) = 10.2690    when t ≤ 38.50
-ŷ(t) = 11.7467    when t > 38.50
-```
-
 ```text
 train sessions = 59
 split when t > 38.50
-left mean = 10.2690
-right mean = 11.7467
+left mean = 10.2690 right mean = 11.7467
 train SSE stump = 2.6315
-train SSE line  = 10.1623
+train SSE line = 10.1623
 ```
+
+The cut is `int(0.75 × 79) = 59`. Training uses the first 59 rows of the index and of adjusted close. The later stretch is held back. Day 45 is where a sum of squares is computed on that stretch.
+
+The stump search sorts the training index, tries a midpoint threshold wherever two adjacent indices differ, sets each side mean to the sample mean of that side, and keeps the threshold with the smallest sum of the two sums of squares. The prediction is
 
 There is no slope inside a leaf. The right leaf is not a steeper line. It is the constant 11.7467. The line is still an affine function of the same kind as day 41, with coefficients refit on the first 59 rows only. Today's page does not print that 59-row slope. It prints the two training sums of squares.
 
@@ -49,6 +43,8 @@ The threshold 38.50 is a cut on the training index, not the name of a calendar e
 A smaller training SSE is what the extra capacity does. Two constants have one more location parameter than a line, and each piece uses the optimal mean under squared error. More capacity can lower the training sum of squares. The drop is not a score on the later stretch. Day 45 adds one more level of depth and prints training SSE beside later SSE. The two columns need not move in the same direction.
 
 Today's print stops on the training column. 2.6315 and 10.1623 share the first 59 labels, and the stump is smaller. The sum of squares after the cut has not appeared. Day 45 prints depth 1's later SSE as 0.5669. That cell cannot be read out of today's training SSE, and 2.6315 is not a result after the sample changes. The step height 1.4777 likewise describes the two training means.
+
+**Stump vs line.** Train SSE stump 2.6315 beats line 10.1623 in-sample on 59 sessions—split at t>38.50.
 
 ## What the run showed
 

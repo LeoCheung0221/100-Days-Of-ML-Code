@@ -24,6 +24,9 @@ When writing that nonlinear fits are seed-sensitive, point at split column/thres
 
 ## Core
 
+
+Copy stdout literally: English keys, spacing, signs, and printed decimals. The ```text``` block must diff clean against the day script.
+
 ```text
 linear weight lag 1 = -0.1359
 seed = 0 tree split lag = 1 threshold = 0.076142
@@ -40,13 +43,6 @@ Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows 
 | forbidden OHLC/market | Contract holds | See days 56–57, 67 |
 | train/test rows | Default 54/19 | Day 58 calendar cut excepted |
 
-Day 53 prints 4 contract lines:
-
-- `linear weight lag 1 = -0.1359`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `seed = 0 tree split lag = 1 threshold = 0.076142`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `seed = 1 tree split lag = 4 threshold = -0.020177`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `linear weight lag 1 after tree seeds = -0.1359`: match the terminal verbatim—keys, spacing, signs, six decimals.
-
 Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
 
 ## Further out
@@ -58,8 +54,6 @@ When reproducing day 52, match seed 1 column and threshold, not leaf means with 
 Day 54 adds volume; today's line baseline remains test MSE 0.000081.
 
 Tree seeds move cuts; OLS stays at lag1 −0.1359. If linear weights change, that is a bug. Day 54 adds volume and hurts test MSE with helped=false.
-
-Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
 
 Day 9 row-order invariance applies to OLS sums, not to shuffling before lag construction. Tree seeds affect tie-breaking in greedy splits, not the linear contract.
 

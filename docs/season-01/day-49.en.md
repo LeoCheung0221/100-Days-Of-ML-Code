@@ -21,12 +21,10 @@ The tree is depth 2, fit on the same 79 points. The leaf value on the jump date 
 ```text
 jump date = 2024-02-28
 adj close = 12.0142
-line slope = 0.0299
-ridge slope = 0.0201
-lambda = 20000, slope only, full sample
-line  at jump = 11.0315   residual = 0.9827   ten later = 11.3305
-ridge at jump = 11.0315   residual = 0.9827   ten later = 11.2326
-tree  at jump = 11.7285   residual = 0.2857   ten later = 11.7285
+line slope = 0.0299 ridge slope = 0.0201
+line at jump = 11.0315  residual = 0.9827  ten later = 11.3305
+ridge at jump = 11.0315  residual = 0.9827  ten later = 11.2326
+tree at jump = 11.7285  residual = 0.2857  ten later = 11.7285
 ```
 
 At the jump index the gap between the line and ridge is 11.0315 − 11.0315 = 0. The gap in residuals is 0 as well. Ten sessions later, 11.3305 and 11.2326 are no longer the same number. A sentence about how far the two lines sit apart on the jump date uses that day's 11.0315. A sentence about the penalty's effect on the level uses the two numbers ten sessions later.
@@ -42,6 +40,8 @@ Two lines with different slopes cross at most once. Which index holds the crossi
 The tree holding 11.7285 across ten adjacent sessions is the shape of a piecewise constant. The jump price 12.0142 sits 0.2857 above the leaf, and that 0.2857 does not turn into a slope along the leaf. Reading the smaller tree residual as "the tree tilted along with the jump" does not match a fitted value that is still 11.7285 ten sessions later. What moves are the two lines that have slopes: from 11.0315 to 11.3305, and from 11.0315 to 11.2326.
 
 λ on the full sample is still 20000. Day 46's training SSE 16.3596 belongs to the first 59 rows and does not replace today's 0.0201. Today does not print a sum of squares. It prints levels on the jump date and ten sessions later.
+
+**Jump day.** Line and ridge meet at 11.0315 on 2024-02-28; tree residual 0.2857 is smaller at the jump.
 
 ## What the run showed
 

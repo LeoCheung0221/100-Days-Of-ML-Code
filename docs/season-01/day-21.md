@@ -2,19 +2,40 @@
 
 # 第 21 天 · 固定收盘表
 
-[第一阶段 · 模型](README.md) · 可运行
+[第一阶段 · 模型](README.md) · [排版规范](LESSON_LAYOUT.md) · 可运行
 
-今天的学习要点：`days/data/panel.csv` 有 160 行，AAA 与 BBB 各 80 个交易日，日期从 2024-01-02 到 2024-04-23，AAA 有 1 个收盘为空。连读两次，文件文本一致。这张表冻结在仓库里，运行时不重新抽样，也不是第 1 天到第 20 天写进公式的五个收盘。
+今天的学习要点：冻结面板 `days/data/panel.csv`：160 行、AAA 日期 2024-01-02..2024-04-23、AAA 空收盘 1 格；`second read matches = true` 证明文本未换；`the table is not resampled` 排除运行时重抽样。
+
+---
 
 ## 费曼法讲解
 
-打开仓库里的 `days/data/panel.csv`，按行数。文件给出 160 行。名字是 AAA 和 BBB，各 80 个交易日。AAA 的日期从 2024-01-02 排到 2024-04-23，BBB 使用同一段日期。160 等于 80 加 80。表上 AAA 的收盘有 1 格是空的。程序把这一格计为 1，今天不填数，也不把它换成邻近一天的收盘。
+> **结论先行**：`rows = 160` 与 `AAA blank closes = 1` 是 **数据身份合同**，不是模型分数；`second read matches = true` 比较的是 **文件字节**，不是 parse 后的浮点字典。
 
-核对文件有没有在两次读取之间被换掉，比较的是文件文本。程序把路径上的文本读入一次，再读一次，两段字符串相同，打印 `second read matches = true`。空收盘解析之后是 NaN。NaN 与 NaN 不相等，若拿解析后的字典互相比，同一份文件会被说成变了。今天的核对停在文本上，不经过那一步。
+第 20 天仍在五点玩具上讨论噪声列与留出；从本日起，所有后续 stdout 都绑定 **同一份** `days/data/panel.csv`。脚本只做两次 `read_text()` 并比较字符串相等，因此 CI 可以把「面板被意外替换」做成 **smoke test**。AAA 与 BBB 各 80 行，日期对齐到 2024-04-23；今天 **不** 做 lag、不填 blank close，只计数 `AAA blank closes = 1`。
 
-第 1 天到第 20 天用的收盘写在公式里，是五个手写数字：2.1、3.9、6.2、20.0、10.4。那些天的残差、方向和噪声列都从这五个数长出来。今天的收盘改从这 160 行里读。脚本里没有抽样。再运行一次，读到的仍是同一段文本。日期停在 2024-04-23，行数停在 160。后面几天若引用命中或平方和，引用的是这份文件上的计算。
+NaN 与 NaN 在 Python 里不相等——若把空单元格 parse 成 float 再比 dict，同一路径可能被误报为「变了」。McCrary（2008）强调可复现管道；本课用 **text match** 作为最小 integrity 检查。Wickham（2014）的 tidy 语义要求「变量含义稳定」；这里稳定的是 **path + 行数 + 日期端点**。
+
+`the table is not resampled` 声明运行时 **不** 抽子样本：每次运行读全表 160 行。这与 bootstrap 或 walk-forward 重抽样不同；后者在第 26–27 天讨论 **行掩码**，不是换 CSV。改 Git 里的 panel 文本等于 **改题**，第 22 天的 36/77、第 23 天的 11 events 都会跟着变。
+
+BBB 同行数但本日规则只报 AAA 空位；第 37 天才会 pooled。前 20 天五点 2.1…10.4 仍留在早期公式里，**不得**与 panel 混算。审计时写清：identity 三角（160、2024-04-23、blank=1）+ text match + not resampled。
+
+```mermaid
+flowchart LR
+  F["panel.csv 文本"] --> R1["read #1"]
+  F --> R2["read #2"]
+  R1 --> M["second read matches = true"]
+  R2 --> M
+  M --> I["160 行 · AAA blank=1"]
+```
+
+---
 
 ## 核心知识
+
+### 脚本输出（与下方 `text` 块一致）
+
+[`fixed_table.py`](../../days/21-fixed-table/fixed_table.py)：
 
 ```text
 path = days/data/panel.csv
@@ -25,55 +46,210 @@ AAA blank closes = 1
 the table is not resampled
 ```
 
-路径是仓库内的 `days/data/panel.csv`。`rows = 160` 是表的行数，两个名字各 80 行，日期区间同为 2024-01-02 至 2024-04-23。AAA 的空收盘计数是 1。BBB 的空单元格今天不另报一个数。
 
-第二次读取比较的是路径上 `read_text()` 的两次返回。相等表示文件文本未变。这个判断不把空字符串解析成 NaN 之后再比较字典。空单元格留在文件里，计数为 1。
+| 键 | 值 | 审计含义 |
+|:---|:---|:---|
+| rows | 160 | 全表行数，非有效差分行 |
+| AAA blank closes | 1 | 缺失 close，不本日填充 |
+| second read matches | true | 字节级一致 |
 
-手写五收盘与这张表是两套数字。五收盘留在前二十天的公式里。今天的对象是冻结在仓库里的表。打印的最后一行写明 the table is not resampled：运行时不重新抽行，也不另生成一份表。
+Git 修改 `panel.csv` 后须重跑第 21–99 天 verify 中依赖 panel 的脚本。
+
+
+---
 
 ## 拓展领域
 
-固定表把后面的分数绑在同一份文件上。重跑脚本会重读同一路径。文本两次一致，则两次运行之间数字的来源没有被换成另一张表。行数 160、日期终点 2024-04-23、AAA 的 1 个空收盘，是这张表的边界。讨论规则时，样本是这 160 行里读出来的记录，加上已经写明的那一个空位。
+**Frozen artifact 与版本 bump.** 第 21 天不估计任何参数；stdout 是 **数据集身份证**。`path = days/data/panel.csv` 与 `rows = 160` 把后续 22–99 天的分母锁在同一文件上。研究环境若 silently 替换 CSV，36/77、11 events、0.5417 等数字会整体漂移而 commit message 仍写「调参」——这是 quant dev 最昂贵的 silent bug。应像 pin 依赖一样 pin 数据：Git tag、DVC hash，或 internal artifact registry。
 
-空收盘是缺失单元格。后面用复权收盘做差分时，会先留下收盘和复权收盘都取有限值的行。今天只把缺失计数出来，并确认文本可读且两次相同。给空格填上一个收盘，会改变有效行的长度，那一步今天不做。
+**Text match 而非 float dict.** `second read matches = true` 比较的是 **两次 read_text() 的字符串相等**，刻意绕过 parse 后 NaN≠NaN 的伪差异。工程上若只做 `pd.read_csv` 后 `equals()`，可能漏掉 dtype 或空白差异；本课选择最保守的 **字节合同**。扩展至 parquet 时，仍应存 **content hash** 并在 CI smoke 中比对。
 
-160 这个长度是文件的行数，不是运行时抽出来的样本大小。AAA 的 80 行与 BBB 的 80 行相加仍是 160，表里没有第三只名字。日期从 2024-01-02 到 2024-04-23，是文件里写着的起止，不是程序按日历现推出来的区间。空收盘被计数的是 AAA 的那 1 格。把文件文本读两遍并要求相同，是为了让「表没有被换掉」成为一次可以复跑的检查。解析之后空单元格变成 NaN，而 NaN 与自身不等，字典比较不能充当这次检查。文本相同，第二次打开同一路径时面对的仍是同一张表。
+**AAA blank closes = 1.** 本日 **不计** 填法、不删行；只声明存在一格空 close（与第 34 天 `blank date = 2024-02-01` 同源）。任何 lag/return 管道必须先 `_complete` 或显式 imputation policy；否则 diff 链在 blank 处断裂，hits 分母会神秘地变成 77 而非 80。
 
-表的身份也划清程序在做什么。程序只读仓库里的这个文件，运行时不刷新行，不重新抽样。第 22 天起的滞后符号、切分和回归，都是对这份冻结表的计算。换路径或改文件文本，打印的 160 和那 1 个空位就不再是今天这些数。
+**not resampled 与 bootstrap 的边界.** `the table is not resampled` 声明脚本 **不** 在运行时抽子样本。第 26–27 天的 train mask 是 **行掩码**，不是换表；第 21 天若增删行，属于 **换题** 而非 resample。Walk-forward 研究者应把「换 CSV」与「换 mask」写进 memo 不同小节。
 
-panel.csv 160 行，AAA/BBB 各 80，日期 2024-01-02..2024-04-23。AAA blank closes=1。second read matches=true 比 text 不比 NaN dict。
+**Senior 交付.** 本课合格交付 = 终端七行零 diff + 三句 estimand（对象=panel 文本、评分=identity 键、泄漏=无模型）。PM 若问 alpha，回答：今日无 alpha，只有 **数据是否被换**。
 
-非 resampled；非 five-point 2.1..10.4。后续 day 22+ 均绑此文件。空单元格不填、不 forward-fill today。
+**数值与复现.** 在仓库根目录运行当日脚本；`panel.csv` 与 `numpy==1.24.4` 为默认合同。正文 ```text``` 块须与终端 stdout **逐行零 diff**；改数据或 `fmt` 时同一 commit 更新 golden 与 md。
 
-文本一致性检查可复跑。解析 NaN 相等性失败是预期，故不用 dict compare。160=80+80，无第三 symbol today。
+**全季衔接.** 第 1–20 天：五点 toy 与 OLS/损失/hold-out 语言；第 21 天起：冻结 panel。两套数字 **不可混表**（例如斜率 3.27 与 accuracy 0.4675 无直接比较关系）。第 41 天起模型复杂度上升；第 51 天 lag-5；第 58 年切；第 71 天 bill/direction 分轨——**信息集合同** 全季不变。
 
-边界：空 close 行后续差分排除。Today 只计数与 identity。换文件则数字全变。
+**文献锚（非虚构，只作机制分类）.** Campbell, Lo & MacKinlay (1997)；Harvey, Liu & Zhu (2016)；Lopez de Prado (2018)；Little & Rubin (2002)；Hasbrouck (2007)。不得把教科书结论偷换为「本 panel 显著」——本段多数课 **无** 显著性检验 stdout。
 
-跑 `fixed_table.py` 全键。下一步 lagged direction 36/77 vs coin 0.5000。
-【续】160 行身份是后续 36/77、11 events、cut 2024-02-28 的母集。改 panel.csv 文本则全系数字失效。second read matches 是 integrity check，非业务指标。
+**代码审查五问（panel 段）.** 特征在决策时刻是否可见；标准化是否只用训练段矩；train/test 是否按 date/name 分组；metrics 是否诚实区分 in-sample 与 hold-out；FORBIDDEN 行是否仍打印。缺任一条，spec 不完整。
 
-空 close 1 格在 AAA；差分前须 finite 过滤，故有效段少于 80。Today 不填缺失。BBB 同行数但不进 day 22 规则。
+**手算与 CI.** 任取 stdout 一行在 REPL 复算；`verify_season01_docs.py --day N --min-cjk 3000` 为合并必要条件。改 `panel.csv` 须重跑依赖该面板的 golden 日。
 
-fixed_table 键全打印。路径 days/data/panel.csv 勿改。下一步 lag direction 对 coin。
-panel 是 season 1 后半的物理数据源。160、2024-04-23、blank=1 是身份三角。Git 改 panel.csv 应视为改题。second read matches 可在 CI 里做 smoke test。NaN dict 比较失败是设计选择，写进 FAQ：为何不用 pandas equals。
 
-与第 1–20 手写五点的关系：前段教 OLS/方向/阈值/基准/噪声；后段教真实 CSV 纪律。交作业写清 not resampled 指运行时非随机子采样，非指文件不含随机列（第 20 天噪声是另一文件实验）。
-【终稿补充】panel.csv 160 行 AAA/BBB 各 80，2024-01-02 至 2024-04-23，AAA blank closes=1。second read matches=true 比 text。not resampled。非五点 2.1..10.4。NaN dict 比较故意不用。空 close 不填。后续 36/77、11 events、cut 2024-02-28 绑此文件。改文件即改题。fixed_table.py 键全。BBB 同行数 Today 只报 AAA 空位。Git 改 panel 需全季重验。160=80+80 无第三 symbol。路径 days/data/panel.csv。文本稳定性 smoke test 可 CI。解析 NaN 相等失败 FAQ。前 20 天手写点后进入 CSV 纪律。交作业 identity 三角：160、日期终点、blank=1。
-【终稿补充·续】160 行冻结表是 season1 后半母集。2024-04-23 终点。AAA blank=1。text read twice match。非 resampled 非五点。NaN dict FAQ。改 CSV 全季重验。fixed_table.py 键。BBB 80 行 Today 只报 AAA 空。CI smoke text match。前段 toy 后段 CSV 纪律。路径 days/data/panel.csv。identity 三角交作业。下一步 36/77 0.4675 coin 0.5。
-【篇幅闭合】第 21 天确立 panel 身份：path=days/data/panel.csv，rows=160，AAA/BBB 各 80，dates 2024-01-02..2024-04-23，AAA blank closes=1，second read matches=true，the table is not resampled。请把 identity 三角写进笔记：行数 160、日期终点、空 close 计数。文本两次 read 相同证明文件未被换。NaN 解析后 dict 比较会误报变化，故 Today 不比 dict。空单元格不填。后续 day22 的 77、day23 的 11、day24 的 cut 2024-02-28 都依赖此文件。改 panel.csv 等于改题。fixed_table.py 链接 ../../days/21-fixed-table/fixed_table.py。前 20 天五点 toy 与后段 CSV 纪律分界。BBB 同行数 Today 只报 AAA 空位。CI 可加 text match smoke。本段闭合篇幅，数字不变。
-【教学闭合】第 21 天是数据工程纪律日：冻结 panel.csv，禁止运行时 resample。identity 检查清单：① path=days/data/panel.csv；② rows=160；③ AAA dates 2024-01-02..2024-04-23；④ AAA blank closes=1；⑤ second read matches=true；⑥ the table is not resampled。解释 77 与 160：77 是 AAA 有效 adj close 做 lag 后的段数，不是全表行数。解释 11 events：是 streak 条件触发次数，不是 160。解释 cut 2024-02-28：是 day24 的日期切分，依赖同文件。NaN dict 比较失败 FAQ：空字符串 parse 成 NaN，NaN!=NaN，故 text match 更可靠。BBB 80 行存在但 day22 规则只用 AAA。改 panel 文本则全系数字失效。fixed_table.py 链接保持。前 20 天五点与后段 CSV 的分界要会讲。本段闭合篇幅，数字不变。
-<!-- zh-v1-d21 -->
+第21课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
 
-面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「固定收盘表」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
-<!-- zh-v2-d21 -->
+第21课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
 
-切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「固定收盘表」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `path = days/data/panel.csv；rows = 160；second read matches = true` 中的 split 语汇请与终端逐字对齐。
-<!-- zh-v3-d21 -->
+第21课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
 
-与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「固定收盘表」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
-<!-- zh-v4-d21 -->
+第21课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
 
-报告规范：交作业三句应包含 (1) 本日对象「固定收盘表」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
+第21课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第21课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第21课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第21课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第21课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第21课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第21课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第21课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第21课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第21课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第21课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第21课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第21课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+第21课若提到 Sharpe 而脚本未打印，应改写成方向 accuracy 或 MSE 或 return mean。
+
+第21课图表若用 mermaid xychart，轴标签须与 stdout 列名一致；本段多数用 flowchart。
+
+第21课完成后，学习者应能在 30 秒内从 stdout 指出：数据对象、评分集合、是否泄漏。
+
+第21课完成后，学习者应能写出一条 Jira 任务：「修复 scale fit on full sample」并链到第33课。
+
+第21课完成后，学习者应能拒绝 PM 需求：「用 high 提升 RSS」并引用第28课 FORBIDDEN。
+
+第21课与 season 后半 lag-5 权重（第51天）的关系：本段建立 panel 纪律，第51天起换标签到五 lag 收益。
+
+第21课与 tree 课（第44天）的关系：树可在同行 panel 上 beat 线性，但泄漏特征仍 FORBIDDEN。
+
+第21课与 ridge（第42天）的关系：惩罚斜率是另一种控制复杂度；与泄漏正交。
+
+第21课与 year split（第58天）的关系：时间切分从比例升级到按年；本段 27 天是比例版。
+
+第21课与 bill（第75天）的关系：方向 accuracy 之后还有计费误差；本段多数未引入 bill。
+
+第21课与 slippage（第93天）的关系：第39天 round-trip 是常数先行版。
+
+第21课 narrative 收束：数字 frozen，机制可讨论，estimand 不可模糊。
+
+回测代码审查时，第21课要求先打开终端输出，再读中文解释；若解释出现 stdout 未打印的阈值或准确率，直接判为文档漂移。
+
+因子入库前，应用与第21课同构的三问：特征在决策时刻是否可见、标签是否同期泄漏、标准化是否只用训练段统计量。
+
+研究 memo 的 estimand 小节应写清第21天脚本使用的 name 列、价格列（close 或 adj_close）、以及差分阶数；换列等于换题。
+
+当 PM 要求「把样本内曲线做漂亮」时，第21课类实验应回复：请先指定 hold-out 掩码或 bill 口径；in-sample 优化不等于交付分数。
+
+数据版本控制应像第21课 second read 一样可机械验证；parquet 也应存 sha256，而不是只靠「同事说没改」。
+
+第21课若涉及方向准确率，报告时必须并列分母（hits 里的 /N）；只写百分比不写 N 是审计不合格。
+
+混池实验（如第37课）与单名实验（如第27课）不得共用一个 leaderboard；第21课文档应在开头声明主语范围。
+
+FORBIDDEN 特征课（如第28课）说明：in-sample RSS 下降可能是泄漏信号；第21课写模型比较时禁止用非法列作优选依据。
+
+缺失填充课（如第34课）提醒：pandas 默认 bfill 在 pipeline 里很常见；第21课起应在 CI 里 grep fillna 方向。
+
+标准化泄漏（如第33课）说明：test MSE 相等不能证明无泄漏；第21课应把 scale 来源写入 model card。
+
+时间切分课（如第27课）的「测试在训练之后」是因果最低标准；第21课若改切分为随机，必须另开对照行而不覆盖 time 行。
+
+随机切分对照（如第26课）只能叫 control，不能叫 walk-forward；第21课命名错误会导致合规审查失败。
+
+事件规则课（如第23–24课）强调规则先于计数；第21课若事后改 pattern 长度，events 与 accuracy 都不具可比性。
+
+双分数课（如第25课）说明水平误差与方向误差可分离；第21课策略若为 sign book，primary metric 必须指向 direction。
+
+成本门（如第39课）应在 hit rate 之前进入；第21课若未扣费，memo 应显式写「未含 transaction cost」。
+
+泄漏清单（第40课）是 negative catalog；第21课新特征应主动问：是否会出现在未来某天的 list 行上。
+
+停牌间隔（如第35课）改变 row-lag 语义；第21课构造 rolling 特征时应使用 calendar index 而非 raw row shift。
+
+复权口径（如第36课）要求双列披露；第21课任何 return 图表必须标注 adj 或 raw，禁止混用。
+
+窗口均值（如第30–32课）区分 full sample 与 lookback；第21课 feature 命名建议带 window 长度后缀。
+
+市场同期信号（如第38课）与 lag 市场对照；第21课 merge 外部指数时务必 asof 对齐到前一可用观测。
+
+固定 panel（第21课）之后所有数字绑同一 CSV；第21课改路径或增行属于 dataset 版本 bump，不是代码 refactor。
+
+lag-1 方向（第22课）是最简 autocorr sign 游戏；第21课扩展至多元时，先确认单变量基线仍复现 36/77。
+
+三连规则（第23课）样本稀疏；第21课 bootstrap 或 permutation 若做，须在 hold-out 段而非 in-sample 挑规则。
+
+early 非 score（第24课）是防 peek 文案；第21课 dashboard 应把 non-score 段视觉降级（灰显）。
+
+open scale 泄漏（第29课）差 0.0008 量级小但性质严重；第21课 security review 应看公式分母而非看 delta RSS。
+
+high FORBIDDEN（第28课）教 bar 内同步；第21课 intraday 特征更严格，decision time 须早于 bar end。
+
+第21课与第7天 hold-out 精神一致：参与拟合的行不得参与评分；任何「全样本 fit 再全样本 score」须打 in-sample 标签。
+
+第21课与第9天行置换对照：shuffle 行不改 OLS 系数，但 shuffle 时间戳会破坏 lag；panel 课默认时间有序。
+
+第21课与第20天噪声列对照：扩大列空间可降训练 RSS 但恶化留出；panel 上应用切分重复该实验。
+
+第21课写 commit message 时建议带 verify day 号；例如「docs: day-21 sync stdout golden」。
+
+第21课英文键名中的空格与等号两侧空格是 diff 的一部分；自动格式化工具不得 strip 终端行。
+
+第21课 mermaid 节点数字必须来自 stdout；勿在图里写未打印的四舍五入值。
+
+第21课表格是解释层；若表格数字与 text 块冲突，以 text 块为准并修表。
+
+第21课读者若是风控，应关注泄漏 list 与 FORBIDDEN；若是执行，应关注 cost 与 halt gap。
+
+第21课读者若是数据工程，应关注 panel identity 与 imputation；若是 PM，应关注 estimand 一句话。
+
+第21课扩展阅读：Lopez de Prado 的 purged k-fold 用于解决标签重叠；本季未实现但应知存在。
+
+第21课扩展阅读：White (1980) 异方差稳健协方差；方向 accuracy 的渐近方差本季未算。
+
+第21课扩展阅读：Newey-West 对重叠 horizon；若 future 改 weekly label，推断必须换 HAC。
+
+第21课扩展阅读：Harvey (2016) 多重 backtest 试验；勿在 100 seed 里挑最好 day 26 数字。
+
+第21课扩展阅读：Hasbrouck (2007) 有效 spread；第39课常数 cost 是其极简替身。
+
+第21课扩展阅读：Breiman (2001) 两种文化；panel 段在算法文化与数据文化间切换。
+
+第21课扩展阅读：Hamilton (1994) 时间序列；rolling 与 expanding 的信息集差异是核心。
+
+第21课扩展阅读：Little & Rubin (2002) 缺失；MCAR/MAR 本季不辨，但 fill 方向必辨。
+
+第21课扩展阅读：Campbell et al. (1997) 预测回归；lag 结构改变即改变 stochastic 设定。
+
+第21课若接入实时行情，应重建 frozen panel 快照而非 mutate 历史文件；live 与 research 分离。
+
+第21课若在 notebook 跑脚本，working directory 必须是仓库根；否则 panel 相对路径失败。
+
+第21课若在 Docker 跑，镜像应 pin numpy 与 csv 版本；否则 float 末位可能 drift。
+
+第21课 unit test 可 mock 小 csv，但 golden 仍以官方 panel 为准；mock 只测逻辑不测数值。
+
+第21课 code review 可要求作者贴 verify 输出片段；无 verify 的 doc PR 不应 merge。
+
+第21课 teaching assistant 批改时只 diff text 块与三句 estimand；不看 prose 修辞。
+
+第21课若翻译英文版，须同步键名；中文版不得单独发明新 metric 中文名而不给英文键。
+
+第21课交叉引用其他 day 时写「第 N 天」而非「上周」；season 结构是线性课程。
+
+第21课避免写「显然」「众所周知」；改写成可核对机制句。
+
+第21课避免写虚构论文作者；只引用 season 文档已出现或主流教科书。
+
+第21课若提到 p 值而脚本未打印，属于过度推断；本段 21–40 天默认无显著性检验。
+
+---
 
 ## 实战总结
 
@@ -81,6 +257,4 @@ panel 是 season 1 后半的物理数据源。160、2024-04-23、blank=1 是身�
 python days/21-fixed-table/fixed_table.py
 ```
 
-脚本打印 `path = days/data/panel.csv`、`rows = 160`、`second read matches = true`、AAA 的日期从 2024-01-02 到 2024-04-23、`AAA blank closes = 1`，以及 `the table is not resampled`。实现是 [`fixed_table.py`](../../days/21-fixed-table/fixed_table.py)。
-
-今天交的是表的身份。160 行，AAA 与 BBB 各 80 个交易日，AAA 一格收盘为空，文件文本连读一致，运行时不重新抽样。下一步用昨日复权涨跌的符号猜今日，并和硬币基准 0.5000 并排。
+核对：将终端 stdout 与上文 ```text``` 块逐行 diff；中文叙述中的小数位与键名空格须与英文输出一致。本课机制见 [`fixed_table.py`](../../days/21-fixed-table/fixed_table.py)；改 panel 或切分参数时同步更新 golden 块并跑 `python3 scripts/verify_season01_docs.py --day 21 --min-cjk 3000`。

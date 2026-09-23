@@ -34,6 +34,11 @@ With several features, a distance, a tree split, or a correlation matrix, the sa
 
 The training standard deviation 0.022132 is larger than the whole-sample 0.019265, and the training mean 0.003241 is higher than the whole-sample 0.002470. The test stretch pulls the location down and compresses the scale. That is how it enters the moments. After it enters, the line with an intercept absorbs location and scale again, and test MSE still prints as 0.000109. Absorption holds the score still. It does not take the test stretch back out of the whole sample. Saving only the mean squared error, and dropping the mean and the standard deviation, hides the leak on this print. The script prints all four numbers together so that 0.003241, 0.022132, 0.002470, 0.019265, and the two copies of 0.000109 are on the page at once. Next is a blank close, and the question is whether filling from the previous close and filling from the next close are the same number.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Train moments 0.003241/0.022132 vs whole 0.002470/0.019265; both test MSE 0.000109. Seeing the test stretch is not the same as improving MSE.
+
 ## What the run showed
 
 ```bash

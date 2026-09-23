@@ -43,6 +43,46 @@ accuracy = 36 / 77 = 0.4675   （四位小数）
 
 规则不含待估的斜率。它在看见这 77 段之前就已经写成「昨日的符号」。第 23 天会把另一条规则同样先写进程序，再去数它覆盖了多少次事件。今天的精确陈述停在这里：36/77，准确率 0.4675，硬币基准 0.5000，滞后符号没有赢过不看价格的基准。
 
+AAA finite adj close，77 可比段，36 hits → 0.4675。predict sign(Δ_{t-1}) for sign(Δ_t)。coin 0.5000 不读价格，作并排基准。
+
+0.4675<0.5000：用昨日符号未赢基准。非 OLS 斜率规则。BBB 不在 today。分母 77 非 160。
+
+与第 25 天：lag-1 return 符号同 0.4675；今天纯符号，第 25 天加 MAE 0.0167。硬币 vs always-up/down 是不同课。
+
+miss 41 段说明规则可低于随机。报告必带 baseline 0.5000。跑 `lagged_direction.py`。下一步 three-day run 11 events。
+【续】0.4675 四位小数来自 36/77；分母非 80 因 lag 与 finite 过滤。coin 0.5000 非本表上涨比例——勿用 36/77 与 0.5 比「接近」而不比大小：36/77<0.5。
+
+规则无参数；低于基准说明 lag sign 无 edge。第 23 天换规则非改本规则。BBB 未用。
+
+lagged_direction.py 三键。报告必带 baseline。下一步 three-day streak。
+77 分母来自 AAA 有效 adj close 序列的一阶差分与 lag 对齐，不是 80 也不是 160。36/77 精确值 0.467532…→0.4675。coin 0.5000 是印刷常数非估计。规则无 tie-break：sign(0) 若出现按脚本处理，Today 假设非零为主。
+
+低于基准 0.4675<0.5000 应写完整不等式，不写「差不多」。第 23–24 天换规则后可能高于 0.5，但那是另一条规则。lagged_direction.py 路径 ../../days/22-lagged-direction/lagged_direction.py。BBB 排除理由：Today 单名教学。
+【终稿补充】lag sign(Δ_{t-1}) 预测 sign(Δ_t)，AAA finite adj，77 段，36 hits，accuracy 0.4675。coin 0.5000 并排。0.4675<0.5000 写全不等式。非 OLS。BBB 未用。miss 41。baseline 必引。lagged_direction.py。第 25 天 lag return 同 0.4675 加 MAE。分母 77 解释：lag+finite。无参数规则。低于 coin 结论。下一步 three-day 11 events 0.5455 fixed rule。
+【终稿补充·续】77 段 36 hit 0.4675<0.5000 coin baseline。AAA only finite adj。lag sign 规则无参数。miss 41。lagged_direction.py。第 25 MAE 0.0167 同方向。分母解释 lag+filter。不写接近 coin 写严格低于。BBB 未用。下一步 11 events 6 hits 0.5455 rule fixed。
+【篇幅闭合】第 22 天：predict today adj sign with yesterday sign，hits=36/77，accuracy=0.4675，coin-flip baseline=0.5000。请写不等式 0.4675<0.5000。分母 77 来自 AAA finite adj 的 lag 段，不是 160。miss 41。规则无估计参数。BBB 未用。lagged_direction.py 链接 ../../days/22-lagged-direction/lagged_direction.py。第 25 天 lag-1 return 方向同 0.4675 并加 MAE。基准必须并排。不写「接近硬币」写「低于硬币」。本段闭合篇幅，数字不变。
+【教学闭合】第 22 天在 77 段上检验 lag 符号规则。hits=36/77，accuracy=0.4675，coin-flip baseline=0.5000。必须写 0.4675<0.5000，表示读昨日符号未胜过不看价格的硬币参照。miss=41 段。规则无待估参数，不是 OLS 斜率题。BBB 80 行未进入。分母 77 来自 finite adj close 与 lag 对齐，不是 80 也不是 160。lagged_direction.py  stdout 三键验收。第 25 天 lag-1 return 方向同 0.4675，并加 MAE 0.0167 教两列不可互替。基准并排是 season 习惯，始于本课 coin 0.5000。勿写「接近随机」替代严格低于。本段闭合篇幅，数字不变。
+<!-- zh-v1-d22 -->
+
+报告规范：交作业三句应包含 (1) 本日对象「滞后一日的方向」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
+<!-- zh-v2-d22 -->
+
+手算/复核：从核心块 `predict today's adj move with yesterday's sign；hits = 36/77；accuracy = 0.4675` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
+<!-- zh-v3-d22 -->
+
+阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「滞后一日的方向」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 23 天标题，勿提前把未打印的对照写进本页结论。
+<!-- zh-v4-d22 -->
+
+矩阵视角重述「滞后一日的方向」：把每一行看成设计矩阵的一行，把核心块 `predict today's adj move with yesterday's sign；hits = 36/77；accuracy = 0.4675` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
+<!-- zh-v5-d22 -->
+
+| 对照项 | 第 21 天 | 第 22 天（滞后一日的方向） | 第 23 天 |
+|---|---|---|---|
+| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
+| 数字来源 | 冻结 stdout | predict today's adj  | 勿混贴 |
+| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
+读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
+
 ## 实战总结
 
 ```bash

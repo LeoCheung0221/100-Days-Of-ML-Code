@@ -42,6 +42,9 @@ Separation does not turn the later stretch into a reliable distribution on its o
 
 Day 23's 0.5455 is the count on all 11 events together, and today it is no longer the score. The pooled count contains the early stretch. The early stretch already sits where it can be inspected. Once the score is the later 0.6667, the next day does not keep cutting these 3 events. It hands in direction accuracy and a price error side by side.
 
+Cut 2024-02-28: early 8 events at 0.5000 is not the score; later 3 events at 0.6667 is. Three events do not form a distribution— they only move the score off the already-seen stretch.
+Later stretch score 0.6667 on three events is a reporting choice, not a confidence interval.
+Score is later-segment 0.6667 on three events; early 0.5000 on eight events is labeled not the score.
 ## What the run showed
 
 ```bash

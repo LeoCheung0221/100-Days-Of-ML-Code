@@ -52,6 +52,13 @@ A price model and a direction label use different coordinates. Squared loss pena
 
 The number of up steps in the sample itself raises the hit rate of "call up on every step." With three rises and one fall, any affine fit with a positive slope scores the same 3/4 on direction, as long as its one-day difference stays positive. The next change of definition starts on day 12: a return is compared with a threshold that is written into the label, and the sign by itself is no longer the label. Day 14 is the chapter that writes the constant rule, the rule that looks at no price, as the control. Today's score column changes definition first: the direction hit enters the score, and the absolute price residual leaves it.
 
+Today changes the score column, not the line. `8.21` stays a level residual and is explicitly not the score; `3/4` is. That reporting split persists when threshold labels arrive on day 12 and when sigmoid scores arrive on day 16–17.
+
+Because `β₁ > 0`, the direction rule coincides with always-up on symbol labels—the same 3/4 as day 14's 0.75 benchmark, but here the slope was estimated from prices. Full-sample fit then full-sample direction counts mirror day 7's warning about training objects that already saw the labels.
+
+Verify `labels.py` against day 10's table; anchor words: `not the score`, 8.21, 4.66, 3/4.
+Score column vs diagnostic column: 3/4 vs 8.21/4.66. The stdout line `not the score` is part of the specification—do not drop it in slides. Threshold days change labels, not this fitted line.
+Treat `not the score` as part of the spec alongside 3/4. Changing metrics without refitting is deliberate pedagogy for later train vs holdout splits and for day-25's two-score report.
 ## What the run showed
 
 ```bash

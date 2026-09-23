@@ -43,6 +43,9 @@ The place of 0.4675 relative to 0.5000 stays next to the score. Thirty-six hits 
 
 The rule has no slope left to estimate. It was already written as "yesterday's sign" before these 77 steps were counted. Day 23 writes another rule into the program first, and only then counts how many events it covers. Today's claim stops here: 36/77, accuracy 0.4675, coin-flip baseline 0.5000, and the lagged sign does not beat a baseline that ignores price.
 
+36/77 ⇒ 0.4675 below coin 0.5000. Baseline must sit beside the rule accuracy. Denominator 77 is AAA lagged segments, not the full 160-row panel.
+36/77 beats nothing about coin 0.5000—0.4675 is strictly below the baseline.
+Denominator 77, not 80; 0.4675 is strictly below coin 0.5000—state the inequality explicitly in write-ups.
 ## What the run showed
 
 ```bash

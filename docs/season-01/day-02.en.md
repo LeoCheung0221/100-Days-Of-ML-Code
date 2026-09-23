@@ -12,6 +12,12 @@ Day 1 left five residuals: 0.12, −1.35, −2.32, 8.21, −4.66. Saying "sessio
 
 One number is not enough. 8.2 does not say whether it is an absolute residual, a squared residual, or an average. 16.66 or 96.339 alone does not say how far session 4 was amplified.
 
+Think of two ledgers on the same five residuals. Absolute loss adds distances; squared loss adds areas. Session 4 goes from under half of `L1` to about seven tenths of `L2`. Whenever someone says "error fell," ask which addition rule was used.
+
+Day 3 splits `L2` into five shares; session 4's 0.6997 is the same number as today's squared share. Day 4's endpoint chord can beat this line on `L1` and lose on `L2` while staying in the same affine class. Changing the loss can change the winner even when the shape stays "straight line."
+
+Picture five cards labeled with `(t, r_t)`. Shuffling card order does not change the backs—day 9 will show that for `L1` and `L2` on a fixed residual vector. Today the vector is already fixed from day 1.
+
 ## Core
 
 The line is still `ŷ = 3.27x − 1.29`. With `r = y − ŷ`:
@@ -38,11 +44,21 @@ Session 4's share of `L1` is 0.4928 and of `L2` is 0.6997, printed to four decim
 
 The printed slope 3.27 and intercept −1.29 are that minimizer. The absolute-loss minimizer is a different problem and is not solved today. Today only requires both norms, and both shares, on the line already fit. Changing the loss can change the minimizer. The endpoint chord on day 4 is where that shows up.
 
+| Reading | Day 2 | Day 3 | Day 4 |
+|---|---|---|---|
+| Scalar losses | `L1` and `L2` | RSS split | both norms for two lines |
+| Session 4 weight | 0.4928 / 0.6997 | π₄ = 0.6997 | \|r\| 11.6750 vs 8.2100 |
+| Refit β̂? | no | no | chord uses endpoints |
+
 ## Further out
 
 Mean squared error and mean absolute error are often treated as interchangeable ways of saying "the error got smaller." They do not select the same point. Squared loss lets a few large residuals dominate a fit, so one jump, one bad print, or one unadjusted corporate action can own the objective. Absolute loss still sees those points, but it does not let them grow with the square.
 
 In a factor regression or a portfolio objective, changing the norm can change the solution. An "error" that does not name its norm hides how much one session was amplified. These five points make the arithmetic visible: the same residual vector, shares 0.4928 and 0.6997. When a mean squared error falls, ask whether one or two squared outliers produced the fall.
+
+Workflow pitfall: training under MSE while reporting only MAE—or the reverse—hides the 0.4928 versus 0.6997 debate. Robust losses exist because `L1` and `L2` trade off differently; today's `L1` is sum of absolute residuals, not an L1 penalty on coefficients.
+
+Day 5 moves the slope when session 4 leaves the estimation set; that is an information-set change, not switching the norm. The share 0.6997 says the day is heavy in `L2`; the displacement −1.1729 says how far the line moved.
 
 ## What the run showed
 
@@ -55,3 +71,5 @@ python days/02-two-losses/two_losses.py
 The script should print `L1 = sum |r| = 16.66`, `L2 = sum r^2 = 96.339`, and session-4 shares `0.4928` and `0.6997`. The implementation is [`two_losses.py`](../../days/02-two-losses/two_losses.py). The line still comes from `numpy.linalg.lstsq`.
 
 Both losses are in sample. Neither is a holdout score. Hand in the two norms and the two shares. Day 3 splits the sum of squares back into each session. Day 4 compares this line with the endpoint chord, where the two losses can rank the fits in opposite order.
+
+Self-check: both 16.66 and 96.339 present? Shares at four decimals? Do not claim OLS minimizes `L1`. Keep this table as the canonical residual vector for later days.

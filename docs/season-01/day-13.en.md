@@ -55,6 +55,11 @@ Handing in one accuracy is taking one of the three rows and erasing the threshol
 
 Of the four returns, the ones that change side across these three cuts are 0.5897 and 0.8571. The return 2.2258 is above 0.90, and −0.4800 is below 0.50, so those two steps keep their class on all three rows. The accuracy move from 0.75 to 0.50 is 0.5897 leaving the positive class. The move from 0.50 to 0.25 is 0.8571 leaving it. Each step down has one return that can be named. The four steps do not change sign together. Write the list of returns next to the threshold and the accuracy, and 0.75, 0.50, and 0.25 each correspond to one stated cut.
 
+Three rows, one prediction vector, three accuracies 0.75/0.50/0.25. Endpoints differ by 0.50 while τ moves 0.40—that is discrete class counts changing, not a tuned model. Never publish 0.50 without naming the τ=0.70 row it came from.
+
+2.2258 stays positive on all three rows; −0.4800 stays negative. Sensitivity is entirely from 0.5897 and 0.8571 crossing cut lines as τ rises.
+Endpoint spread 0.75 vs 0.25 with τ spread 0.40 is about class counts under a fixed always-up prediction—not a learned slope.
+The three τ rows are enumerated upfront, not tuned to maximize accuracy. Document all three when citing any single row's accuracy.
 ## What the run showed
 
 ```bash

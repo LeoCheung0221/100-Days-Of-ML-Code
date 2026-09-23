@@ -41,6 +41,9 @@ The length 160 is the number of rows in the file. It is not a sample size drawn 
 
 The identity of the table also says what the program is doing. It reads this file in the repository. It does not refresh the rows at runtime, and it does not resample them. From day 22, lagged signs, splits, and regressions are calculations on this frozen table. A different path, or a different file text, would make the printed 160 and the single blank a different report.
 
+Identity checks: 160 rows, dual read text match, one AAA blank close, dates through 2024-04-23, no resampling. Parsed NaN dict compare is intentionally avoided; later days inherit this frozen file.
+Text-stable panel identity underpins every later AAA segment count—160 rows, one blank AAA close, no resampling.
+Panel identity (160 rows, one AAA blank close, text-stable reads) is prerequisite for every later AAA metric—do not swap files silently.
 ## What the run showed
 
 ```bash

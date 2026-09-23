@@ -44,6 +44,9 @@ The 6 and the 11 belong beside 0.5455. The number 0.5455 is not a target accurac
 
 Day 24 keeps this same rule, and the score is no longer the full-sample 0.5455. Today's count stays as the result of writing the rule first and counting second. It has not yet been cut into a stretch that was already used to look and a later stretch that is the score. That cut begins at the date 2024-02-28.
 
+Eleven events, six hits, 0.5455—with the three-day rule fixed before counting. Do not retro-fit window length after seeing hits. Denominator is events, not 77.
+Eleven conditional events, rule frozen before the count—do not tune window length after seeing 6/11.
+Pre-registered three-day rule, eleven events—window length is not a post-hoc knob after seeing six hits.
 ## What the run showed
 
 ```bash

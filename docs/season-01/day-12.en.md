@@ -47,6 +47,11 @@ When a note says the rule is right on half the steps, the half is the two 1s ins
 
 The threshold can still move. The value 0.70 is one cut. Raise it or lower it and the number of 1s changes, and the always-up accuracy changes with it. The next table records that movement: one constant rule, three thresholds, three accuracies. Today fixes one fact first: the number 0.50 contains 0.70 inside its definition.
 
+The only step that flips between symbol labels and τ=0.70 labels is the second return 0.5897—positive for sign, below threshold for the strict `r > 0.70` class. Always-up stays `1,1,1,1`; accuracies move because the target moved.
+
+Report `constant-up accuracy = 0.50` only together with τ=0.70 and strict inequality. Day 13 sweeps three thresholds on the same prediction; day 14's 0.75/0.25 pair belongs to symbol labels, not to today's threshold target.
+Step 2 return 0.5897 is the sole flip between symbol and τ=0.70 labels. Publish 0.50 only with τ=0.70 and strict `>` spelled out.
+The experiment is fully pinned by the four printed returns, τ=0.70, strict `>`, and always-up predictions—alter any piece and 0.50 may change; do not hand-edit returns.
 ## What the run showed
 
 ```bash

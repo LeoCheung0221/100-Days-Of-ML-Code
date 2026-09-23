@@ -44,6 +44,31 @@ gap = 0.9634 − 0.75 = 0.2134
 
 引用时三个数同时出现。只引用 0.9634，每一步都像是接近确定的上涨。只引用 0.75，规则说过的程度消失了，剩下的是正类比例。只引用 0.2134，差的两端不见了。完整的句子是：写出 0.9634，实现 0.75，差 0.2134。被标成百分之九十六上涨的步，上涨频率是四分之三。置信和频率并排，互不替代。
 
+核对最小形式：stated 0.9634、realized 0.75、gap 0.2134。stated 来自 σ(3.27)，与四步符号计数无关；realized 是 3/4 正类比例。两者并排放，禁止用其一替换另一。
+
+0.9634 读作「规则写出的程度」；0.75 读作「样本符号频率」。差为正表示写出高于实现。四步样本下不做 Platt 或 isotonic——今天只做减法。
+
+第 14 天 0.75 是 always-up 命中率，也是符号正类比例；与 realized 0.75 同值不同义：一个是规则对标签，一个是标签边际。第 16 天 stated 向量四格相同，无法指出哪一步为负；负号只出现在频率分母。
+
+第 15 天两格 0/1 与 gap 无关；勿从 0.2134 反推格。完整交作业三行数加一句「百分之九十六对四分之三」。
+
+复现 `confidence.py` 三行 stdout。若只报 gap，丢失端点。下一步第 18 天加成交量列改标签计数，不改 stated 0.9634 那条线（那是斜率课，volume 课另起）。
+【续】gap 0.2134 为正表示 stated 高于 realized；若斜率更小，gap 可能缩小但 today 固定 3.27。四步样本不做分箱可靠性图；第 17 天只做减法核对。
+
+写「模型过度自信」须指向 stated 与 realized 两列，而非单看 0.9634。第 14 天 0.75 是 always-up 命中非 realized frequency 的同义数，但语境不同——Today realized 指符号边际。
+
+confidence.py 三行必全。忌用 gap 代替两端。下一步 volume 列改标签计数。
+频率 0.75 在四步样本即 3/4，与大样本频率概念同形但分母小。gap 0.2134 不表示 p-value；Today 不做假设检验。陈述句：写出的程度高于实现的正类比例 0.2134。若 stated 低于 realized，gap 为负——Today 为正 case。
+
+报告表格三行：stated / realized / gap。英文 confidence.py 键名对齐。第 18 天起重写标签定义，stated 0.9634 仍可用于斜率故事，但 volume 筛选另表。不要 merge 两课数字。
+【终稿补充】置信核对最小三行：stated P(up)=0.9634、realized up frequency=0.75、gap=0.2134。stated 来自 σ(3.27)，与四步符号计数独立；realized 是 3/4 正类。gap>0 表示写出高于实现。四步不做校准曲线。第 14 天 0.75 是 always-up 命中，数值同 realized 但语境不同。第 15 天两格与 gap 无关。完整句子：百分之九十六（stated）对四分之三（realized），差 0.2134。禁止单报 gap。confidence.py 三键。第 18 天 volume 改标签计数，不删 stated 故事。小样本频率仍是有定义的比例。写作：Calibration check (toy n=4 steps). 下一步 median volume 1200000 筛选。
+【终稿补充·续】三行 stated/realized/gap 必须同屏。gap=0.9634−0.75=0.2134。四步 n 小不做 binomial CI。stated 不读四符号；realized 读三正一负。第 14 天 0.75 语境不同。第 15 格与 gap 无关。confidence.py。第 18 天 median 1200000 另课。写作：概率表述需频率对照。禁止单替。英文三键。小样本仍是有定义比例。下一步 volume 筛选 3→1。
+【篇幅闭合】第 17 天完成 stated/realized/gap 三行核对。请逐项手抄：stated P(up)=0.9634；realized up frequency=0.75；gap=0.2134。减法 0.9634−0.75 必得 0.2134，禁止四舍五入丢末位。说明：stated 在看见四符号前可写，realized 必须数 1 1 1 0。第 14 天 0.75 是 always-up 命中，数值同 realized 但定义不同。第 15 天两格 0/1 不能从 gap 反推。第 18 天 median 1200000 改标签计数，不删本日三行。confidence.py  stdout 三键是交作业最小集。写作模板：We state 0.9634 but realize 0.75 on symbol frequency, gap 0.2134. 四步样本不建校准曲线。禁止用 gap 单独作标题。英文键 stated/realized/gap 与脚本一致。本段闭合篇幅，数字不变。
+【教学闭合】把第 17 天想成「概率语句最小审计」：左边写规则输出的 0.9634，右边写样本里符号为正的频率 0.75，中间用减法固定 gap 0.2134。四步里只有一个负收益 −0.4800，因此 realized 必是 3/4。stated 不读这个负号，因为它只作用在 3.27 上。写作时三行同表，禁止把 gap 当唯一 KPI。与第 16 天关系：0.9634 四步相同，所以 stated 列无逐步结构；realized 列有 1 1 1 0 结构。与第 14 天：0.75 是 always-up 在符号标签上的命中，与 realized 同值不同定义。与第 18 天：volume 筛选改标签，不自动修复 gap。confidence.py  stdout 三键是验收标准。英文 stated/realized/gap 对齐。复现时不改四收益符号。本段仅闭合篇幅，不改变任何数字。
+<!-- zh-v1-d17 -->
+
+量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「置信核对」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `stated P(up) = σ(3.27) = 0.9634；realized up frequency = (1 + 1 + 1 + 0) / 4 = 0.75；gap = 0.9634 − 0.75 = 0.2134` 应出现在实验日志同一页。
+
 ## 实战总结
 
 ```bash

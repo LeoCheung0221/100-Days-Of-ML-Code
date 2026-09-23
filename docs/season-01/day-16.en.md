@@ -52,6 +52,9 @@ So 0.9634 is read as the degree written once and shared by the four steps. It do
 
 There is also a reading that connects the constant score to the baseline. On day 14, always-up hands in 1 on every step as a sign. Today the degree hands in 0.9634 on every step. Both outputs do not change with t. The difference is the literal values 1 and 0.9634. The literal value changed, and the ability to rank did not appear. Judging this score includes a separate question: can it separate the four steps? It cannot. A score that cannot separate them cannot be used to pick out the day held with more confidence.
 
+Sigmoid slope score 0.9634 repeats on all four steps because `Δŷ` is constant; that is not confidence ranking. Day 17 will show stated 0.9634 vs realized frequency 0.75. Level residuals 8.21 and 4.66 do not enter the sigmoid input in today's script.
+Constant 0.9634 on all steps means no confidence ranking; day 17 adds the frequency check.
+Without per-step features, σ(β₁) cannot rank days—day 17 adds the frequency gap check on the same constant score.
 ## What the run showed
 
 ```bash

@@ -35,6 +35,16 @@ A rolling window, a volatility, or a volume average that takes "the last twenty 
 
 A halt check asks whether the business-day gap of the pair is greater than 1. It does not ask whether the row numbers are consecutive. The first adjacent pair with a gap greater than 1 is rows 35 and 36. The script stops there, and later rows are not printed. Next, one return is computed on the adjusted close and one on the unadjusted close, so the size of a corporate action in the unadjusted return can be read.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Rows 35–36, dates 2024-02-20 and 2024-02-22, business-day gap 2. Adjacent rows are not adjacent sessions.
+
+
+<!-- uniq-exp-en2 -->
+
+Lag by row index after a halt spans the missing session; gap counting uses np.busday_count on printed dates.
+
 ## What the run showed
 
 ```bash

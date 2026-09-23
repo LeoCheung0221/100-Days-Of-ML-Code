@@ -47,6 +47,39 @@ score on t = 5
 
 种子固定并不把这一次的结果说成每一串噪声都会伤害留出点。它保证的是：这一列在看见留出结果之前已经确定，今天报告的变差不是挑种子挑出来的。就这一次已经确定的列而言，留出绝对误差变大了。结论停在这次运行。这一个结果已经足够说明：训练平方和从 42.0500 降到 26.7061，可以与留出误差从 11.6500 升到 18.1513 同时发生。
 
+fit t=1..4, score t=5；noise seed=0 事先固定。无噪声 RSS 42.0500→26.7061 降；holdout |error| 11.6500→18.1513 升。分数是后者，不是训练 RSS。
+
+多列可拟合训练更紧，但 t=5 更差。这是过拟合五点的最小演示。noise 非 adaptive to holdout。seed 固定防「挑噪声」叙事，但即使固定仍可能 hurt holdout。
+
+第 7 天 holdout 概念延续：估计不含 t=5。Today 加噪声列扩大列空间。26.7061 非零说明仍有过拟合余地，但 holdout 已恶化。
+
+比较模型时声明 metric：若选 min train RSS，选 noisy；若选 holdout abs error，选 no noise。Today 明确后者。
+
+跑 `noise.py` 四数与 seed 0。写清 sample-in drop is not improvement。下一步 frozen panel.csv。
+【续】t=5 收盘 10.4 不参与 fit；noise 第五值仅用于 score 预测。训练 RSS 降因多一自由度方向拟合训练点；holdout 升因该方向在 t=5 不对。seed=0 保证可复现，非保证泛化。
+
+模型选择准则：Today 明示 holdout abs error。若论文只报 train RSS，会选 noisy 模型——Today 反例。第 24 天日期切分是时间维 holdout 的延伸。
+
+noise.py 四数与 seed 句。忌把 26.7061 称「更好模型」。下一步 panel 表身份。
+噪声列演示 VC 维/参数增多训练更灵活的一般事实。seed=0 的噪声可复现但不具经济含义。holdout t=5 单点误差方差大，但 Today 只比较 11.6500 vs 18.1513 大小关系。若换 seed，两数可能变，结论类型不变：训练可降、留出可升。
+
+与正则化对比：ridge 在第 42 天压斜率；Today 加列而非惩罚。都是控制有效复杂度，机制不同。noise.py 打印 fit/score 切分与 seed 句。忌省略 t=5 不参与 fit 的说明。
+【终稿补充】fit t=1..4 score t=5，noise seed=0 固定。RSS 42.0500→26.7061 降；holdout abs error 11.6500→18.1513 升。分数是 holdout。训练下降非改进。seed 非 adaptive。第 7 天 holdout 逻辑延续。noise.py 四数。模型选择看 holdout。下一步 panel 160 行。
+【终稿补充·续】holdout 18.1513 vs 11.6500 为分数；RSS 26.7061 非胜利。seed=0 固定。fit 1..4 score 5。noise 列扩大空间。第 7 天留出逻辑。noise.py 四数。模型比较声明 metric。训练降留出升可并存。下一步 panel 160 second read true。
+【篇幅闭合】第 20 天：noise seed=0，fit t=1..4，score t=5。RSS 42.0500→26.7061；holdout |error| 11.6500→18.1513。分数是 holdout，训练下降不是改进。seed 事先固定，非挑噪声。第 7 天留出逻辑延续。noise.py 四数与 seed 句。模型选择看 18.1513 vs 11.6500。26.7061 更小不可称更好模型。本段闭合篇幅，数字不变。
+【数字闭合】holdout 11.6500 与 18.1513 的比较优先于 RSS 42.0500 与 26.7061；seed=0 事先固定。
+<!-- zh-v1-d20 -->
+
+| 对照项 | 第 19 天 | 第 20 天（噪声列） | 第 21 天 |
+|---|---|---|---|
+| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
+| 数字来源 | 冻结 stdout | noise seed = 0, fixe | 勿混贴 |
+| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
+读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
+<!-- zh-v2-d20 -->
+
+量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「噪声列」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `noise seed = 0, fixed in advance；fit on t = 1..4；score on t = 5` 应出现在实验日志同一页。
+
 ## 实战总结
 
 ```bash

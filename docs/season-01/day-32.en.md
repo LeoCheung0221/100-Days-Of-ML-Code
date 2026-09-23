@@ -35,6 +35,11 @@ The sign gap between 0.0353 and −0.1195 says more about the information set th
 
 The sixty-day slope 0.0353 and the three-day slope −0.1195 use the same endpoint and the same adjusted close. The difference is how long the slice is. 0.4426 is how far the sixty-session extrapolation sits from this close. 0.0867 is how far the three-session extrapolation sits from the same close. The two misses already have their own lines. That the long window is farther on this day stays on the 0.4426 line. That the short window is chasing a local direction stays on the −0.1195 line. Yesterday's twenty-day slope 0.0251 and absolute miss 0.1506 stay on their own print and are not folded into a ranking today. Next the question leaves window length and asks whether the mean and standard deviation used for scaling come from the training stretch, or whether they have also seen the test stretch.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Sixty-day miss 0.4426 vs three-day 0.0867 at the same endpoint. Long window keeps older positive slope 0.0353; short window follows local −0.1195.
+
 ## What the run showed
 
 ```bash

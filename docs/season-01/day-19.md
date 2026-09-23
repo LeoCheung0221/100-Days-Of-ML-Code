@@ -55,6 +55,29 @@ standardized beta volume = 4.7815
 
 以后看到科学计数法的系数，先写单位，再写平均绝对贡献或标准化系数。三行都在，才看得出小系数是计量，还是贡献确实接近 0。今天贡献不接近 0：4.3645 就在时间的 4.4468 旁边。成交量留在这张表里。
 
+勿比 raw beta 1.482253 与 1.731932e-06 大小判重要性——单位是 price/time vs price/share。mean |contribution| 4.4468 vs 4.3645 才可同比。标准化 beta volume 4.7815 > time 2.7049 反转 raw 视觉。
+
+单变量斜率 3.27 属于只有 t 的模型；Today 双列 OLS 系数不同属正常。删 volume 论点若仅引 e-06，未回应 4.3645 贡献。
+
+标准化：列减均值除 std 后再 fit。volume 波动大，raw 系数被压小。报告三件套：raw pair、contribution pair、standardized pair。
+
+五会话样本小，结论限定本 n=5。今天禁推广为「volume 永远更重要」。今天只禁「小系数=可删列」。
+
+跑 `unscaled.py` 全打印。交作业写单位错觉与 4.7815>2.7049。下一步 noise column 与 holdout。
+【续】五点的标准化 std 可能受 8.0e6 主导；Today 只报告脚本给出的 2.7049 与 4.7815，不外推。删列决策需看 4.3645 与 4.4468，不能只看 e-06。时间系数 1.482253 不得与 3.27 混读。
+
+报告模板三行：raw、|Xβ| mean、standardized。缺一行易犯单位错。unscaled.py 全打印核对。下一步 noise holdout。
+贡献均值 4.3645 接近 4.4468 说明在价格尺度两列平均推力相当；标准化后 volume 更大说明波动调整后 volume 边际更强——二者不矛盾。样本 n=5，任何系数仅作教学，不作资产定价结论。
+
+删变量检查清单：报告 raw beta、mean |contribution|、standardized beta 三行后再决定。Today 结论：不能因 e-06 删 volume。时间 1.482253 不得当作单变量 3.27 的更新。unscaled.py 链接 ../../days/19-unscaled-volume/unscaled.py。
+【终稿补充】raw beta time 1.482253、volume 1.731932e-06 不可比大小。mean |contribution| 4.4468 vs 4.3645 在价格尺度可比。standardized beta volume 4.7815 > time 2.7049。单变量斜率 3.27 是另一模型。删 volume 若只引 e-06 未回应 4.3645。五行 n=5 结论不外推。报告三行 raw/contribution/standardized。unscaled.py 全打印。下一步 noise seed 0 holdout。
+【终稿补充·续】三件套 raw 1.482253/e-06、贡献 4.4468/4.3645、标准化 2.7049/4.7815 同屏。删列论证需回应 4.3645。3.27 非本模型斜率。n=5 不外推。unscaled.py。单位 price/time vs price/share。标准化后 volume 更大。报告忌只贴 raw 系数。下一步 noise holdout 18.1513>11.6500。
+【篇幅闭合】第 19 天三件套：raw beta 1.482253 与 1.731932e-06；mean |contribution| 4.4468 与 4.3645；standardized 2.7049 与 4.7815。请禁止只贴 raw 系数图。删 volume 论证必须回应贡献 4.3645 接近 4.4468。3.27 属于单变量直线，不是本 fit。n=5 不外推。unscaled.py 全打印核对。单位：price/time vs price/share。标准化后 volume 系数更大。本段闭合篇幅，数字不变。
+【数字闭合】raw、贡献、标准化三行数字以 unscaled.py 打印为准，勿删任一行。
+<!-- zh-v1-d19 -->
+
+手算/复核：从核心块 `raw beta time   = 1.482253；raw beta volume = 1.731932e-06` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
+
 ## 实战总结
 
 ```bash

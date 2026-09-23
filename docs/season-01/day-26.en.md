@@ -44,6 +44,11 @@ The number 0.4583 is also not day 22's lagged sign, which estimated no parameter
 
 The seed is written into the program so that another run draws the same rows. The fraction 0.70 is fixed the same way. Neither one is a knob turned after 0.4583 has been seen. The control can therefore be read again: the same file, the same seed, and the same fraction still give the test direction accuracy 0.4583. Today does not give 0.4583 a second identity.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Keep 0.4583 as the control until day 27 prints the time split beside it. Random row masks can place test rows before train rows in calendar order; that protocol is what 0.4583 counts. Do not merge it with day 25's 0.4675 full-sample lag sign rule. Report seed 1 and train fraction 0.70 whenever you cite the number.
+
 ## What the run showed
 
 ```bash

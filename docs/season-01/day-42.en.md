@@ -50,6 +50,11 @@ Shrinkage is not deletion. Day 41 removed 2024-02-28 and the slope stayed 0.0299
 
 The penalty changes the slope, and the intercept refits around that new slope, but the script does not print the intercept. Today's reported numbers are 0.0299 and 0.0201, not a ridge equation with an intercept attached. The 0.0098 is a gap in the slope. The levels separate after the lines leave their crossing. That reading is day 49: at the jump index both the line and ridge are 11.0315, and ten sessions later they are 11.3305 and 11.2326. Today the penalty stays on the slope entry, and λ stays at 20000.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+lambda 20000 penalty on slope only; OLS 0.0299, ridge 0.0201, tilt reduction 0.0098.
+
 ## What the run showed
 
 ```bash

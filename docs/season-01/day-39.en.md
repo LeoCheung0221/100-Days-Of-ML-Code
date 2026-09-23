@@ -38,6 +38,16 @@ The net mean −0.0044 is lower than the gross mean −0.0024 by the written 0.0
 
 Next, the earlier designs already marked as seeing the future are collected into a list of six lines. Every line is marked future=yes. A higher score on those lines is not recorded as a result.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Gross mean −0.0024, round-trip cost 0.0020, net −0.0044. No positive edge existed before costs.
+
+
+<!-- uniq-exp-en2 -->
+
+Report gross before net; searching rules after seeing −0.0024 is a different experiment than today's pre-committed sign rule.
+
 ## What the run showed
 
 ```bash

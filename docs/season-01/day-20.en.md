@@ -47,6 +47,9 @@ This also bounds the practice of fitting and then scoring on the same points. Fi
 
 Fixing the seed does not turn this one run into a claim that every noise series hurts the holdout point. What it guarantees is that the column was fixed before the holdout result was seen, so the worsening reported today was not produced by shopping for a seed. For this one column, already fixed, the holdout absolute error got larger. The conclusion stops at this run. This one result is enough to show that a training sum of squares can fall from 42.0500 to 26.7061 at the same time as the holdout error rises from 11.6500 to 18.1513.
 
+Training RSS falls 42.0500→26.7061 when noise joins fit on t=1..4, but holdout absolute error rises 11.6500→18.1513 on t=5 with seed 0 fixed upfront. The scored metric is holdout, not the in-sample drop.
+Holdout 18.1513 vs 11.6500 is the scored comparison; training RSS 26.7061 is not the win metric.
+Seed 0 fixes the noise draw before scoring session 5; lower train RSS with worse holdout abs error is the intended pairing.
 ## What the run showed
 
 ```bash

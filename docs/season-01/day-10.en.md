@@ -39,6 +39,13 @@ The loss of a price model and the loss of a trading decision are often different
 
 A direction accuracy means something only next to a baseline. When the sign of the fitted difference is constant, the accuracy equals the accuracy of "always call that sign." The model has not used the shape of the path. A later direction model that reports seventy-five percent should be checked for a prediction sign that is the same every day. If it is the same, the number is the hit rate of a constant rule, and the constant rule belongs beside it. Today does not unfold that baseline table. It puts the level residual and the direction hit in one table, so the two columns cannot stand in for each other.
 
+Day 9 row-order invariance guarantees the same `β̂` feeds today's constant `Δŷ = 3.27`. Do not swap in the day-8 window slope 8.0500—that changes the sample set, not the scoring functional. Affine structure means `Δŷ_t = β₁` for every step; magnitude mismatches like 13.8 vs 3.27 do not enter the hit bit.
+
+When reporting, sort by `|r|` and sort by direction hits give different rankings—session 5 can look "closer" yet miss direction. Keep both columns visible through day 11 and again on day 25 with returns. The 3/4 here is in-sample on the fitted path, not an out-of-sample directional forecast.
+
+Hand in: positive slope ⇒ constant predicted up moves; 8.21 hit vs 4.66 miss; level and direction are not interchangeable. Re-run checks: four identical `Δŷ`, three hits, script strings unchanged.
+Keep the prefix "in-sample after full fit" when citing 3/4. Level RSS and direction hits answer different functionals; session 5's smaller |r| with a miss is the canonical warning. Script strings and table numbers are the source of truth for hand-ins.
+Re-read the chain: level OLS fixes β₁, affine diffs fix Δŷ, signs define hits. Common exam mistakes confuse 3.27 with a return threshold or 8.21 with a direction penalty—keep the table columns separate in notes and slides.
 ## What the run showed
 
 ```bash

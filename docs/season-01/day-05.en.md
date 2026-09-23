@@ -14,6 +14,10 @@ The full-sample line is `ŷ = 3.2700x − 1.2900`. Without session 4 it is `ŷ =
 
 At the deleted abscissa the fitted value falls from 11.7900 to 8.2714, a displacement of −3.5186. The gap from the label 20.0 to 8.2714 is 11.7286. That gap is not today's score. The point was removed in order to watch its influence, and the removal already used how large 20 is. `x = 4` also remains inside the convex hull of `{1, 2, 3, 5}`. This is influence at an interior location, not extrapolation past the support.
 
+Displacements step from 0 at session 1 to −4.6914 at session 5: the line pivots, it does not shift in parallel. The intercept move is the readout of that pivot at `x = 0`, not a separate story.
+
+Day 8's window `{2,3,4}` includes session 4 and yields slope 8.0500—another information-set change, not the same as deleting session 4 from a four-point fit. Day 9 shuffling rows does not delete rows from `XᵀX`; deletion does.
+
 ## Core
 
 Full sample:
@@ -45,11 +49,19 @@ At full precision the displacement is proportional to `(x − 1)` and is 0 at `t
 
 The share 0.6997 says session 4 is heavy in the sum of squares. The slope change −1.1729 says how far that point moved the line. The gap 11.7286 is not a score. A holdout that voids the training residual is day 7, and the held-out point there is session 5, not a point removed after it was seen.
 
+| Action | Session 4 in β̂? | Today's number |
+|---|---|---|
+| Day 3 share | yes | 0.6997 weight |
+| Day 5 delete | no | Δβ₁ = −1.1729 |
+| Day 7 holdout | yes in fit | score session 5 only |
+
 ## Further out
 
 An influence calculation asks how far a coefficient moves when one observation is deleted. It answers dependence of the estimate on that point. It does not answer a forecast score at that point. The same separation applies to a single day's return. One sentence is the day's share of the loss. A second is how far beta or the intercept moves when the day is removed. A third, and only a third, is the holdout error if the day was set aside before looking. The information sets differ.
 
 Today has the old share and the new displacement. 0.6997 is the full-sample squared share. −1.1729 is the slope change after deletion. 11.7286 looks like a large error, but the deletion used the size of 20, so it is not an out-of-sample score. `x = 4` is still inside the convex hull of `{1, 2, 3, 5}`, so it is not an extrapolation error either. Extrapolation waits until the query leaves the support. That is day 6.
+
+Do not treat repeated "drop outlier days until RSS pretty" as validation. Full-sample RSS 96.339 still describes the old line, not the four-point refit.
 
 ## What the run showed
 
@@ -60,3 +72,5 @@ python days/05-without-day-4/without_day4.py
 The script should print `delta slope = -1.1729` and the displacement `-3.5186` at `x = 4`. The implementation is [`without_day4.py`](../../days/05-without-day-4/without_day4.py).
 
 The full-sample line is not discarded. It is the line the refit is compared with. The in-sample `RSS = 96.339` is still the day-1 sum of squares, not today's result. Today's result is the displacement. Day 6 places the query at `x = 6`, where there is no label and the residual is undefined.
+
+Self-check: 11.7286 not labeled holdout? Table displacements authoritative over hand-multiplied −1.1729? Deletion diagnostics distinguished from day 7 holdout?

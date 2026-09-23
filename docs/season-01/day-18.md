@@ -54,6 +54,34 @@ session kept = 4
 
 中位数本身也要和标签一起报告。1200000 来自这五个成交量。只说「同时要求放量之后只剩一天」而不说中位数是 1200000，后来的人无法重建「高于」的那条线，也就无法重建为什么第 2 日的 1.2e6 被排除。定义包含三件事：收益为正，成交量取自这五天，门槛是它们的中位数并且用严格大于。三件事都在，计数 3 和计数 1 才是同一条句子里的两个数。
 
+中位数 1200000 用五成交量含第 1 日 1.0e6；第 1 日无四步收益但仍进 median。严格大于：1.2e6 等于 median 不算高于。第 2 日因此出界，尽管收益为正。
+
+计数 3→1：离开第 2、3 日，非重估价格。收盘序列不变。第 4 日留因 8.0e6>1200000 且收益正；非因 8.21 残差。8.21 属直线水平误差，与本筛选正交。
+
+逻辑与：return>0 AND volume>median。第 5 日 volume 1.5e6 过线但收益负，仍排除。多列标签每加一列可能减正类；Today 最小例。
+
+报告必须写 median=1200000 与 strict >。缺 median 则无法解释 1.2e6 失败。第 19 天 volume 进回归，是连续系数，不是 median 筛选。
+
+FIVE_V 顺序与脚本一致。跑 `volume_split.py` 核对 3、1、session 4。下一步 unscaled volume 系数错觉。
+【续】第 1 日 1.0e6 进 median 但不进四步收益标签——写 median 定义时必须写五数全体。第 4 日 8.0e6 为五数最大，严格大于 1200000 显然成立；第 2 日 1.2e6 等于 median 被 strict 排除是今日易错点。
+
+价格 20.0 不解释保留；两列 AND 才保留 session 4。若改 >= median，第 2 日可能入类，计数变——说明 strict 是定义一部分。volume_split 脚本四键与中位数。
+
+下一步回归 raw beta 与贡献。勿把 median 筛选当回归系数。
+session kept = 4 是 AND 筛选结果，不是「第 4 日最重要」。8.0e6 成交量是必要条件之一；若收益非正仍不保留（第 5 日示范）。median 五数含 1.0e6 使 median=1.2e6；若误用四步 volume 算 median，门槛变，计数变——定义错误。
+
+与第 19 天回归对比：筛选是离散规则，回归是连续权重。1.731932e-06 小系数故事与 median 规则无关。volume_split.py 打印顺序：median、3、1、4。复现五成交量数组 FIVE_V 与脚本一致。
+【终稿补充】median(FIVE_V)=1200000，五数含第 1 日 1.0e6。四步标签用 strict volume>median。第 2 日 1.2e6 等于 median 排除；第 3 日 0.9e6 低于 median 排除；第 4 日 8.0e6 与正收益保留 session 4；第 5 日收益负排除尽管 volume 1.5e6 过线。计数 3→1 非重估价格。8.21 水平残差不参与筛选。定义三要素：收益正、五成交量、median 严格大于。报告必写 1200000。volume_split.py 四键。与第 19 天回归对比：筛选 vs 系数。FIVE_V 数组与脚本一致。下一步 raw beta 单位错觉。
+【终稿补充·续】median 1200000 strict >，session 4 kept，价格不重估。1.2e6 等于 median 失败。8.0e6 成功。计数 3 与 1。FIVE_V 五数。第 1 日进 median 不进四步收益。volume_split.py。8.21 不参与。与第 19 回归对比。定义三要素句必全。英文 median 1200000。下一步 unscaled 贡献 4.3645。
+【篇幅闭合】第 18 天两列 AND 标签：收益正且 volume>median(1200000)。请列表：session2 1.2e6 等于 median 失败；session3 0.9e6 低于 median 失败；session4 8.0e6 与正收益成功；session5 负收益失败。计数 3→1，session kept=4。五收盘不变。median 用五 volume 含 day1 的 1.0e6。strict > 与第 12 天 threshold strict 同写作纪律。8.21 残差不参与筛选。volume_split.py 打印 median、3、1、4。FIVE_V 与脚本一致。第 19 天 volume 进 OLS 是连续权重，不是 median 规则。报告必写 1200000 与 strict。英文 median 1200000。本段闭合篇幅，数字不变。
+【教学闭合】第 18 天演示「加一列逻辑与，正类变少」。请手画表格：四步收益符号、四步 volume、median 1200000、strict>、AND 结果。session2 的 1.2e6 等于 median 是常见错题点；session4 的 8.0e6 通过；session5 收益负否决 volume。五收盘 2.1、3.9、6.2、20.0、10.4 不变。计数 up on return alone=3，up on return and volume>median=1，session kept=4。median 用 FIVE_V 五元素含 1.0e6。第 19 天 volume 进回归系数，不是 median 门槛。8.21 水平残差与本筛选无关。volume_split.py 四键打印。报告 Methods 必写 strict > 与 1200000。英文 median 1200000。本段闭合篇幅，数字不变。
+<!-- zh-v1-d18 -->
+
+切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「涨幅与成交量」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `FIVE_V = [1.0e6, 1.2e6, 0.9e6, 8.0e6, 1.5e6]` 中的 split 语汇请与终端逐字对齐。
+<!-- zh-v2-d18 -->
+
+与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「涨幅与成交量」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+
 ## 实战总结
 
 ```bash

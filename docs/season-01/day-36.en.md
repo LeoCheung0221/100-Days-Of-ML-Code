@@ -35,6 +35,16 @@ Volatility, a training label, and an excess return each need a declared close. E
 
 If the unadjusted return is the label in "predict the next day's direction," this day is recorded as a large decline. The adjusted label on the same day is 0.0124, and the sign is positive. Both labels are correctly computed on their own series. They describe different events. A model comparison fixes the series first. Otherwise −0.4938 enters the loss as an extreme sample, and the extreme comes from the corporate action. Next, AAA and BBB go into one split, the feature is the same-day market return, and the question is whether a random split can put the same date on both the training side and the test side.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+2024-03-11: unadjusted return −0.4938 and adjusted 0.0124; both numbers are due. Do not call −0.4938 a crash without the unadjusted qualifier.
+
+
+<!-- uniq-exp-en2 -->
+
+Pick adjusted or unadjusted returns before comparing models; corporate-action day is when the two series diverge most on this panel.
+
 ## What the run showed
 
 ```bash

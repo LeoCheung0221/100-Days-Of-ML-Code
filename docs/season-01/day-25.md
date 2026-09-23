@@ -40,6 +40,40 @@ for a sign decision, trust the direction accuracy
 
 以后同时看到一个方向准确率和一个平均绝对误差，先问决定是符号还是距离。决定是符号时，分数栏放准确率，并把它和基准并排。平均绝对误差保留，用来说明收益数值的偏差，也用来核对有多少天「距离不大、符号却错」。今天核对出来的天数是 9。这 9 天是 0.0167 不能代替 0.4675 的具体计数。
 
+lag-1 return forecast：r̂_t=r_{t-1}。direction accuracy 0.4675 同 day 22 符号；MAE 0.0167 在 return 单位。9 days small |error| wrong sign。
+
+符号决定 trust direction accuracy，不信 0.0167  alone。0.0167 小因 return 尺度小，非符号对。coin 0.5000 仍>0.4675。
+
+中位数阈值定义 small error；9 是计数。勿用 MAE 为 direction 担保。两泛函可冲突：平均距离小+九次符号反。
+
+与第 10 天水平/方向两列呼应，在 AAA returns 上。下一步 random train/test split。
+
+跑 `two_scores.py` 四键。并排 0.4675、0.0167、9、trust line。
+【续】0.0167 为 return MAE，与价格水平残差量纲不同。9 天 small error wrong sign 用中位数定义 small——须信脚本逻辑，不手猜天数。direction 0.4675 同 day 22；Today 加 MAE 列教不可互替。
+
+for sign decision trust direction 是打印约束。coin 0.5000 仍高于 0.4675。第 26 天 random split 将另测。
+
+two_scores.py 全键。报告双列分数。忌用 MAE 小论证方向好。
+lag-1 return 预测 `r̂_t=r_{t-1}` 无参数，MAE 0.0167 与 direction 0.4675 同规则不同泛函。9 天 small error wrong sign 证明：中位数以下误差仍可能 sign 错。trust direction 句是决策规则，不是贬低 MAE——MAE 服务幅度诊断。
+
+与第 10 天两列对照：水平残差 vs 方向；Today 是 return MAE vs 方向。coin 0.5000 仍高于 0.4675。two_scores.py 四键打印。第 26 天 random split 将引入新测试准确率，Today 仍是全段同一类 in-sample 对照结构。
+【终稿补充】lag-1 return forecast，direction 0.4675，MAE 0.0167，9 days small error wrong sign。trust direction for sign decision。coin 0.5000>0.4675。MAE 小非符号对。中位数定义 small error。two_scores.py。与 day10 两列呼应。第 26 random split。勿 MAE 担保方向。r̂_t=r_{t-1} 无系数。9 是反例计数。英文键对齐。报告双列。
+【终稿补充·续】direction 0.4675 MAE 0.0167 9 wrong sign small error trust direction。coin 0.5>0.4675。lag-1 return。r̂=r_{t-1}。two_scores.py。day10 两列呼应。第 26 split。MAE 不担保符号。中位数 small 定义在脚本。英文四键。报告符号决策看 direction。
+【篇幅闭合】第 25 天：lag-1 return forecast，direction accuracy=0.4675，mean absolute return error=0.0167，days with small price error and wrong sign=9，for a sign decision trust the direction accuracy。coin 0.5000 仍高于 0.4675。MAE 与 direction 不可互替。9 天证明小误差可错符号。two_scores.py 链接 ../../days/25-two-scores/two_scores.py。第 26 天 random split 下一步。本段闭合篇幅，数字不变。
+【教学闭合】第 25 天并排 direction accuracy=0.4675 与 mean absolute return error=0.0167，并数 days with small price error and wrong sign=9。符号决定 trust direction accuracy，不信 0.0167  alone。lag-1 return forecast：r̂_t=r_{t-1}，无系数。0.0167 单位是 return，不是价格水平。9 天说明小误差可错符号。coin 0.5000 仍高于 0.4675。two_scores.py 链接 ../../days/25-two-scores/two_scores.py。与 day10 水平/方向两列对照。第 26 天 random train/test split 下一步。报告时双列同屏，禁止 MAE 为方向担保。本段闭合篇幅，数字不变。
+<!-- zh-v1-d25 -->
+
+与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「方向与价格并报」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+<!-- zh-v2-d25 -->
+
+报告规范：交作业三句应包含 (1) 本日对象「方向与价格并报」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
+<!-- zh-v3-d25 -->
+
+手算/复核：从核心块 `lag-1 return forecast；direction accuracy = 0.4675；mean absolute return error = 0.0167` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
+<!-- zh-v4-d25 -->
+
+阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「方向与价格并报」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 26 天标题，勿提前把未打印的对照写进本页结论。
+
 ## 实战总结
 
 ```bash

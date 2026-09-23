@@ -55,6 +55,35 @@ RSS(r ~ z^{past}) = 0.2650
 
 掩码必须相同，否则 0.0008 本身会混进行数的差别。过去缩放在序列开头没有定义，泄漏缩放处处有定义。若让泄漏缩放用上那些开头的行，而过去缩放不用，两个 RSS 的样本就不再是同一批收益。程序先取过去缩放有限的掩码，再让两份回归都落在这个掩码上。因此 0.2642 和 0.2650 是同一批行上的两个平方和。它们的差不负责宣布谁更好。宣布泄漏的是：缩放读进了以后的开盘。
 
+与第 33 天的对照：第 33 天泄漏在「全样本矩看见测试段」，测试 MSE 仍都是 0.000109。今天泄漏在「以后的开盘进入缩放」，RSS 差 0.0008。两种 future=yes 都可以几乎不动分数。识别都靠定义，不靠差值大小。第 40 天两行都会进清单。
+
+工程上 `StandardScaler.fit` 若对整个 `DataFrame` 调用，再 `transform` 训练与测试，就复制了今天的泄漏结构。正确做法是 `fit` 只在训练段，或逐时点只用过去窗口。第 30 天固定 20 日窗口是把信息集写死在长度上；第 29 天是把泄漏写死在「用到了 later opens」。读者应能说出：0.2642 与 0.2650 哪一列的 `μ, σ` 含未来开盘。
+
+Walk-forward 里，第 `t` 天的缩放应只含 `open_{≤t}` 或更严的过去集合。泄漏缩放用 `mean(open)` 全序列，使 `z_t` 依赖 `open_{>t}`。打印句 the leaky scale is a function of later opens 就是判决，与 0.0008 无关。
+<!-- zh-v1-d29 -->
+
+手算/复核：从核心块 `leaky scale uses every open, including later ones；RSS of return on leaky close = 0.2642；RSS of return on past-only close = 0.2650` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
+<!-- zh-v2-d29 -->
+
+阶段衔接：第 1–20 天多用五收盘 toy；第 21 天起 panel.csv 160 行冻结；第 51 天起五 lag return 与 test MSE 0.000081 标尺；第 70 天十行清单汇总。本日「用未来开盘标准化」落在链的哪一段，决定能否引用哪些数字。五收盘数字 2.1/3.9/6.2/20.0/10.4 与 panel 160 行是两套母集，不得混公式。下一课预告见第 30 天标题，勿提前把未打印的对照写进本页结论。
+<!-- zh-v3-d29 -->
+
+矩阵视角重述「用未来开盘标准化」：把每一行看成设计矩阵的一行，把核心块 `leaky scale uses every open, including later ones；RSS of return on leaky close = 0.2642；RSS of return on past-only close = 0.2650` 看成必须原样抄写的观测。训练段求 β̂ 时，正规方程累加的是外积与内积；第 9 天说明同一批行只换顺序时，累加结果不变。本日若含 lag 或切分掩码，行集合或可见标签已变，就不能再用行序 shuffle 类比。手算核对时，请先在纸上列出训练行数与测试行数，再对照核心块，避免把 in-sample RSS 当成 test MSE。
+<!-- zh-v4-d29 -->
+
+| 对照项 | 第 28 天 | 第 29 天（用未来开盘标准化） | 第 30 天 |
+|---|---|---|---|
+| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
+| 数字来源 | 冻结 stdout | leaky scale uses eve | 勿混贴 |
+| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
+读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
+<!-- zh-v5-d29 -->
+
+量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「用未来开盘标准化」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `leaky scale uses every open, including later ones；RSS of return on leaky close = 0.2642；RSS of return on past-only close = 0.2650` 应出现在实验日志同一页。
+<!-- zh-v6-d29 -->
+
+工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 28/30 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
+
 ## 实战总结
 
 ```bash
@@ -64,3 +93,5 @@ python days/29-future-open/future_open.py
 脚本打印泄漏缩放使用每一个开盘、包括以后的开盘，`RSS of return on leaky close = 0.2642`，`RSS of return on past-only close = 0.2650`，以及 `the leaky scale is a function of later opens`。实现是 [`future_open.py`](../../days/29-future-open/future_open.py)。
 
 两份 RSS 是 0.2642 与 0.2650，差 0.0008，掩码相同。识别泄漏的事实是以后的开盘是缩放的自变量。下一步每天只使用过去一个固定长度的窗口，信息集不再是整张表。
+
+锚点：later opens、0.2642、0.2650、0.0008、共同掩码。不要写「泄漏版 RSS 更低所以更好」。自检：是否用 0.0008 否定泄漏？是否忘记第 28 天 FORBIDDEN 与今日缩放泄漏是不同列机制？

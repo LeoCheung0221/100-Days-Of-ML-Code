@@ -35,6 +35,16 @@ A shared date plus a same-day market feature lets a test row see a market return
 
 Next stays with AAA, lines up the sign of the market return with the sign of the adjusted return, and then lags the market sign by one day, so the part of the accuracy that was simultaneous can be seen to drop. The gap between 0.7234 and 0.6170 has today's explanation only when the two names are drawn in one sample.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Pooled names: random test 0.7234, time 0.6170; random split can share a date across names. Single-name day 26–27 ordering does not generalize.
+
+
+<!-- uniq-exp-en2 -->
+
+When names are pooled, random splits can leak calendar information across symbols; time split 0.6170 uses a different protocol than single-name day 27.
+
 ## What the run showed
 
 ```bash

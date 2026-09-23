@@ -52,6 +52,11 @@ Any later direction rule that reports 0.75 on these four sign labels is checked 
 
 The two constants are a complementary pair on one label table. Dropping 0.25 drops the statement of how much of the hit rate comes from the positive class occupying three steps. The baseline looks at no price. That sentence is complete when both accuracies are present: one rule that looks at no price scores 0.75, another rule that looks at no price scores 0.25, and the results come from the counts of 1 and 0 in the labels.
 
+Always-down 0.25 and always-up 0.75 sum to 1 on the same symbol labels—a complementary pair that ignores prices. Any rule that prints up every day cannot beat 0.75 on these labels without changing predictions; slope 3.27's direction score coincides with that benchmark.
+
+Do not mix threshold-label accuracies from days 12–13 into this table. Day 22's coin 0.5000 is yet another baseline on 77 AAA segments.
+Pair 0.75 with 0.25 and the sentence that the baseline ignores prices. Do not mix in threshold-label accuracies from days 12–13.
+Seventy-five percent on symbol labels with always-up is a label-frequency fact, not evidence that prices were used in the baseline table.
 ## What the run showed
 
 ```bash

@@ -4,17 +4,17 @@
 
 [Phase I · Models](../../README.en.md) · runs
 
-What you learn today: line 0.000081, ridge 0.000098, tree 0.000174; three miss-mode English lines match script
+What you learn today: line MSE 0.000081, ridge 0.000098, tree 0.000174; three miss-mode English sentences verbatim
 
 ## Plain-language account
 
-Day 55's numbers come from script stdout, not hand-filled values. 岭 λ=20000 惩罚五 lag，截距自由. line 最小 MSE. 三句失手描述形状，不是命中率. 
+All three models score the same nineteen test rows. MSE order: line, then ridge, then tree.
 
-The panel is days/data/panel.csv, name AAA, simple returns from adjusted close. Train is the first seventy-five percent in time order unless this script changes the cut. Hold-out rows score MSE only; coefficients are not re-fit there. Same-bar high, low, close are not features; same-day market is not a result.
+Ridge λ=20000 penalizes lag coefficients only; shrinkage toward zero raises test MSE here.
 
-Separate train from test: parameters on train, MSE on hold-out mean squared error. line 0.000081, ridge 0.000098, tree 0.000174; three miss-mode English lines match script
+Miss-mode lines describe error shapes, not hit rates; keep English verbatim for stdout checks.
 
-Return MSE is not price-level SSE from days 45–46. Claims serve this print only.
+Data come from name AAA in days/data/panel.csv: simple returns from adjusted close ratios minus one. Usable rows start after the fifth return, so five fewer rows than the raw panel. The default split is the first seventy-five percent of those rows in time order for train and the rest for test (often fifty-four train, nineteen test). Same-bar high, low, and close must not explain same-day return; same-day market return is not a valid feature or label unless the day script says otherwise.
 
 ## Core
 
@@ -27,18 +27,51 @@ ridge miss mode = same blend pulled toward zero misses jumps and size
 tree miss mode = one lag threshold leaves a constant on each side
 ```
 
+
+Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows are the only score set; coefficients and thresholds are fit on train only.
+
+| Idea | Changes this day? | Note |
+|---|---|---|
+| Five-lag line coeffs | Usually frozen | From day 51 train |
+| test MSE 0.000081 | Reprinted on MSE days | Diagnostics use MAE/direction/bill |
+| forbidden OHLC/market | Contract holds | See days 56–57, 67 |
+| train/test rows | Default 54/19 | Day 58 calendar cut excepted |
+
+## Core block, line by line
+
+Day 55 prints 6 contract lines:
+
+- `test MSE line = 0.000081`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `test MSE ridge = 0.000098`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `test MSE tree = 0.000174`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `line miss mode = smooth blend of lags misses sharp jumps`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `ridge miss mode = same blend pulled toward zero misses jumps and size`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `tree miss mode = one lag threshold leaves a constant on each side`: match the terminal verbatim—keys, spacing, signs, six decimals.
+
+Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
+
 ## Further out
 
-Cross-check stdout against the page: key names, signs, and six decimals should match the terminal. line 0.000081, ridge 0.000098, tree 0.000174; three miss-mode English lines match script
+Do not paste day-42 full-sample ridge slope into return tables.
 
-Keep forbidden rules beside MSE in the lab notebook. If the next lesson changes the cut or target, open a new log row instead of overwriting today's numbers.
+Archive miss-mode sentences beside MSE for later direction/jump diagnostics.
+
+Next: explicit task and forbidden lines in stdout.
+
+## How this day connects
+
+Three test MSE lines plus English miss-mode sentences—keep both tables. Ridge 0.000098 sits between line and tree. Day 56 prints the task contract next.
+
+Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
 
 ## What the run showed
 
 ```bash
-python days/55-three-miss-modes/three_miss_modes.py
+python3 days/55-three-miss-modes/three_miss_modes.py
 ```
 
-The script should print stdout lines matching the core block. The implementation is [`three_miss_modes.py`](../../days/55-three-miss-modes/three_miss_modes.py).
+The script should print stdout matching the core block. Implementation: [`three_miss_modes.py`](../../days/55-three-miss-modes/three_miss_modes.py).
 
-Hand in the printed numbers and rule lines for day 55. Keep the script path for reruns.
+
+
+Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; FORBIDDEN and not-a-result lines stay verbatim; do not swap line versus tree MSE or bill columns; lag-5 anchors (MSE 0.000081, volume helped false, bill −18) stay untouched unless you re-run and update the whole contract.

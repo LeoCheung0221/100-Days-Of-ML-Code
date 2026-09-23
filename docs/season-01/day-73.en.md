@@ -4,19 +4,15 @@
 
 [Phase I · Models](../../README.en.md) · runs
 
-What you learn today: direction wrong on 3 days; 19 test days.
+What you learn today: Three direction-wrong days; nineteen test days
 
 ## Plain-language account
 
-Day 73's numbers come from script stdout, not hand-filled values. 方向只看 sign(y) 与 sign(ŷ)，不看误差幅度. 3/19 约十六 percent 失手，与 MAE 或 MSE 不是同一分数. 
+Direction wrong when signs disagree—three of nineteen days.
 
-第 74 天会按 |y−ŷ| 列出前五名，其中可能方向对但误差大. 
+Dates are not printed; map from panel if needed.
 
-The panel is days/data/panel.csv, name AAA, simple returns from adjusted close. Train is the first seventy-five percent in time order unless this script changes the cut. Hold-out rows are scored only; the five-lag line is not re-fit there. Same-bar high, low, close are not features; same-day market is not a result.
-
-Separate train from test: coefficients on train, counts and MAE on nineteen hold-out rows. direction wrong on 3 days; 19 test days.
-
-Return scores here are not price-level SSE from days 45–46. Claims serve this print only.
+Data come from name AAA in days/data/panel.csv: simple returns from adjusted close ratios minus one. Usable rows start after the fifth return, so five fewer rows than the raw panel. The default split is the first seventy-five percent of those rows in time order for train and the rest for test (often fifty-four train, nineteen test). Same-bar high, low, and close must not explain same-day return; same-day market return is not a valid feature or label unless the day script says otherwise.
 
 ## Core
 
@@ -25,18 +21,47 @@ direction wrong days = 3
 test days = 19
 ```
 
+
+Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows are the only score set; coefficients and thresholds are fit on train only.
+
+Days 71–80 mostly diagnose the same five-lag line frozen from day 51 train; this lesson may not reprint test MSE 0.000081, but predictions still use lag1=−0.1359, lag2=0.0829, lag3=0.1094, lag4=−0.1726, lag5=−0.0803, intercept 0.0023.
+
+| Idea | Changes this day? | Note |
+|---|---|---|
+| Five-lag line coeffs | Usually frozen | From day 51 train |
+| test MSE 0.000081 | Reprinted on MSE days | Diagnostics use MAE/direction/bill |
+| forbidden OHLC/market | Contract holds | See days 56–57, 67 |
+| train/test rows | Default 54/19 | Day 58 calendar cut excepted |
+
+## Core block, line by line
+
+Day 73 prints 2 contract lines:
+
+- `direction wrong days = 3`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `test days = 19`: match the terminal verbatim—keys, spacing, signs, six decimals.
+
+Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
+
 ## Further out
 
-Cross-check stdout against the page: key names, signs, and decimals should match the terminal. direction wrong on 3 days; 19 test days.
+Days 71–80 mostly diagnose the same five-lag line frozen from day 51 train; this lesson may not reprint test MSE 0.000081, but predictions still use lag1=−0.1359, lag2=0.0829, lag3=0.1094, lag4=−0.1726, lag5=−0.0803, intercept 0.0023.
 
-Keep billing rules beside direction counts in the lab notebook. If the next lesson changes the cut or target, open a new log row instead of overwriting today's numbers.
+Day 74 lists top five absolute errors with classes.
+
+## How this day connects
+
+Three direction-wrong days of nineteen. Day 74 lists dated top errors.
+
+Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
 
 ## What the run showed
 
 ```bash
-python days/73-wrong-direction/wrong_direction.py
+python3 days/73-wrong-direction/wrong_direction.py
 ```
 
-The script should print stdout lines matching the core block. The implementation is [`wrong_direction.py`](../../days/73-wrong-direction/wrong_direction.py).
+The script should print stdout matching the core block. Implementation: [`wrong_direction.py`](../../days/73-wrong-direction/wrong_direction.py).
 
-Hand in the printed numbers and rule lines for day 73. Keep the script path for reruns.
+
+
+Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; FORBIDDEN and not-a-result lines stay verbatim; do not swap line versus tree MSE or bill columns; lag-5 anchors (MSE 0.000081, volume helped false, bill −18) stay untouched unless you re-run and update the whole contract.

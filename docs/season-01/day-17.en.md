@@ -44,6 +44,9 @@ On these four steps the forecast is the constant 0.9634. A constant forecast has
 
 A citation carries all three numbers. Cite only 0.9634, and every step reads as nearly certain to be up. Cite only 0.75, and the degree the rule stated disappears, leaving the positive-class share. Cite only 0.2134, and both ends of the gap disappear. The full sentence is: stated 0.9634, realized 0.75, gap 0.2134. Steps called ninety-six percent up were up three quarters of the time. Confidence and frequency sit side by side and do not replace each other.
 
+Calibration check in miniature: stated P(up) 0.9634, realized up frequency 0.75, gap 0.2134. Quote all three; do not replace one with the other. The gap is not the day-15 confusion matrix.
+Quote stated, realized, and gap together—never one number alone.
+Three-line report: stated, realized, gap—no substitution. Small-n frequency 0.75 is still a realized proportion, not the sigmoid output.
 ## What the run showed
 
 ```bash

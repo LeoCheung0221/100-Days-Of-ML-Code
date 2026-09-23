@@ -54,6 +54,9 @@ The price path is the same path under both labels. The kept set shrinking to ses
 
 The median is reported together with the label. The value 1200000 comes from these five volumes. A sentence that says only "after also requiring heavy volume, one day remains," and that does not say the median is 1200000, leaves the line called "above" impossible to rebuild, and leaves it impossible to rebuild why session 2's 1.2e6 was excluded. The definition contains three things: the return is positive, the volume is taken from these five days, and the bar is their median under a strict inequality. With all three present, the count 3 and the count 1 are two numbers in one sentence.
 
+Median volume 1200000 uses all five sessions including day 1; strict `>` excludes 1.2e6 on day 2. Count drops from 3 to 1 without revaluing any close—only the label definition gained a volume column.
+Median 1200000 and strict `>` explain why 1.2e6 fails while 8.0e6 passes—closes are untouched.
+Session 4 survives the AND rule; session 5 fails on negative return despite volume above median—closes unchanged throughout.
 ## What the run showed
 
 ```bash

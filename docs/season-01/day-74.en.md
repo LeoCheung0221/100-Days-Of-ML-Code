@@ -4,19 +4,17 @@
 
 [Phase I · Models](../../README.en.md) · runs
 
-What you learn today: Top five: 2024-04-03 err=0.019717 jump right; 04-18 0.017449 jump right; 04-22 0.014328 mid wrong; 03-28 0.013401 jump right; 04-02 0.009609 jump right.
+What you learn today: Top five errors with dates, classes, and direction flags per stdout
 
 ## Plain-language account
 
-Day 74's numbers come from script stdout, not hand-filled values. 排序键是 |y−ŷ|，不是账单. 前五里四个 jump、一个 mid；仅 rank3 方向错. 最大误差日可以方向对——直线猜对涨跌仍可能离 y 很远. 
+Top five by absolute error: four jump, one mid on 2024-04-22 with wrong direction.
 
-日期与六位 error 必须逐字对齐 stdout；class 与 direction 是脚本对同一行的附加标签. 
+Large error without jump class happens; jump with right direction also happens.
 
-The panel is days/data/panel.csv, name AAA, simple returns from adjusted close. Train is the first seventy-five percent in time order unless this script changes the cut. Hold-out rows are scored only; the five-lag line is not re-fit there. Same-bar high, low, close are not features; same-day market is not a result.
+Keep English class and direction tokens verbatim.
 
-Separate train from test: coefficients on train, counts and MAE on nineteen hold-out rows. Top five: 2024-04-03 err=0.019717 jump right; 04-18 0.017449 jump right; 04-22 0.014328 mid wrong; 03-28 0.013401 jump right; 04-02 0.009609 jump right.
-
-Return scores here are not price-level SSE from days 45–46. Claims serve this print only.
+Data come from name AAA in days/data/panel.csv: simple returns from adjusted close ratios minus one. Usable rows start after the fifth return, so five fewer rows than the raw panel. The default split is the first seventy-five percent of those rows in time order for train and the rest for test (often fifty-four train, nineteen test). Same-bar high, low, and close must not explain same-day return; same-day market return is not a valid feature or label unless the day script says otherwise.
 
 ## Core
 
@@ -28,18 +26,50 @@ rank 4 date = 2024-03-28 error = 0.013401 class = jump direction = right
 rank 5 date = 2024-04-02 error = 0.009609 class = jump direction = right
 ```
 
+
+Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows are the only score set; coefficients and thresholds are fit on train only.
+
+Days 71–80 mostly diagnose the same five-lag line frozen from day 51 train; this lesson may not reprint test MSE 0.000081, but predictions still use lag1=−0.1359, lag2=0.0829, lag3=0.1094, lag4=−0.1726, lag5=−0.0803, intercept 0.0023.
+
+| Idea | Changes this day? | Note |
+|---|---|---|
+| Five-lag line coeffs | Usually frozen | From day 51 train |
+| test MSE 0.000081 | Reprinted on MSE days | Diagnostics use MAE/direction/bill |
+| forbidden OHLC/market | Contract holds | See days 56–57, 67 |
+| train/test rows | Default 54/19 | Day 58 calendar cut excepted |
+
+## Core block, line by line
+
+Day 74 prints 5 contract lines:
+
+- `rank 1 date = 2024-04-03 error = 0.019717 class = jump direction = right`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `rank 2 date = 2024-04-18 error = 0.017449 class = jump direction = right`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `rank 3 date = 2024-04-22 error = 0.014328 class = mid direction = wrong`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `rank 4 date = 2024-03-28 error = 0.013401 class = jump direction = right`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `rank 5 date = 2024-04-02 error = 0.009609 class = jump direction = right`: match the terminal verbatim—keys, spacing, signs, six decimals.
+
+Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
+
 ## Further out
 
-Cross-check stdout against the page: key names, signs, and decimals should match the terminal. Top five: 2024-04-03 err=0.019717 jump right; 04-18 0.017449 jump right; 04-22 0.014328 mid wrong; 03-28 0.013401 jump right; 04-02 0.009609 jump right.
+Days 71–80 mostly diagnose the same five-lag line frozen from day 51 train; this lesson may not reprint test MSE 0.000081, but predictions still use lag1=−0.1359, lag2=0.0829, lag3=0.1094, lag4=−0.1726, lag5=−0.0803, intercept 0.0023.
 
-Keep billing rules beside direction counts in the lab notebook. If the next lesson changes the cut or target, open a new log row instead of overwriting today's numbers.
+Day 75 bills errors: total bill line −18.
+
+## How this day connects
+
+Top five absolute errors with classes; 2024-04-22 mid and wrong direction. Day 75 bills −18.
+
+Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
 
 ## What the run showed
 
 ```bash
-python days/74-top-five-errors/top_five_errors.py
+python3 days/74-top-five-errors/top_five_errors.py
 ```
 
-The script should print stdout lines matching the core block. The implementation is [`top_five_errors.py`](../../days/74-top-five-errors/top_five_errors.py).
+The script should print stdout matching the core block. Implementation: [`top_five_errors.py`](../../days/74-top-five-errors/top_five_errors.py).
 
-Hand in the printed numbers and rule lines for day 74. Keep the script path for reruns.
+
+
+Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; FORBIDDEN and not-a-result lines stay verbatim; do not swap line versus tree MSE or bill columns; lag-5 anchors (MSE 0.000081, volume helped false, bill −18) stay untouched unless you re-run and update the whole contract.

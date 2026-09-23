@@ -48,6 +48,16 @@ Adding depth, leaves, or features often moves training loss down. On a stretch t
 
 The smaller later SSE belongs to depth 1, not depth 2. A rule that reads only the training column selects the layer at 1.3953, and that layer's later SSE is 2.1488, which is larger than 0.5669. The column used by the selection rule is the column the result belongs to.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Depth 2 train SSE 1.3953 but later SSE 2.1488 rises vs depth 1 later 0.5669.
+
+
+<!-- uniq-exp-en2 -->
+
+Pick depth using the column you will actually deploy on; train SSE alone would favor depth 2 while later SSE favors depth 1 on this print.
+
 ## What the run showed
 
 ```bash

@@ -39,6 +39,38 @@ a higher score on any of these lines is not a result
 
 新的一天若要加进行，先回答它的输入在标签可知之前是否已经固定。当日高、以后的开盘、测试段的矩、下一个收盘、跨股票的同一天、当日市场收益，这六种来源今天都回答成了 yes。换一个模型族不会把来源变成 no。线性回归、树、或者一个更灵活的拟合，只要还吃这些输入，分数就仍然不是结果。
 
+清单用法：研究日志里 future=yes 行可保留打印作审计，但不进结果表。第 39 天 −0.0044 不在六行内，因规则与成本事先写定且无 future 特征。第 31–32 窗口失手、第 35 天 gap=2、第 36 天双收益亦不在六行内。
+
+读者应能逐行复述六条英文描述与对应数字：28→3.6518 RSS 差、29→0.0008、33→双 0.000109、34→9.8971、37→0.7234、38→0.6795，并加总句 a higher score on any of these lines is not a result。
+
+与 honest 切分：第 27 天切分不在清单；泄漏是特征/矩/填值来源，不是「随机切分」本身（除第 37 行共享日设计）。
+<!-- zh-v1-d40 -->
+
+| 对照项 | 第 39 天 | 第 40 天（泄漏清单） | 第 41 天 |
+|---|---|---|---|
+| 评分对象 | 见相邻课 recap | 核心块键名 | 见脚本预告 |
+| 数字来源 | 冻结 stdout | leakage list | 勿混贴 |
+| 常见误读 | 混用 SSE/MSE | 改三位小数 | 省略 forbidden |
+读表时先确认三列是否同一标签列与同一切分；若标签从价格换成 return，SSE 与 MSE 不得横向排名。
+<!-- zh-v2-d40 -->
+
+量化陷阱：只把 test MSE 或方向准确率写进 PPT，不附 forbidden 与切分句，听众会把「泄漏清单」当成无条件结论。另一个陷阱是把 BBB 的打印搬到 AAA，或把第 45–46 天价格树 SSE 贴进 return 表。第三个陷阱是在 panel 上 shuffle 后再做 lag，却引用第 9 天「行序不变」——破坏的是特征对齐，不是求和顺序。本日锚点 `leakage list；day 28  today's high explains today's close  future=yes；day 29  scale uses later opens  future=yes` 应出现在实验日志同一页。
+<!-- zh-v3-d40 -->
+
+工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 39/41 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
+<!-- zh-v4-d40 -->
+
+面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「泄漏清单」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
+<!-- zh-v5-d40 -->
+
+切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「泄漏清单」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `leakage list；day 28  today's high explains today's close  future=yes；day 29  scale uses later opens  future=yes` 中的 split 语汇请与终端逐字对齐。
+<!-- zh-v6-d40 -->
+
+与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「泄漏清单」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+<!-- zh-v7-d40 -->
+
+报告规范：交作业三句应包含 (1) 本日对象「泄漏清单」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
+
 ## 实战总结
 
 ```bash
@@ -48,3 +80,5 @@ python days/40-leakage-list/leakage_list.py
 脚本应打印六行，每行 future=yes，以及这些行上更高的分数不是结果。实现是 [`leakage_list.py`](../../days/40-leakage-list/leakage_list.py)。
 
 今天交出去的是这六行。第 28 天的最高价，第 29 天以后的开盘，第 33 天的测试段，第 34 天的下一个收盘，第 37 天共享的日期，第 38 天的当日市场收益，全部是 future=yes。更高的分数不是结果。
+
+复现 `leakage_list.py`。自检：是否把 0.7234 或 0.6795 写进 alpha 表？是否漏 future=yes？

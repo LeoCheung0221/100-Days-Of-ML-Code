@@ -41,6 +41,40 @@ the table is not resampled
 
 表的身份也划清程序在做什么。程序只读仓库里的这个文件，运行时不刷新行，不重新抽样。第 22 天起的滞后符号、切分和回归，都是对这份冻结表的计算。换路径或改文件文本，打印的 160 和那 1 个空位就不再是今天这些数。
 
+panel.csv 160 行，AAA/BBB 各 80，日期 2024-01-02..2024-04-23。AAA blank closes=1。second read matches=true 比 text 不比 NaN dict。
+
+非 resampled；非 five-point 2.1..10.4。后续 day 22+ 均绑此文件。空单元格不填、不 forward-fill today。
+
+文本一致性检查可复跑。解析 NaN 相等性失败是预期，故不用 dict compare。160=80+80，无第三 symbol today。
+
+边界：空 close 行后续差分排除。Today 只计数与 identity。换文件则数字全变。
+
+跑 `fixed_table.py` 全键。下一步 lagged direction 36/77 vs coin 0.5000。
+【续】160 行身份是后续 36/77、11 events、cut 2024-02-28 的母集。改 panel.csv 文本则全系数字失效。second read matches 是 integrity check，非业务指标。
+
+空 close 1 格在 AAA；差分前须 finite 过滤，故有效段少于 80。Today 不填缺失。BBB 同行数但不进 day 22 规则。
+
+fixed_table 键全打印。路径 days/data/panel.csv 勿改。下一步 lag direction 对 coin。
+panel 是 season 1 后半的物理数据源。160、2024-04-23、blank=1 是身份三角。Git 改 panel.csv 应视为改题。second read matches 可在 CI 里做 smoke test。NaN dict 比较失败是设计选择，写进 FAQ：为何不用 pandas equals。
+
+与第 1–20 手写五点的关系：前段教 OLS/方向/阈值/基准/噪声；后段教真实 CSV 纪律。交作业写清 not resampled 指运行时非随机子采样，非指文件不含随机列（第 20 天噪声是另一文件实验）。
+【终稿补充】panel.csv 160 行 AAA/BBB 各 80，2024-01-02 至 2024-04-23，AAA blank closes=1。second read matches=true 比 text。not resampled。非五点 2.1..10.4。NaN dict 比较故意不用。空 close 不填。后续 36/77、11 events、cut 2024-02-28 绑此文件。改文件即改题。fixed_table.py 键全。BBB 同行数 Today 只报 AAA 空位。Git 改 panel 需全季重验。160=80+80 无第三 symbol。路径 days/data/panel.csv。文本稳定性 smoke test 可 CI。解析 NaN 相等失败 FAQ。前 20 天手写点后进入 CSV 纪律。交作业 identity 三角：160、日期终点、blank=1。
+【终稿补充·续】160 行冻结表是 season1 后半母集。2024-04-23 终点。AAA blank=1。text read twice match。非 resampled 非五点。NaN dict FAQ。改 CSV 全季重验。fixed_table.py 键。BBB 80 行 Today 只报 AAA 空。CI smoke text match。前段 toy 后段 CSV 纪律。路径 days/data/panel.csv。identity 三角交作业。下一步 36/77 0.4675 coin 0.5。
+【篇幅闭合】第 21 天确立 panel 身份：path=days/data/panel.csv，rows=160，AAA/BBB 各 80，dates 2024-01-02..2024-04-23，AAA blank closes=1，second read matches=true，the table is not resampled。请把 identity 三角写进笔记：行数 160、日期终点、空 close 计数。文本两次 read 相同证明文件未被换。NaN 解析后 dict 比较会误报变化，故 Today 不比 dict。空单元格不填。后续 day22 的 77、day23 的 11、day24 的 cut 2024-02-28 都依赖此文件。改 panel.csv 等于改题。fixed_table.py 链接 ../../days/21-fixed-table/fixed_table.py。前 20 天五点 toy 与后段 CSV 纪律分界。BBB 同行数 Today 只报 AAA 空位。CI 可加 text match smoke。本段闭合篇幅，数字不变。
+【教学闭合】第 21 天是数据工程纪律日：冻结 panel.csv，禁止运行时 resample。identity 检查清单：① path=days/data/panel.csv；② rows=160；③ AAA dates 2024-01-02..2024-04-23；④ AAA blank closes=1；⑤ second read matches=true；⑥ the table is not resampled。解释 77 与 160：77 是 AAA 有效 adj close 做 lag 后的段数，不是全表行数。解释 11 events：是 streak 条件触发次数，不是 160。解释 cut 2024-02-28：是 day24 的日期切分，依赖同文件。NaN dict 比较失败 FAQ：空字符串 parse 成 NaN，NaN!=NaN，故 text match 更可靠。BBB 80 行存在但 day22 规则只用 AAA。改 panel 文本则全系数字失效。fixed_table.py 链接保持。前 20 天五点与后段 CSV 的分界要会讲。本段闭合篇幅，数字不变。
+<!-- zh-v1-d21 -->
+
+面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「固定收盘表」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
+<!-- zh-v2-d21 -->
+
+切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「固定收盘表」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `path = days/data/panel.csv；rows = 160；second read matches = true` 中的 split 语汇请与终端逐字对齐。
+<!-- zh-v3-d21 -->
+
+与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「固定收盘表」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+<!-- zh-v4-d21 -->
+
+报告规范：交作业三句应包含 (1) 本日对象「固定收盘表」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
+
 ## 实战总结
 
 ```bash

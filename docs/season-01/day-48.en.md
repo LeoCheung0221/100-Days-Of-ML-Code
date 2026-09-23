@@ -41,6 +41,11 @@ When a tree is read past the end of a sample, the reading is the level of the la
 
 11.9608 lying inside the observed range means it is a mean of labels in the sample. It does not mean the price at t = 118 will be 11.9608. That session was not observed. Day 47 keeps the same reservation about 13.3936: a function value is not a close that has not arrived.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Same t: tree 11.9608 flat leaf vs line 13.3936; tree stays inside training range.
+
 ## What the run showed
 
 ```bash

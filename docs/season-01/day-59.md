@@ -8,21 +8,15 @@
 
 ## 费曼法讲解
 
-第 59 天的数字来自脚本 stdout，不是手算补值。恒零预测是 return 最简基准。直线 beat 零：0.000081<0.000101。
+基准模型每天预测收益 0，test MSE=0.000101。五 lag 直线 0.000081 更低，说明线性信号在 hold-out 上略优于「什么都不做」。
 
-面板文件是 days/data/panel.csv，名称列 AAA，收益由复权收盘相邻两日比值减一得到。特征行从第五个收益之后才开始，因此有效样本比原始行数少五。除非当天脚本改写切分，训练集是这些有效行按日期排序后的前百分之七十五；剩余行只做测试，不参与重估系数或阈值。同一交易日上的 high、low、close 不能作为解释当日收益的输入；同日 market 收益也不能当作合法结果。
+差值 0.000020 将在第 60 天印成 improvement 行；本日先建立两列分数并存的习惯。
 
-读数时先把训练与测试分开：参数只在训练段估计，MSE 只在 hold-out 行上算平均平方误差。baseline MSE 0.000101；line 0.000081
+零基准不是「方向总是对」，而是水平预测为零；大 jump 日仍会有大误差。
 
-MSE 在 hold-out 行上是预测减标签的平方的平均，脚本用六位小数打印。return 上的 MSE 与早期「时间对价格水平」的 SSE 不是一列数；读第 51 天及以后的表时，不要把第 45、46 天的树 SSE 贴进来。
-
-结论只服务本次打印。换切分、换股票代码或加列，会得到另一套六位小数；另一套不在本页。
-
-baseline 每日预测 return=0，test MSE=0.000101。line test MSE=0.000081 更低，说明五 lag 线性模型在这段 hold-out 上 beat 零预测。零基准不依赖特征，是 return 任务的最简对照，应先过基准再比 tree。
+数据来自 days/data/panel.csv 的 AAA 行：简单收益由复权收盘相邻两日比值减一。有效样本从第五个收益之后才开始，因此比原始行数少五行。默认切分是这些有效行按日期排序后的前百分之七十五训练、其余测试（本段多数课为 train=54、test=19）。同一交易日的 high、low、close 不能解释当日收益；同日 market 收益也不能当作合法标签或特征，除非当天脚本明确允许。
 
 ## 核心知识
-
-面板文件是 days/data/panel.csv，名称列 AAA，收益由复权收盘相邻两日比值减一得到。特征行从第五个收益之后才开始，因此有效样本比原始行数少五。除非当天脚本改写切分，训练集是这些有效行按日期排序后的前百分之七十五；剩余行只做测试，不参与重估系数或阈值。同一交易日上的 high、low、close 不能作为解释当日收益的输入；同日 market 收益也不能当作合法结果。
 
 ```text
 baseline predict return = 0 every day
@@ -30,33 +24,49 @@ baseline test MSE = 0.000101
 line test MSE = 0.000081
 ```
 
-MSE 在 hold-out 行上是预测减标签的平方的平均，脚本用六位小数打印。return 上的 MSE 与早期「时间对价格水平」的 SSE 不是一列数；读第 51 天及以后的表时，不要把第 45、46 天的树 SSE 贴进来。
 
-baseline 与 line 共用同一 test 标签列。0.000101 是 label 方差下的零预测误差；0.000081 是五 lag 解释后的剩余。
+return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列数；第 51 天及以后不要把第 45、46 天的树 SSE 贴进 return 表。hold-out 行是唯一评分集合；系数与阈值只在训练段估计。
 
-量化课程从价格水平转向 return 后，MSE 均在收益标签上计算。hold-out 行是唯一评分集合；训练行只用于参数估计。写实验记录时，把 forbidden 规则、切分方式与 test MSE 同页保存。英文 stdout 是权威来源，中文正文是解释层，两者数字必须一致。若本地复跑六位小数不一致，先核对 panel 路径、name 列与切分行数，再改笔记。
+| 概念 | 本课是否变动 | 备注 |
+|---|---|---|
+| 五 lag 直线系数 | 多数课 frozen | 来自第 51 天 train |
+| test MSE 0.000081 | 仅 MSE 课重印 | 诊断课改读 MAE/方向/账单 |
+| forbidden OHLC/market | 合同不变 | 见第 56–57、67 天 |
+| train/test 行数 | 默认 54/19 | 第 58 天按年切分例外 |
+
+## 核心块逐行读法
+
+第 59 天 stdout 核心块共 3 行。下面逐行说明读法纪律（不是改写成口语数字）：
+
+- `baseline predict return = 0 every day`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
+- `baseline test MSE = 0.000101`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
+- `line test MSE = 0.000081`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
+
+lag-5 阶段常用锚点：line test MSE 0.000081（第 51、56、57、69 等课）、volume helped on the test stretch = false（第 54 天）、total bill line = -18.0000（第 75、79 天）。若本课核心块不含某锚点，正文中也不要为了「看起来完整」而提前写入；若本课含某锚点，不得四舍五入或去掉负号。第 58 天按年切分时的 0.000782 是切分实验，不能覆盖 0.000081 标尺。第 65、68 天 BBB 的 0.000105 与 AAA 并列，禁止自动搬运结论。
 
 ## 拓展领域
 
-把当天 stdout 与正文交叉核对：核心块中的英文键名、符号和小数位应与终端一致。恒零预测是 return 最简基准。直线 beat 零：0.000081<0.000101。
+报告里应同时给出 baseline 与 line，避免只报「我们的 MSE 很小」却不说明相对谁。
 
-研究日志里，禁止项与 MSE 要同页保存，避免日后只抄分数、不抄规则。下一课若改切分或目标，应新开一行记录，而不是覆盖本日数字。
+下一课打印 improvement 与最小误差日 index。
 
-写笔记时，英文 stdout 键名与数值应原样抄写，不要把 line 与 tree 的 MSE 列对调。比较模型时，先确认标签列、特征列与切分行数一致，再读 improvement 或失手句。若脚本声明 FORBIDDEN 或 not a result，该列分数不进入结果表，即使六位小数更小。阶段一固定在 panel.csv 的 AAA 行上；BBB 只在指定天出现，不能把 AAA 的 0.000081 自动搬到 BBB。十行清单与单日脚本的关系是汇总与分项：汇总不替代分项复跑，分项也不省略汇总中的禁止项。
+## 与前后课的关系
+
+零基准 0.000101 对 line 0.000081，建立「相对谁改进」的习惯。baseline 不是策略，只是水平零预测。第 60 天会印 improvement=0.000020 与最小误差日 index=13；本日只保留两列 MSE。不要把 baseline 当成「方向模型」；jump 日零预测仍有大误差，只是 MSE 定义不同。第 61 天会把同一 baseline 用到树上，improvement 变负。写论文时，baseline 应占一行，不能藏在脚注；本季用 zero return 作为最小对照。
+
+给工程师的阅读顺序：先跑本日脚本对照 stdout，再读正文；不要跳过第 51 天直接读诊断课，否则不知道直线系数从哪来。写单元测试时，对 frozen 系数在 hold-out 上断言 MSE 或账单与打印一致；失败常见原因是混用 train 行或把 BBB 行掺进 AAA。文档截图应至少露出核心块英文键名与六位小数，便于他人 diff。复现环境建议 python3 与仓库 pinned numpy；末位浮点差不改变本课结论，但不应改合同整数如 quiet=10、jump=5、direction wrong=3。
 
 ## 实战总结
 
 ```bash
-python days/59-zero-baseline/zero_baseline.py
+python3 days/59-zero-baseline/zero_baseline.py
 ```
 
 脚本应打印与核心块一致的 stdout 行。实现是 [`zero_baseline.py`](../../days/59-zero-baseline/zero_baseline.py).
 
-今天交出去的是第 59 天打印表上的数与规则句。请保留脚本路径便于复跑。
 
 
-核对清单：训练行数、测试行数、核心块英文键名、MSE 小数位、FORBIDDEN 句是否与终端一致。
+自检清单：训练/测试行数是否与脚本一致；核心块英文键名、符号、六位小数是否与终端逐字相同；FORBIDDEN 与 not a result 句是否原样保留；不要把 line 与 tree 的 MSE 或 bill 列对调；AAA 的 0.000081 与 volume helped=false 与 bill −18 等 lag-5 锚点未被改写。
 
-核对清单：训练行数、测试行数、核心块英文键名、MSE 小数位、FORBIDDEN 句是否与终端一致。
 
-核对清单：训练行数、测试行数、核心块英文键名、MSE 小数位、FORBIDDEN 句是否与终端一致。
+第 59 天补记：lag-5 合同锚点包括 line test MSE 0.000081、volume helped=false（第 54 天）、total bill line=−18.0000（第 75 天）。改切分或 name 会改分数，但未重跑脚本时不得手改上述字面量。

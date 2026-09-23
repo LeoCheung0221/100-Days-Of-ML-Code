@@ -37,6 +37,11 @@ After 9.8971 is written onto 2024-02-01, the row is finite again, and a later si
 
 Once the two candidate prices stand side by side, the blank day has not yet been written into a price path. 10.1047 is the close already printed on the previous row. 9.8971 is the close that appears only on the next row. A research note that keeps only the filled series shows a later reader a finite close and hides which row the fill came from. The script keeps the date and both prices so the choice on 2024-02-01 stays in the print. Choosing 10.1047 uses a price that has already happened. Choosing 9.8971 uses the next close. Both numbers are printed, and the second one sees the future.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Blank 2024-02-01: fill 10.1047 from previous close vs 9.8971 from next close; the next close sees the future.
+
 ## What the run showed
 
 ```bash

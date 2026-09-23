@@ -55,6 +55,9 @@ The standardized coefficients are another summary, with the unit changed to each
 
 A coefficient printed in scientific notation is followed by its unit, and then by the mean absolute contribution or the standardized coefficient. With all three lines present, a small coefficient can be told apart as a unit of measurement or as a contribution that really is near 0. Today's contribution is not near 0: 4.3645 sits beside time's 4.4468. Volume stays on this table.
 
+Compare mean absolute contributions 4.4468 vs 4.3645, not raw betas 1.482253 vs 1.731932e-06. Standardized volume beta 4.7815 exceeds time 2.7049— opposite of the raw coefficient eyeball. Conclusions stay within these five rows.
+Lead with contribution means 4.4468 vs 4.3645 when arguing column importance on these five rows.
+On five rows, small raw volume beta with sizable mean contribution is a units lesson, not a delete-column lesson.
 ## What the run showed
 
 ```bash

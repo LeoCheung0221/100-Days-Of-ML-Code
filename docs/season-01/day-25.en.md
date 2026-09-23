@@ -40,6 +40,9 @@ The unit of 0.0167 is the return, not the price level. It is smaller than the ab
 
 When a direction accuracy and a mean absolute error arrive together, the first question is whether the decision is a sign or a distance. When the decision is a sign, the score column takes the accuracy and sets it beside a baseline. The mean absolute error stays, as a statement of how far the return numbers sat, and as a check of how many days have a modest distance and the wrong sign. The check today is 9 days. Those 9 days are the concrete count that 0.0167 does not stand in for 0.4675.
 
+Direction accuracy 0.4675 pairs with mean absolute return error 0.0167; nine days can be small-error yet wrong-sign. For sign decisions, trust direction accuracy, not the MAE column—same separation as level vs direction on day 10.
+Trust direction accuracy for sign calls; MAE 0.0167 and the nine wrong-sign small-error days prove the columns diverge.
+Nine wrong-sign days despite small absolute return error justify trusting direction accuracy for sign decisions, not MAE alone.
 ## What the run showed
 
 ```bash

@@ -8,17 +8,17 @@
 
 ## 费曼法讲解
 
-第 71 天仍用第 51 天 frozen 的五 lag 直线，只在后十九行测试段上读标签与预测。分类看的是真实当日简单收益的绝对值，不是 |ŷ|。
+仍用第 51 天 frozen 直线，只在 nineteen test 行上读标签与预测。分类看 |y|，不是 |ŷ|。
 
-quiet 的定义是 |y| 不超过测试段 |y| 的中位数。jump 的定义是 |y| 不低于测试段 |y| 的第七十五百分位。介于两者之间的日子脚本里叫 mid，本日只打印 quiet 与 jump 的个数。quiet=10 说明一半左右的测试日波动落在「不超过中位数」一侧；jump=5 说明最猛的五分之一左右落在高波动档。
+quiet：|y| 不超过 test 段 |y| 中位数；jump：|y| 不低于 p75；中间为 mid（本日不打印个数）。
 
-方向失手单独计数：sign(y) 与 sign(ŷ) 不同记一天，共 3 天。方向与 quiet/jump 是正交维度——大 jump 日可以方向对，quiet 日也可以方向错。不要把 direction wrong=3 理解成 quiet 或 jump 的子集计数；脚本没有要求三者相加等于十九。
+quiet=10、jump=5 与 direction wrong=3 是正交维度：大 jump 可方向对，quiet 可方向错。
 
-今天的结论停在这三个整数。它们描述的是同一条 lag-5 return 直线在同一 seventy-five percent 切分下的测试段形状，不是新拟合的模型。
+不要把 3+10+5 当成十九；mid 占剩余 4 天。
+
+数据来自 days/data/panel.csv 的 AAA 行：简单收益由复权收盘相邻两日比值减一。有效样本从第五个收益之后才开始，因此比原始行数少五行。默认切分是这些有效行按日期排序后的前百分之七十五训练、其余测试（本段多数课为 train=54、test=19）。同一交易日的 high、low、close 不能解释当日收益；同日 market 收益也不能当作合法标签或特征，除非当天脚本明确允许。
 
 ## 核心知识
-
-面板文件是 days/data/panel.csv，名称列 AAA，收益由复权收盘相邻两日比值减一得到。特征行从第五个收益之后才开始，因此有效样本比原始行数少五。除非当天脚本改写切分，训练集是这些有效行按日期排序后的前百分之七十五；剩余行只做测试，不参与重估系数或阈值。同一交易日上的 high、low、close 不能作为解释当日收益的输入；同日 market 收益也不能当作合法结果。
 
 ```text
 quiet days = 10
@@ -26,28 +26,51 @@ jump days = 5
 direction wrong days = 3
 ```
 
-本课在 hold-out 十九行上读绝对误差、方向或账单，不再重印 return MSE 0.000081；直线仍是第 51 天同一套五 lag OLS，系数 frozen 在训练段。return 上的分数与早期「时间对价格水平」的 SSE 不是一列数；不要把第 45、46 天的树 SSE 贴进来。
+
+return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列数；第 51 天及以后不要把第 45、46 天的树 SSE 贴进 return 表。hold-out 行是唯一评分集合；系数与阈值只在训练段估计。
+
+第 71–80 天多数只诊断同一条五 lag 直线：系数 frozen 在第 51 天训练段，本课不再重印 test MSE 0.000081，但直线仍是 lag1=−0.1359、lag2=0.0829、lag3=0.1094、lag4=−0.1726、lag5=−0.0803、截距 0.0023 那一套。
+
+| 概念 | 本课是否变动 | 备注 |
+|---|---|---|
+| 五 lag 直线系数 | 多数课 frozen | 来自第 51 天 train |
+| test MSE 0.000081 | 仅 MSE 课重印 | 诊断课改读 MAE/方向/账单 |
+| forbidden OHLC/market | 合同不变 | 见第 56–57、67 天 |
+| train/test 行数 | 默认 54/19 | 第 58 天按年切分例外 |
+
+## 核心块逐行读法
+
+第 71 天 stdout 核心块共 3 行。下面逐行说明读法纪律（不是改写成口语数字）：
+
+- `quiet days = 10`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
+- `jump days = 5`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
+- `direction wrong days = 3`：键名、等号两侧空格、负号与小数位须与终端一致。中文解释可以写长，但这行英文与数字是 diff 基准；不要把 false 写成中文「否」、不要把 FORBIDDEN 行删掉、不要把 bill −18 写成 18。若该行含 test MSE，默认指 hold-out 平均平方误差；若含 FORBIDDEN，表示该列不得进入合法特征。批改时对此行做逐字 diff，而不是只看摘要段。
+
+lag-5 阶段常用锚点：line test MSE 0.000081（第 51、56、57、69 等课）、volume helped on the test stretch = false（第 54 天）、total bill line = -18.0000（第 75、79 天）。若本课核心块不含某锚点，正文中也不要为了「看起来完整」而提前写入；若本课含某锚点，不得四舍五入或去掉负号。第 58 天按年切分时的 0.000782 是切分实验，不能覆盖 0.000081 标尺。第 65、68 天 BBB 的 0.000105 与 AAA 并列，禁止自动搬运结论。
 
 ## 拓展领域
 
-交叉核对：quiet 与 jump 按 |y| 划分，中位数与 p75 都在测试段 nineteen 行上算，不能拿训练段分位数代替。
+第 71–80 天多数只诊断同一条五 lag 直线：系数 frozen 在第 51 天训练段，本课不再重印 test MSE 0.000081，但直线仍是 lag1=−0.1359、lag2=0.0829、lag3=0.1094、lag4=−0.1726、lag5=−0.0803、截距 0.0023 那一套。
 
-下一课在第 72 天只盯 quiet 子集的 MAE，并与全测试 MAE 0.006980 对照。不要把 jump=5 写成「方向错的 jump 有五天」——方向错仍是 3。
+第 72 天比较 quiet 上 MAE 与全 test MAE 0.006980。
 
-写笔记时，英文 stdout 键名与数值应原样抄写，不要把 line 与 tree 的账单对调。比较模型时，先确认标签列、特征列与切分行数一致，再读 direction wrong 或 total bill。若脚本声明 FORBIDDEN 或 not a result，该列分数不进入结果表，即使六位小数更小。阶段一固定在 panel.csv 的 AAA 行上；BBB 只在指定天出现，不能把 AAA 的系数自动搬到 BBB。账单 −18 与 jump=5、direction wrong=3 的关系是 3×1+5×3 的扣分，不是十九天各扣一次。quiet 与 jump 按真实 |y| 划分；|ŷ| 阈值课只影响 speaking 计数，不改变 quiet 定义。
+## 与前后课的关系
 
-写笔记时，英文 stdout 键名与数值应原样抄写，不要把 line 与 tree 的账单对调。比较模型时，先确认标签列、特征列与切分行数一致，再读 direction wrong 或 total bill。若脚本声明 FORBIDDEN 或 not a result，该列分数不进入结果表，即使六位小数更小。阶段一固定在 panel.csv 的 AAA 行上；BBB 只在指定天出现，不能把 AAA 的系数自动搬到 BBB。账单 −18 与 jump=5、direction wrong=3 的关系是 3×1+5×3 的扣分，不是十九天各扣一次。quiet 与 jump 按真实 |y| 划分；|ŷ| 阈值课只影响 speaking 计数，不改变 quiet 定义。
+quiet=10、jump=5、direction wrong=3 都在 nineteen test 行上；分类用 |y|，方向用 sign。mid 有 4 天未打印；10+5+3 不等于 19 不是矛盾。第 72 天看 quiet MAE；第 73 天只数方向错。frozen 直线系数仍来自第 51 天；本课不重印 MSE 0.000081 但直线未变。不要把 jump=5 写成「五个方向错日」；方向错仍是 3。
 
-写笔记时，英文 stdout 键名与数值应原样抄写，不要把 line 与 tree 的账单对调。比较模型时，先确认标签列、特征列与切分行数一致，再读 direction wrong 或 total bill。若脚本声明 FORBIDDEN 或 not a result，该列分数不进入结果表，即使六位小数更小。阶段一固定在 panel.csv 的 AAA 行上；BBB 只在指定天出现，不能把 AAA 的系数自动搬到 BBB。账单 −18 与 jump=5、direction wrong=3 的关系是 3×1+5×3 的扣分，不是十九天各扣一次。quiet 与 jump 按真实 |y| 划分；|ŷ| 阈值课只影响 speaking 计数，不改变 quiet 定义。
-
-写笔记时，英文 stdout 键名与数值应原样抄写，不要把 line 与 tree 的账单对调。比较模型时，先确认标签列、特征列与切分行数一致，再读 direction wrong 或 total bill。若脚本声明 FORBIDDEN 或 not a result，该列分数不进入结果表，即使六位小数更小。阶段一固定在 panel.csv 的 AAA 行上；BBB 只在指定天出现，不能把 AAA 的系数自动搬到 BBB。账单 −18 与 jump=5、direction wrong=3 的关系是 3×1+5×3 的扣分，不是十九天各扣一次。quiet 与 jump 按真实 |y| 划分；|ŷ| 阈值课只影响 speaking 计数，不改变 quiet 定义。
+给工程师的阅读顺序：先跑本日脚本对照 stdout，再读正文；不要跳过第 51 天直接读诊断课，否则不知道直线系数从哪来。写单元测试时，对 frozen 系数在 hold-out 上断言 MSE 或账单与打印一致；失败常见原因是混用 train 行或把 BBB 行掺进 AAA。文档截图应至少露出核心块英文键名与六位小数，便于他人 diff。复现环境建议 python3 与仓库 pinned numpy；末位浮点差不改变本课结论，但不应改合同整数如 quiet=10、jump=5、direction wrong=3。
 
 ## 实战总结
 
 ```bash
-python days/71-three-classes/three_classes.py
+python3 days/71-three-classes/three_classes.py
 ```
 
-脚本应打印`quiet days = 10`、`jump days = 5`、`direction wrong days = 3`。实现是 [`three_classes.py`](../../days/71-three-classes/three_classes.py).
+脚本应打印与核心块一致的 stdout 行。实现是 [`three_classes.py`](../../days/71-three-classes/three_classes.py).
 
-今天交出去的是 quiet、jump 与方向错三个计数。下一课比较 quiet 上的平均绝对误差。
+
+
+自检清单：训练/测试行数是否与脚本一致；核心块英文键名、符号、六位小数是否与终端逐字相同；FORBIDDEN 与 not a result 句是否原样保留；不要把 line 与 tree 的 MSE 或 bill 列对调；AAA 的 0.000081 与 volume helped=false 与 bill −18 等 lag-5 锚点未被改写。
+
+
+第 71 天补记：lag-5 合同锚点包括 line test MSE 0.000081、volume helped=false（第 54 天）、total bill line=−18.0000（第 75 天）。改切分或 name 会改分数，但未重跑脚本时不得手改上述字面量。

@@ -8,37 +8,49 @@ What you learn today: the five pairs stay intact and only the row order changes,
 
 ## Plain-language account
 
-Day 8 changed the set inside the equation, and the slope moved from 2.0500 to 8.0500. Today the set stays. The five pairs of session index and close stay intact. Only their vertical order in the table is shuffled, and batch least squares is run again.
+Day 8 changed which sessions entered the equation. The window moved from `{1, 2, 3}` to `{2, 3, 4}`, and the slope jumped from 2.0500 to 8.0500 because the close of 20 on session 4 entered the information set. Today the set is fixed: the same five points `(1, 2.1)` through `(5, 10.4)`. Only the row order in the file changes.
 
-The new order, in zero-based indices, is `[2, 4, 3, 0, 1]`. The third row moves to the top, and that row is still session 3 paired with 6.2. The close of session 3 is not attached to another day. The normal equations sum over rows. A sum does not depend on the order of its terms, so the coefficients should not change. The printed line is still `ŷ = 3.2700x − 1.2900` and the sum of squares is still 96.3390. The slope differs by `1.332e-15` and the sum of squares by `1.421e-14`. That is floating-point noise, not a new line.
+Picture five cards: the front shows the session index, the back shows the close. Shuffling the deck changes stack order, not which back belongs to which front. The script order `[2, 4, 3, 0, 1]` means the old row 3 sits on top, still labeled session 3 with 6.2. Peeling a back and gluing it to another front would be a different experiment. Today does not break pairs.
 
-It is easy to call this "the model ignores time." That sentence is wrong. The abscissa is still `x_t = t`. Session 1 and session 5 are not the same number in the design matrix. Time entered the equation. What did not enter is the typography of the table. Breaking the pairs, so that session 5's close is tied to session 1's abscissa, is a different problem and is not done today. Pairs stay whole.
+Ordinary least squares accumulates sums. Each row contributes terms to `XᵀX` and `Xᵀy`. Addition is commutative, so permuting rows permutes terms inside those sums without changing the totals, as long as each row still carries its own `[t, 1]` and its own `y`. The printed line remains `ŷ = 3.2700x − 1.2900` and RSS remains 96.3390. Differences of `1.332e-15` on the slope and `1.421e-14` on RSS are floating-point noise at roughly `1e-14`. They are not an economic shift in the fit.
+
+Calling this "the model ignores time" is misleading. Time enters through `x_t = t` in the design matrix. Session 1 and session 5 are different first-column entries. What does not enter is "this row is row k in the CSV." Row index is not a feature unless you put it in `X`. Today's design is only `[t, 1]`.
 
 ## Core
 
-Batch least squares in the original order:
+Original batch least squares:
 
 ```text
 ŷ = 3.2700x − 1.2900
 RSS = 96.3390
 ```
 
-After the row order becomes `[2, 4, 3, 0, 1]`, the equations are solved again. The differences are:
+After the order `[2, 4, 3, 0, 1]`:
 
 ```text
 Δslope = 1.332e-15
 ΔRSS = 1.421e-14
 ```
 
-Each design row is still `[t, 1]` and the label is still the close at that `t`. Swapping rows swaps terms in a sum. `XᵀX` and `Xᵀy` are unchanged in exact arithmetic, so the `lstsq` coefficients are unchanged. A floating-point gap around `1e-14` is not "the slope moved a little after the shuffle."
+With permutation matrix `P` that only reorders rows, `(PX)ᵀ(PX) = XᵀX` and `(PX)ᵀ(P y) = Xᵀy` in exact arithmetic, so the least-squares solution is unchanged. `numpy.linalg.lstsq` may show the tiny deltas above; treat them as zero in interpretation.
 
-Day 8's window also collects rows by date, not by their current position in the table. If the pairs stay intact, swapping the three rows of a window does not change that window's coefficients. Do not say that shuffling rows would move day 8's slope off 2.0500. The window changed because the set changed from `{1, 2, 3}` to `{2, 3, 4}`. A new row order with the pairs intact leaves the set alone.
+| Operation | Sample set | Design rows | β̂ and RSS |
+|---|---|---|---|
+| Day 8 slide window | Changes | Still `[t, 1]`, different t set | Changes (e.g. 2.0500 → 8.0500) |
+| Day 9 shuffle rows | Same five t | Same `[t, 1]`, permuted order | Unchanged (up to float noise) |
+| Break pairs (not today) | Five rows | t and y misaligned | Generally changes |
+
+Day 1 already fit this line and RSS. Day 9 verifies that reordering rows does not refit a new story. Day 7 holdout removed a point from estimation; shuffle keeps all five points in the loss.
+
+Day 10 will keep this line but score direction instead of level. Invariance today guarantees day 9 does not move day 10's line; day 10 changes the functional, not `β̂`.
 
 ## Further out
 
-Panel and tick data are sorted before a regression: by time, by name, by trade. The sort keeps lags, rolling windows, and session alignment from being written against the wrong neighbor. The sort itself is not a feature. Batch least squares reads the pair `(x, y)`. It does not read "this row is now in position k." The estimate changes if the sort is fed back in as a column, or if the shuffle separates labels from features.
+Three notions of "order" appear in research code: file row order, calendar order, and explicit `t` or `date` inside features. Batch OLS is invariant to the first when pairs are intact. It is sensitive to the second once features are defined as "previous row." It is sensitive to the third because that column is inside `X`. Sorting a panel by `date, symbol` before building lags is hygiene, not an extra regressor.
 
-A time-series model can depend on order somewhere else. A lag `y_{t-1}` must take the previous label in time, not the previous row after a shuffle. Today's abscissa is the session index already stored inside the row, so exchanging rows does not exchange information. If the feature were "the close in the row above," a shuffle would replace yesterday with an unrelated day. That is a change in the definition of the feature, not least squares suddenly reading row order. Before building a lag, sort by time, then take the previous row. Today does not build that lag column.
+Shuffling rows after building correct lags is not the same as shuffling before building lags. Day 26's random split assigns rows to train or test; day 37's pooled names share dates across sides. Those are information-set issues, not the row-order invariance of a fixed design matrix.
+
+A hand-check on five points: `β₁` is a ratio of sums of products `(t − t̄)(y − ȳ)`. Both numerator and denominator reorder unchanged when pairs stay intact. RSS is a sum of five squared residuals, each depending only on its own `(t, y)`. Breaking pairs changes cross-terms; shuffling intact pairs does not.
 
 ## What the run showed
 
@@ -46,6 +58,8 @@ A time-series model can depend on order somewhere else. A lag `y_{t-1}` must tak
 python days/09-row-order/row_order.py
 ```
 
-The script should print the line after the shuffle as `3.2700 x + -1.2900`, `RSS = 96.3390`, and the two near-zero differences. The implementation is [`row_order.py`](../../days/09-row-order/row_order.py).
+Expect `3.2700 x + -1.2900`, `RSS = 96.3390`, and the two near-zero deltas. Code: [`row_order.py`](../../days/09-row-order/row_order.py).
 
-Hand in invariance to row order. Time is still in the design matrix. Day 10 keeps this full-sample line and changes the score from the price level to the direction of the move. A direction hit and a small absolute residual need not fall on the same day.
+Hand in three checks: pairs intact; `β̂` and RSS match day 1; deltas at `1e-14` mean zero. Do not write "shuffle removes time"; write "time is in column t, not in row index." Day 10 reads direction from the same line; a large level residual and a direction miss can land on different sessions.
+
+Before claiming "we shuffled the data," specify whether you permuted rows of a fixed design or destroyed time when constructing features. Those are different operations; only the first is what today's script demonstrates.

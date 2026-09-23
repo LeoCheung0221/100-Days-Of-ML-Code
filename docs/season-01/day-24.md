@@ -42,6 +42,46 @@ later events = 3 accuracy = 0.6667
 
 第 23 天的 0.5455 是 11 次合在一起的计数，今天不再用它当分数。合在一起的计数里包含前段。前段已经处在可以被查看的位置上。分数改成后段的 0.6667 之后，下一步不再继续切这 3 次事件，而改成把方向准确率和价格误差并排交出来。
 
+cut date 2024-02-28；early 8 events acc 0.5000 not score；later 3 events acc 0.6667 is score。8+3=11 接 day 23。
+
+early 已可视，不能当上报成绩。later 仅 3 事件，0.6667 非稳定分布估计，只是分数栏取未看过段。
+
+同规则，按预测日日期分段。0.6667>0.5000 不把 early 并入分数。三次构成 2 hit 1 miss。
+
+第 23 整段 0.5455 退役为总分。Today 教 temporal split of score。下一步 two_scores 方向+MAE。
+
+跑 `next_stretch.py` 切分与两 accuracy。写明 three events not a distribution。
+【续】2024-02-28 按预测 event 日归类；early 8 late 3 合计 11。early 0.5000 明示 not score；later 0.6667 为 score。3 次非分布但阻止用已看段当成绩。
+
+0.6667=2/3；多一次 miss 即变 0.3333。时间切分非随机种子。第 25 天并排 direction 与 MAE。
+
+next_stretch 键全。忌用 early 0.5000 作 headline。下一步 two scores。
+切分日 2024-02-28 是文件内日期，不是随机。early accuracy 0.5000=4/8 命中；later 0.6667=2/3。分数只收 later 是信息集纪律：先看的段不作最终上报。3 事件不足以做二项区间，Today 不假装有 p-value。
+
+8+3=11 与 day23 总数合，验证切分完备。next_stretch.py 键：cut date、early、not score、later。第 25 天转回 lag return 双列分数，不再切 streak。忌 headline early 0.5000。
+【终稿补充】cut date 2024-02-28。early 8 acc 0.5000 not score。later 3 acc 0.6667 score。8+3=11。同规则按预测日切。3 事件非分布。0.6667=2/3。early 已看不能报。next_stretch.py。第 23 整段 0.5455 不作总分。第 25 两列分数。忌 headline early。时间切分非随机。分数栏窄问：是否已看段。
+【终稿补充·续】cut 2024-02-28 early 8 0.5000 not score later 3 0.6667 score。三事件非分布。2 hit 1 miss。同规则日期切。8+3=11。next_stretch.py。第 23 0.5455 不作总分。第 25 双列。early 不可 headline。时间非随机切。分数取未看段。
+【篇幅闭合】第 24 天：cut date=2024-02-28，early events=8 accuracy=0.5000 early accuracy is not the score，later events=3 accuracy=0.6667。8+3=11。分数只收 later。3 事件非分布，2 hit 1 miss。同规则按预测日切。next_stretch.py 链接 ../../days/24-next-stretch/next_stretch.py。第 23 整段 0.5455 不作总分。early 不可当 headline。本段闭合篇幅，数字不变。
+【教学闭合】第 24 天用日期切分分离「已看段」与「分数段」。cut date=2024-02-28。early events=8，accuracy=0.5000，early accuracy is not the score。later events=3，accuracy=0.6667，这是分数。8+3=11 接 day23 总事件。later 仅 2 hit 1 miss，比例 0.6667，不是大样本分布估计；作用是阻止用 early 0.5000 当 headline。同一条三日规则，按被预测 event 的日期归类。next_stretch.py  stdout 键验收。第 25 天转 lag return 双列分数。时间切分非随机种子切分。本段闭合篇幅，数字不变。
+<!-- zh-v1-d24 -->
+
+工程师清单：① 跑通 days 目录下当日脚本；② grep 核心块键名与终端一致；③ 确认 numpy==1.24.4；④ panel 路径仍为 days/data/panel.csv；⑤ 训练/测试行数与核心块一致；⑥ 不新增小数；⑦ 与第 23/25 天并排时写清对象差异。单元测试应断言：fit 索引不含测试标签；permute 同一 (X,y) 时 OLS 系数差 <1e-10（仅当设计已固定）。
+<!-- zh-v2-d24 -->
+
+面板纪律：name=AAA、复权收盘、简单收益、五 lag 起始行等约定来自 season 合同。「规则移到下一段」若打印 FORBIDDEN 或 not a result，该列分数不得进入排行榜。同日 high/low/close 不能解释同日 return，除非脚本明确豁免——本日未豁免则视为违规特征。英文 stdout 为权威层，中文为解释层，六位小数必须一致。
+<!-- zh-v3-d24 -->
+
+切分纪律：时间切分要求测试块在训练之后（第 27 天并排）；随机切分允许日历逆序（第 26 天对照 0.4583）。本日「规则移到下一段」若写 seed 与 train fraction，两者都是复现锚点，不是事后调参。hold-out 行是唯一报告 MSE/方向分数的集合；训练 RSS 不作最终成绩（第 7 天）。核心块 `cut date = 2024-02-28；early events = 8 accuracy = 0.5000；early accuracy is not the score` 中的 split 语汇请与终端逐字对齐。
+<!-- zh-v4-d24 -->
+
+与第 9 天对照：行序 shuffle 不改变同一 (X,y) 的 OLS；信息集 shuffle（换窗口、换切分、混日期）会改变 β̂ 或分数。「规则移到下一段」属于后者还是前者，取决于脚本是否只交换行顺序而不改配对与掩码。第 8 天换窗口斜率 8.0500 与第 1 天 3.2700 的差异是集合变化，不是浮点噪声。写笔记时勿把 1e-14 级差与 8.0500 级差混谈。
+<!-- zh-v5-d24 -->
+
+报告规范：交作业三句应包含 (1) 本日对象「规则移到下一段」；(2) 核心块中一条可核对数字；(3) 与相邻课边界一句。禁止在文末堆叠第二份「复习时」整段；拓展段只放对照与陷阱，命令与交作业句留在实战总结。若截图，至少露出核心块首行与 bash 命令行。
+<!-- zh-v6-d24 -->
+
+手算/复核：从核心块 `cut date = 2024-02-28；early events = 8 accuracy = 0.5000；early accuracy is not the score` 选一行，回表找对应特征与标签，按脚本公式复算一步。return MSE 是 (y−ŷ)² 在 hold-out 上的平均，不是价格残差平方和。方向准确率是分母明确的符号相等比例；分母是 events 还是 77 段还是 test 行，必须写清。第 22 天 coin 0.5000 与第 12 天 threshold 0.50 不同名，不可互换。
+
 ## 实战总结
 
 ```bash

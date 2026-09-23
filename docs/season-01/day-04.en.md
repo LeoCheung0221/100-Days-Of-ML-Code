@@ -14,6 +14,8 @@ Score both lines on all five points. Absolute loss is 12.0000 for the chord and 
 
 The chord cannot beat least squares on squared loss. Least squares is defined as the minimum of that sum inside this affine class. Any other slope and intercept, including this chord, has a sum of squares at least as large. Absolute loss has no such guarantee. The chord can win there, and on these five points it does.
 
+Session 4's cell is larger on the chord but total `L1` is still smaller—middle sessions can be closer on the chord. Squared loss punishes the large session-4 miss more heavily, which is why `L2` reverses the rank.
+
 ## Core
 
 The chord uses only `(1, 2.1)` and `(5, 10.4)`:
@@ -35,11 +37,18 @@ On `L2` the chord is larger. That is the definition of least squares inside one 
 
 Do not rank the fits by the session-4 residuals 11.6750 and 8.2100 alone. That cell is one of five. The ranks that matter are the full `L1` and the full `L2`. Day 2 already showed that one cell can have very different shares in the two norms. Today the full norms themselves reverse.
 
+| Fit | Coefficient rule | Wins on L1 (this sample) | Wins on L2 |
+|---|---|---|---|
+| Chord | endpoints (1,5) | yes (12.0000) | no |
+| OLS | min sum of squares | no (16.6600) | yes (96.3390) |
+
 ## Further out
 
 A common swap in model comparison is to choose the loss you win and then call the win "the better model." Linear factors, ridge, and trees sit in different classes, and even one class can be fit under different objectives. One reported error cannot say whether the rank survives a change of norm.
 
 These two lines share a function class. The only difference is how the coefficients are chosen. The class can still reverse the rank: 12.0000 against 16.6600 on `L1`, 136.3837 against 96.3390 on `L2`. When two fits are compared, name the class and name the loss. An advantage on one loss is not a claim that the line is better on every loss. Out-of-sample rank is a later question. Both losses today are on the five training points.
+
+Pitch decks that show only the loss where the chord wins mislead; slides should carry all four totals. Day 5 deleting session 4 moves OLS, not the chord's endpoint formula. Day 9 row shuffle does not change either line's coefficients when pairs stay intact.
 
 ## What the run showed
 
@@ -50,3 +59,5 @@ python days/04-endpoint-chord/endpoint_chord.py
 The script should print the chord `ŷ = 2.075x + 0.025` and the losses in the table. The implementation is [`endpoint_chord.py`](../../days/04-endpoint-chord/endpoint_chord.py).
 
 Hand in one rank reversal inside one affine class. Do not call the chord always worse, and do not call it always better. It cannot win on squared loss, by definition. It can win on absolute loss, and here that win is 12.0000 against 16.6600. Day 5 removes session 4 from the estimation sample and records how far the line moves. That move is not an exam score.
+
+Self-check: all four loss cells present? Session-4 \|r\| not substituted for full norms? Model card lists class, coefficient rule, training loss, and reported loss.

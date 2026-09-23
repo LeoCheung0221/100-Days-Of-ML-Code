@@ -35,6 +35,16 @@ The short window asks how far the recent direction lands on this last close. The
 
 The miss and the slope are stored apart. −0.1195 is the slope on the three-day slice. 0.0251 is the slope on the twenty-day slice. 0.0867 and 0.1506 record how close each line came. They leave the disagreement in direction in place. If a later endpoint named in advance shows a larger three-day miss, that print stays on its own line and does not go back and rewrite today's 0.0867 as an accuracy advantage. A comparison of window lengths accumulates many endpoints. This pair of numbers covers this one endpoint. Next the window is sixty sessions, set beside these three.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Slopes −0.1195 vs 0.0251; misses 0.0867 vs 0.1506 at one endpoint. Smaller miss is not a window championship without a pre-specified holdout set.
+
+
+<!-- uniq-exp-en2 -->
+
+Hand in all four printed numbers and state that endpoint miss does not rank window length. Re-run the script before narrating.
+
 ## What the run showed
 
 ```bash

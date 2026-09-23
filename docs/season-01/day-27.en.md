@@ -43,6 +43,11 @@ On a single-name panel, a random shuffle cannot put the same date on both sides 
 
 Day 26 marked 0.4583 as the control on its own, so that the number would have an identity that did not depend on a comparison. Today's comparison uses it, and writes down the time split's 0.5417. The sentence of the comparison is: on this one name, the random split did not lift the accuracy above the time split. A second name, and the cross-side date that would come with it, is not in today's print.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Print both 0.5417 and 0.4583. On single-name AAA the random split does not beat the time split. The line about the test sitting entirely after the train defines the time-split information set. Day 37's pooled 0.7234 vs 0.6170 is a different design; do not replace today's pair.
+
 ## What the run showed
 
 ```bash

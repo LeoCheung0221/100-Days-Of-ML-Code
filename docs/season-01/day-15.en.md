@@ -53,6 +53,11 @@ If the two cells have different costs, one number is even less of a summary. Tod
 
 The same accuracy with different cells also changes how a later score of "how up" is read. A rule that hands in a high up-score on every step, and never hands in down, will also show 0 in up-called-down. That 0 has nothing to do with how high the score is. It has to do with whether the rule ever output down. Today's rule has no score at all, only a hard 1. It already shows that 0.75 has to appear together with the two cells. The cells are 0 and 1. Leave one cell out, and the meaning of the other cell changes.
 
+The confusion matrix cells `up called down = 0` and `down called up = 1` explain the 0.75 accuracy—error type is entirely "down called up" because the rule never emits down. Accuracy alone cannot recover which cell was nonzero.
+
+Keep both cells in the write-up even when 0.75 is quoted as a summary.
+Both confusion cells belong in the write-up; 0.75 is derived from `(4−0−1)/4`, not from level residuals.
+Show the full 2×2 matrix before quoting 0.75; the structural zero in up-called-down comes from never predicting down.
 ## What the run showed
 
 ```bash

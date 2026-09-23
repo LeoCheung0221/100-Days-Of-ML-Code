@@ -42,6 +42,16 @@ The full-sample line cannot refuse that row. The normal equations sum over every
 
 The five neighbors include the query, so this is not the holdout of day 7. A holdout removes the query from the estimate and only then talks about error. Today's local mean counts the query inside 11.6932. Treating that number as an out-of-sample score uses the wrong information set. An out-of-sample cut arrives with the first 59 training sessions on day 44.
 
+
+<!-- uniq-exp-en-27-50 -->
+
+Local mean 11.6932 vs OLS 11.4800 at 2024-03-20; jump date not in five neighbors.
+
+
+<!-- uniq-exp-en2 -->
+
+Local mean includes the query day in the five neighbors; it is not a holdout score like day 7.
+
 ## What the run showed
 
 ```bash

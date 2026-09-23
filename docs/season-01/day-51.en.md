@@ -47,16 +47,16 @@ Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows 
 
 Day 51 prints 8 contract lines:
 
-- `weight lag 1 = -0.1359`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `weight lag 2 = 0.0829`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `weight lag 3 = 0.1094`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `weight lag 4 = -0.1726`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `weight lag 5 = -0.0803`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `intercept = 0.0023`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `weight min = -0.1726  weight max = 0.1094`: match the terminal verbatim—keys, spacing, signs, six decimals.
-- `test MSE = 0.000081`: match the terminal verbatim—keys, spacing, signs, six decimals.
+- `weight lag 1 = -0.1359`: match the terminal verbatim.
+- `weight lag 2 = 0.0829`: match the terminal verbatim.
+- `weight lag 3 = 0.1094`: match the terminal verbatim.
+- `weight lag 4 = -0.1726`: match the terminal verbatim.
+- `weight lag 5 = -0.0803`: match the terminal verbatim.
+- `intercept = 0.0023`: match the terminal verbatim.
+- `weight min = -0.1726  weight max = 0.1094`: match the terminal verbatim.
+- `test MSE = 0.000081`: match the terminal verbatim.
 
-Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Do not paste anchors on days that do not print them; do not round or drop signs when they appear. Day 58’s 0.000782 belongs to the calendar split, not the 0.000081 ruler. BBB 0.000105 stays beside AAA—no auto-transfer.
+Lag-5 anchors: line test MSE 0.000081, volume helped false (day 54), total bill line −18.0000 (days 75 and 79). Day 58’s 0.000782 is split-specific; BBB 0.000105 stays beside AAA.
 
 ## Further out
 
@@ -72,7 +72,7 @@ Log forbidden rules, split, and test MSE together; stdout is authoritative for s
 
 Day 50 still voted on price-level directions; today starts the return chain with five lagged simple returns and test MSE 0.000081 as the ruler. Day 52 adds a lag4 stump—memorize weights, especially lag4 versus lag3. Do not paste price SSE from days 45–46. Split roles: one person copies stdout, one explains signs, one verifies the seventy-five percent split counts.
 
-Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
+Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics. Unit tests should assert hold-out scores against printed literals. Screenshots should show English keys and six-decimal scores. Use python3; contract integers must not drift.
 
 ## What the run showed
 
@@ -84,4 +84,14 @@ The script should print stdout matching the core block. Implementation: [`five_l
 
 Hand in five lag weights and test MSE 0.000081. Next: one stump on the same lags.
 
-Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; FORBIDDEN and not-a-result lines stay verbatim; do not swap line versus tree MSE or bill columns; lag-5 anchors (MSE 0.000081, volume helped false, bill −18) stay untouched unless you re-run and update the whole contract.
+Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; lag-5 anchors stay untouched unless you re-run the whole contract.
+
+## Study checks
+
+1. First core line: `weight lag 1 = -0.1359` verbatim.
+2. Does the hook cover every contract line?
+3. Hold-out only—what breaks if you score train rows?
+4. Which lag-5 anchors appear today?
+5. How does day 51 connect to day 51?
+6. Why keep English FORBIDDEN/miss-mode lines verbatim?
+

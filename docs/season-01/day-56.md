@@ -16,6 +16,18 @@ train rows=54、test rows=19 与 seventy-five percent 切分一致；写报告�
 
 数据来自 days/data/panel.csv 的 AAA 行：简单收益由复权收盘相邻两日比值减一。有效样本从第五个收益之后才开始，因此比原始行数少五行。默认切分是这些有效行按日期排序后的前百分之七十五训练、其余测试（本段多数课为 train=54、test=19）。同一交易日的 high、low、close 不能解释当日收益；同日 market 收益也不能当作合法标签或特征，除非当天脚本明确允许。
 
+第 56 天把 lag-5 任务写成 stdout 合同：task 行说明用 AAA adj_close 上五个滞后收益预测当日简单收益；target 行重申标签是同日简单收益；forbidden 行禁止同行 high/low/close 作特征。train rows = 54 与 test rows = 19 必须与默认百分之七十五时间切分一致。test MSE = 0.000081 仍是第 51 天 frozen 直线在 hold-out 上的标尺。
+
+读核心块时请把英文键名当作 diff 基准：等号两侧空格、负号、六位小数与 FORBIDDEN 句都不可本地化改写。中文解释可以展开，但不要把 false 写成「否」、不要把 not a result 删掉。批改时优先逐行 diff stdout，再看叙述是否误导。
+
+与第 51 天 frozen 直线对照：凡是 test MSE 课，0.000081 来自同一系数与十九行 hold-out；诊断课改读 MAE、方向或 bill，但不得回写修改 0.000081。第 58 天 0.000782 与 BBB 0.000105 只在指定天出现，禁止自动搬运结论。
+
+第 70 天十行摘要适合 onboarding，但不替代分项脚本；新人仍应至少重跑第 51、56、67 三天验证环境。
+
+研究面板时，lag1 是上一交易日收益，不是上一行 CSV 收益；排序必须是 date 升序，否则 lag 特征与标签同时被破坏。
+
+hold-out 十九行是唯一报告 test MSE 的集合；训练 RSS 或 train MSE 只能作诊断，不能替代 0.000081 标尺。写论文 Results 段时应写明 split 语汇与 name=AAA，Methods 段应写明 forbidden 与 lag 构造，否则读者无法复现 stdout。
+
 ## 核心知识
 
 ```text
@@ -26,7 +38,6 @@ train rows = 54 test rows = 19
 test MSE = 0.000081
 ```
 
-
 return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列数；第 51 天及以后不要把第 45、46 天的树 SSE 贴进 return 表。hold-out 行是唯一评分集合；系数与阈值只在训练段估计。
 
 | 概念 | 本课是否变动 | 备注 |
@@ -35,8 +46,6 @@ return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列�
 | test MSE 0.000081 | 仅 MSE 课重印 | 诊断课改读 MAE/方向/账单 |
 | forbidden OHLC/market | 合同不变 | 见第 56–57、67 天 |
 | train/test 行数 | 默认 54/19 | 第 58 天按年切分例外 |
-
-## 核心块逐行读法
 
 第 56 天 stdout 核心块共 5 行。下面逐行说明读法纪律（不是改写成口语数字）：
 
@@ -54,11 +63,25 @@ lag-5 阶段常用锚点：line test MSE 0.000081（第 51、56、57、69 等课
 
 下一课在 feature build 层拒绝 same-bar OHLC 并打印 FORBIDDEN 标记。
 
-## 与前后课的关系
-
 本日数字与第 51 天相同，价值在 task/forbidden/train/test 四行合同。把它当作 README 里的「可执行规格」。CI 可 snapshot 这五条与 test MSE 0.000081；若 MSE 变了而 task 行没变，说明数据或切分被改。第 57 天会在列级别打印 FORBIDDEN same-bar；本日 forbidden 行是语义层，下一天是构建器层。新人 onboarding：先背 task 行，再背 lag 权重；否则后面诊断课不知道预测什么。与第 40 天泄漏清单对照：same-row OHLC 仍非法，只是今天用英文写进 stdout。
 
 给工程师的阅读顺序：先跑本日脚本对照 stdout，再读正文；不要跳过第 51 天直接读诊断课，否则不知道直线系数从哪来。写单元测试时，对 frozen 系数在 hold-out 上断言 MSE 或账单与打印一致；失败常见原因是混用 train 行或把 BBB 行掺进 AAA。文档截图应至少露出核心块英文键名与六位小数，便于他人 diff。复现环境建议 python3 与仓库 pinned numpy；末位浮点差不改变本课结论，但不应改合同整数如 quiet=10、jump=5、direction wrong=3。
+
+工程师复现顺序：先跑本日脚本抄终端，再读正文；跳过第 51 天会导致不知道系数从哪来。单元测试应对 hold-out 断言与打印一致；常见失败是混 train 行、混 BBB、或把价格 SSE 当 return MSE。
+
+交作业时除核心块外，用一段话说明本课「改的是评分/合同/标签中的哪一项」，并引用至少一个 stdout 数字锚点。截图应露出 bash 命令与英文键名，便于同伴复现。
+
+报告里写「改进」一词时，请标明 baseline 是零预测、朴素均值还是第 51 天 line；不同 baseline 的 improvement 数字不可互换。
+
+FORBIDDEN 行不是装饰：它告诉特征工程代码应 reject 哪些列。实现若 silently drop 列而不打印 false/true，复盘时会失去证据。
+
+方向类分数用 sign(ŷ) 与 sign(y) 比较；水平类分数用 (y−ŷ)² 或 |y−ŷ|。混读两类分数会把 jump 日方向对但水平差大的日子判成「全错」。
+
+bill 表里的 cost 整数来自脚本合同，不是货币单位；读 total bill line = −18.0000 时，把它当作加权失误计数，不是美元。
+
+第 54 天 volume helped=false 表示在该 test stretch 上扩展特征未降 MSE；不代表 volume 在训练段无解释力，也不代表永远无效。
+
+交阶段作业：中文叙述可以长，但附录必须贴 stdout 核心块；没有附录，叙述里的数字无法被同伴独立验证。
 
 ## 实战总结
 
@@ -68,9 +91,4 @@ python3 days/56-next-day-task/next_day_task.py
 
 脚本应打印与核心块一致的 stdout 行。实现是 [`next_day_task.py`](../../days/56-next-day-task/next_day_task.py).
 
-
-
 自检清单：训练/测试行数是否与脚本一致；核心块英文键名、符号、六位小数是否与终端逐字相同；FORBIDDEN 与 not a result 句是否原样保留；不要把 line 与 tree 的 MSE 或 bill 列对调；AAA 的 0.000081 与 volume helped=false 与 bill −18 等 lag-5 锚点未被改写。
-
-
-第 56 天补记：lag-5 合同锚点包括 line test MSE 0.000081、volume helped=false（第 54 天）、total bill line=−18.0000（第 75 天）。改切分或 name 会改分数，但未重跑脚本时不得手改上述字面量。

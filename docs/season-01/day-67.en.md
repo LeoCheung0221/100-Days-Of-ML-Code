@@ -14,6 +14,12 @@ Only lags only 0.000081 counts.
 
 Data come from name AAA in days/data/panel.csv: simple returns from adjusted close ratios minus one. Usable rows start after the fifth return, so five fewer rows than the raw panel. The default split is the first seventy-five percent of those rows in time order for train and the rest for test (often fifty-four train, nineteen test). Same-bar high, low, and close must not explain same-day return; same-day market return is not a valid feature or label unless the day script says otherwise.
 
+Day 67 same-day market lowers MSE illegally—FORBIDDEN; not a result row.
+
+Treat English stdout keys as the diff authority—spaces around equals, signs, six decimals, and FORBIDDEN lines stay verbatim.
+
+Line test MSE 0.000081 stays the frozen day-51 benchmark on nineteen hold-out rows unless this day explicitly changes the split or label.
+
 ## Core
 
 ```text
@@ -23,7 +29,6 @@ same-day market column = FORBIDDEN
 a lower MSE with same-day market is not a result
 ```
 
-
 Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows are the only score set; coefficients and thresholds are fit on train only.
 
 | Idea | Changes this day? | Note |
@@ -32,8 +37,6 @@ Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows 
 | test MSE 0.000081 | Reprinted on MSE days | Diagnostics use MAE/direction/bill |
 | forbidden OHLC/market | Contract holds | See days 56–57, 67 |
 | train/test rows | Default 54/19 | Day 58 calendar cut excepted |
-
-## Core block, line by line
 
 Day 67 prints 4 contract lines:
 
@@ -50,11 +53,33 @@ Day 68 centralizes the legal path in pipeline(name).
 
 Production beta uses prior-day market or rolling estimates—not same-day leakage.
 
-## How this day connects
-
 FORBIDDEN same-day market: 0.000094 is not a result. Legal score stays lags only 0.000081.
 
 Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
+
+Reproduce by running today's script first; unit tests should assert hold-out literals; do not mix train rows or paste price SSE as return MSE.
+
+Hand in one paragraph stating which part of the contract changes today, citing at least one printed anchor.
+
+Paper the train mask before hand-checking rows. Common failures: BBB rows in AAA, or price SSE pasted as return MSE.
+
+Screenshots should show English keys and six-decimal literals; Chinese prose may be long but the terminal is the diff authority.
+
+Frozen-coefficient days score test rows with ŷ=Xβ̂ only—no test refit. Later direction and bill days change the metric, not the day-51 line anchor.
+
+Day 9 row-order invariance needs intact pairs in X; shuffling before lag construction breaks alignment.
+
+Return labels come from adjusted close; do not paste day 1–10 price slopes or RSS into lag-5 return notes.
+
+Slides should pair English stdout keys with Chinese prose—Chinese-only numbers fail literal diff grading.
+
+Day 40 leakage checks column semantics; days 56–57 reject same-bar OHLC—the lists stack, not replace.
+
+Quiet ten, jump five, direction-wrong three are contract integers from day 71—do not round them into percentages.
+
+Compare tree and line on hold-out MSE; lower train MSE alone is not a generalization argument.
+
+Merge panel on date and name, not row index—row-index merges break lag alignment like broken pairs.
 
 ## What the run showed
 
@@ -63,7 +88,5 @@ python3 days/67-market-lag/market_lag.py
 ```
 
 The script should print stdout matching the core block. Implementation: [`market_lag.py`](../../days/67-market-lag/market_lag.py).
-
-
 
 Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; FORBIDDEN and not-a-result lines stay verbatim; do not swap line versus tree MSE or bill columns; lag-5 anchors (MSE 0.000081, volume helped false, bill −18) stay untouched unless you re-run and update the whole contract.

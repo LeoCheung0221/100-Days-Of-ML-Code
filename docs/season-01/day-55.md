@@ -14,6 +14,18 @@
 
 数据来自 days/data/panel.csv 的 AAA 行：简单收益由复权收盘相邻两日比值减一。有效样本从第五个收益之后才开始，因此比原始行数少五行。默认切分是这些有效行按日期排序后的前百分之七十五训练、其余测试（本段多数课为 train=54、test=19）。同一交易日的 high、low、close 不能解释当日收益；同日 market 收益也不能当作合法标签或特征，除非当天脚本明确允许。
 
+三模型共享 test 十九行与同一标签。MSE 排序 line 0.000081 < ridge 0.000098 < tree 0.000174。miss mode 三行英文是误差形状签名：line/ridge 是 lag 的平滑混合，tree 是单 lag 阈值两侧常数。
+
+ridge 在本课比 line 差，说明 λ=20000 收缩 toward zero 在此 hold-out 上不利；不要把第 42 天价格 ridge 斜率 0.0201 搬进 return 表。截距自由、只惩罚 lag 系数的设定仍成立。
+
+读 miss mode 时不要翻译成命中率；它是定性描述，与第 71 天后的 direction/jump 诊断分开存档。幻灯片一张表放 MSE，一张放 miss mode。
+
+第 26 天随机切分与第 58 天日历切分都会改 test 行集合；改集合后所有 MSE/MAE/bill 都要重跑，不能手改单个数字。
+
+第 70 天十行摘要适合 onboarding，但不替代分项脚本；新人仍应至少重跑第 51、56、67 三天验证环境。
+
+研究面板时，lag1 是上一交易日收益，不是上一行 CSV 收益；排序必须是 date 升序，否则 lag 特征与标签同时被破坏。
+
 ## 核心知识
 
 ```text
@@ -25,7 +37,6 @@ ridge miss mode = same blend pulled toward zero misses jumps and size
 tree miss mode = one lag threshold leaves a constant on each side
 ```
 
-
 return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列数；第 51 天及以后不要把第 45、46 天的树 SSE 贴进 return 表。hold-out 行是唯一评分集合；系数与阈值只在训练段估计。
 
 | 概念 | 本课是否变动 | 备注 |
@@ -34,8 +45,6 @@ return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列�
 | test MSE 0.000081 | 仅 MSE 课重印 | 诊断课改读 MAE/方向/账单 |
 | forbidden OHLC/market | 合同不变 | 见第 56–57、67 天 |
 | train/test 行数 | 默认 54/19 | 第 58 天按年切分例外 |
-
-## 核心块逐行读法
 
 第 55 天 stdout 核心块共 6 行。下面逐行说明读法纪律（不是改写成口语数字）：
 
@@ -54,11 +63,27 @@ lag-5 阶段常用锚点：line test MSE 0.000081（第 51、56、57、69 等课
 
 下一课把 task 与 forbidden 写进 stdout 合同。
 
-## 与前后课的关系
-
 三模型横向比较日：line 0.000081、ridge 0.000098、tree 0.000174。请把三行 miss mode 英文当作「误差形状签名」，与第 71 天后的方向/jump 诊断分开存档。岭 λ=20000 只惩罚 lag，截距自由；不要把第 42 天价格 ridge 斜率写进来。第 56 天起强调 stdout 合同，本日仍是同一 split 下的模型赛，不涉及 forbidden 新句。写组会幻灯片时，一张表放 MSE，一张表放 miss mode，不要把 miss mode 翻译成「命中率」。若 ridge 比 line 更好，才值得讨论收缩；本日数据不支持，结论应写「hold-out 上 OLS 仍最小 MSE」。
 
 给工程师的阅读顺序：先跑本日脚本对照 stdout，再读正文；不要跳过第 51 天直接读诊断课，否则不知道直线系数从哪来。写单元测试时，对 frozen 系数在 hold-out 上断言 MSE 或账单与打印一致；失败常见原因是混用 train 行或把 BBB 行掺进 AAA。文档截图应至少露出核心块英文键名与六位小数，便于他人 diff。复现环境建议 python3 与仓库 pinned numpy；末位浮点差不改变本课结论，但不应改合同整数如 quiet=10、jump=5、direction wrong=3。
+
+若 ridge test MSE 低于 line，才讨论正则化收益；本日数据不支持，结论应写 hold-out 上 OLS 仍最小 MSE。tree 0.000174 再次确认第 52 天「灵活但不赢 test」叙事。
+
+团队分工：一人抄 MSE 三行，一人解释 miss mode 英文，第三人只 diff 键名与六位小数。
+
+树桩与 straight line 的对比应写在 hold-out 上：train MSE 更低常见于见过标签的切点，不能自动推广到 test。
+
+若你在 notebook 里 merge panel 与 market 列，请先核对 merge key 是 date+name 而非行号；行号 merge 等价于拆配对。
+
+报告里写「改进」一词时，请标明 baseline 是零预测、朴素均值还是第 51 天 line；不同 baseline 的 improvement 数字不可互换。
+
+FORBIDDEN 行不是装饰：它告诉特征工程代码应 reject 哪些列。实现若 silently drop 列而不打印 false/true，复盘时会失去证据。
+
+方向类分数用 sign(ŷ) 与 sign(y) 比较；水平类分数用 (y−ŷ)² 或 |y−ŷ|。混读两类分数会把 jump 日方向对但水平差大的日子判成「全错」。
+
+bill 表里的 cost 整数来自脚本合同，不是货币单位；读 total bill line = −18.0000 时，把它当作加权失误计数，不是美元。
+
+第 54 天 volume helped=false 表示在该 test stretch 上扩展特征未降 MSE；不代表 volume 在训练段无解释力，也不代表永远无效。
 
 ## 实战总结
 
@@ -68,9 +93,4 @@ python3 days/55-three-miss-modes/three_miss_modes.py
 
 脚本应打印与核心块一致的 stdout 行。实现是 [`three_miss_modes.py`](../../days/55-three-miss-modes/three_miss_modes.py).
 
-
-
 自检清单：训练/测试行数是否与脚本一致；核心块英文键名、符号、六位小数是否与终端逐字相同；FORBIDDEN 与 not a result 句是否原样保留；不要把 line 与 tree 的 MSE 或 bill 列对调；AAA 的 0.000081 与 volume helped=false 与 bill −18 等 lag-5 锚点未被改写。
-
-
-第 55 天补记：lag-5 合同锚点包括 line test MSE 0.000081、volume helped=false（第 54 天）、total bill line=−18.0000（第 75 天）。改切分或 name 会改分数，但未重跑脚本时不得手改上述字面量。

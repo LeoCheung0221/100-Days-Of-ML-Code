@@ -14,6 +14,12 @@ Frozen line magnitudes stay below one percent here.
 
 Data come from name AAA in days/data/panel.csv: simple returns from adjusted close ratios minus one. Usable rows start after the fifth return, so five fewer rows than the raw panel. The default split is the first seventy-five percent of those rows in time order for train and the rest for test (often fifty-four train, nineteen test). Same-bar high, low, and close must not explain same-day return; same-day market return is not a valid feature or label unless the day script says otherwise.
 
+Day 77 threshold 0.0100 yields zero speaking days—not defined MAE.
+
+Treat English stdout keys as the diff authority—spaces around equals, signs, six decimals, and FORBIDDEN lines stay verbatim.
+
+Line test MSE 0.000081 stays the frozen day-51 benchmark on nineteen hold-out rows unless this day explicitly changes the split or label.
+
 ## Core
 
 ```text
@@ -21,7 +27,6 @@ threshold = 0.0100
 days speaking = 0
 mean abs error when speaking = not defined
 ```
-
 
 Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows are the only score set; coefficients and thresholds are fit on train only.
 
@@ -33,8 +38,6 @@ Days 71–80 mostly diagnose the same five-lag line frozen from day 51 train; th
 | test MSE 0.000081 | Reprinted on MSE days | Diagnostics use MAE/direction/bill |
 | forbidden OHLC/market | Contract holds | See days 56–57, 67 |
 | train/test rows | Default 54/19 | Day 58 calendar cut excepted |
-
-## Core block, line by line
 
 Day 77 prints 3 contract lines:
 
@@ -50,11 +53,37 @@ Days 71–80 mostly diagnose the same five-lag line frozen from day 51 train; th
 
 Day 78 lowers threshold to 0.0010 with seventeen speaking days.
 
-## How this day connects
-
 Threshold 0.0100 yields zero speaking days; MAE undefined. Day 78 lowers threshold to 0.0010.
 
 Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
+
+Reproduce by running today's script first; unit tests should assert hold-out literals; do not mix train rows or paste price SSE as return MSE.
+
+Hand in one paragraph stating which part of the contract changes today, citing at least one printed anchor.
+
+Compare tree and line on hold-out MSE; lower train MSE alone is not a generalization argument.
+
+Merge panel on date and name, not row index—row-index merges break lag alignment like broken pairs.
+
+Random and calendar splits change the test row set—rerun scripts instead of hand-editing one metric.
+
+Name the baseline whenever you write improvement—zero forecast, naive mean, and day-51 line differ.
+
+FORBIDDEN lines are executable policy, not decoration—silent column drops erase audit evidence.
+
+Day 70’s ten lines onboard newcomers but do not replace rerunning days 51, 56, and 67.
+
+Direction scores use signs; level scores use squared or absolute error—do not mix the narratives.
+
+Bill totals are weighted mistake counts, not currency—read −18.0000 as contract arithmetic.
+
+Lag1 means previous trading day, not previous CSV row—sort by date before shifting.
+
+Volume helped false is stretch-specific on nineteen test rows—not a universal claim about volume.
+
+Long Chinese prose is fine; append the stdout core block so peers can verify literals.
+
+Nineteen hold-out rows are the only legitimate test MSE set; train RSS or train MSE is diagnostic, not a headline score beside 0.000081.
 
 ## What the run showed
 
@@ -63,7 +92,5 @@ python3 days/77-high-threshold/high_threshold.py
 ```
 
 The script should print stdout matching the core block. Implementation: [`high_threshold.py`](../../days/77-high-threshold/high_threshold.py).
-
-
 
 Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; FORBIDDEN and not-a-result lines stay verbatim; do not swap line versus tree MSE or bill columns; lag-5 anchors (MSE 0.000081, volume helped false, bill −18) stay untouched unless you re-run and update the whole contract.

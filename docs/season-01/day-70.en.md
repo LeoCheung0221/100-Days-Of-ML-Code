@@ -16,6 +16,12 @@ Recap does not replace per-day scripts.
 
 Data come from name AAA in days/data/panel.csv: simple returns from adjusted close ratios minus one. Usable rows start after the fifth return, so five fewer rows than the raw panel. The default split is the first seventy-five percent of those rows in time order for train and the rest for test (often fifty-four train, nineteen test). Same-bar high, low, and close must not explain same-day return; same-day market return is not a valid feature or label unless the day script says otherwise.
 
+Day 70 ten-line stdout compresses the lag-5 contract without refitting new models.
+
+Treat English stdout keys as the diff authority—spaces around equals, signs, six decimals, and FORBIDDEN lines stay verbatim.
+
+Line test MSE 0.000081 stays the frozen day-51 benchmark on nineteen hold-out rows unless this day explicitly changes the split or label.
+
 ## Core
 
 ```text
@@ -31,7 +37,6 @@ fill = close to close slippage zero
 no live order leaves this script
 ```
 
-
 Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows are the only score set; coefficients and thresholds are fit on train only.
 
 | Idea | Changes this day? | Note |
@@ -40,8 +45,6 @@ Test MSE on returns is not the price-level SSE from days 45–46. Hold-out rows 
 | test MSE 0.000081 | Reprinted on MSE days | Diagnostics use MAE/direction/bill |
 | forbidden OHLC/market | Contract holds | See days 56–57, 67 |
 | train/test rows | Default 54/19 | Day 58 calendar cut excepted |
-
-## Core block, line by line
 
 Day 70 prints 10 contract lines:
 
@@ -64,11 +67,17 @@ From day 71 onward emphasizes direction and quiet/jump diagnostics.
 
 Use the ten lines as onboarding before deep dives.
 
-## How this day connects
-
 Ten-line contract recap including line MSE 0.000081 and volume did not help. Day 71 starts quiet/jump/direction diagnostics.
 
 Engineer reading order: run today's script first, then read the page; do not skip day 51 before diagnostics or the frozen coefficients lose context. Unit tests should assert hold-out scores against printed literals; common failures mix train rows or tickers. Screenshots should show English keys and six-decimal scores. Use python3; tiny float noise is fine, but contract integers like quiet=10, jump=5, and direction wrong=3 must not drift.
+
+Reproduce by running today's script first; unit tests should assert hold-out literals; do not mix train rows or paste price SSE as return MSE.
+
+Hand in one paragraph stating which part of the contract changes today, citing at least one printed anchor.
+
+Merge panel on date and name, not row index—row-index merges break lag alignment like broken pairs.
+
+Random and calendar splits change the test row set—rerun scripts instead of hand-editing one metric.
 
 ## What the run showed
 
@@ -77,7 +86,5 @@ python3 days/70-ten-lines/ten_lines.py
 ```
 
 The script should print stdout matching the core block. Implementation: [`ten_lines.py`](../../days/70-ten-lines/ten_lines.py).
-
-
 
 Checklist: train/test counts match the script; English keys, signs, and six-decimal literals match the terminal; FORBIDDEN and not-a-result lines stay verbatim; do not swap line versus tree MSE or bill columns; lag-5 anchors (MSE 0.000081, volume helped false, bill −18) stay untouched unless you re-run and update the whole contract.

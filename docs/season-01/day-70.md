@@ -18,6 +18,12 @@ line test MSE 0.000081 必须与第 51 天一致；volume did not help 与第 54
 
 数据来自 days/data/panel.csv 的 AAA 行：简单收益由复权收盘相邻两日比值减一。有效样本从第五个收益之后才开始，因此比原始行数少五行。默认切分是这些有效行按日期排序后的前百分之七十五训练、其余测试（本段多数课为 train=54、test=19）。同一交易日的 high、low、close 不能解释当日收益；同日 market 收益也不能当作合法标签或特征，除非当天脚本明确允许。
 
+第 70 天十行摘要压合同：data/task/split/baseline/forbidden/line MSE/tree 一句/volume 无效/fill/无 live order。逐项对齐第 51–69 课，不重算新模型。
+
+读核心块时请把英文键名当作 diff 基准：等号两侧空格、负号、六位小数与 FORBIDDEN 句都不可本地化改写。中文解释可以展开，但不要把 false 写成「否」、不要把 not a result 删掉。批改时优先逐行 diff stdout，再看叙述是否误导。
+
+与第 51 天 frozen 直线对照：凡是 test MSE 课，0.000081 来自同一系数与十九行 hold-out；诊断课改读 MAE、方向或 bill，但不得回写修改 0.000081。第 58 天 0.000782 与 BBB 0.000105 只在指定天出现，禁止自动搬运结论。
+
 ## 核心知识
 
 ```text
@@ -33,7 +39,6 @@ fill = close to close slippage zero
 no live order leaves this script
 ```
 
-
 return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列数；第 51 天及以后不要把第 45、46 天的树 SSE 贴进 return 表。hold-out 行是唯一评分集合；系数与阈值只在训练段估计。
 
 | 概念 | 本课是否变动 | 备注 |
@@ -42,8 +47,6 @@ return 上的 test MSE 与早期「时间对价格水平」的 SSE 不是一列�
 | test MSE 0.000081 | 仅 MSE 课重印 | 诊断课改读 MAE/方向/账单 |
 | forbidden OHLC/market | 合同不变 | 见第 56–57、67 天 |
 | train/test 行数 | 默认 54/19 | 第 58 天按年切分例外 |
-
-## 核心块逐行读法
 
 第 70 天 stdout 核心块共 10 行。下面逐行说明读法纪律（不是改写成口语数字）：
 
@@ -66,11 +69,13 @@ lag-5 阶段常用锚点：line test MSE 0.000081（第 51、56、57、69 等课
 
 用十行做 onboarding：新人先核对 forbidden 与 MSE，再读诊断课。
 
-## 与前后课的关系
-
 十行 stdout 是阶段一 lag-5 合同摘要：data、task、split、baseline、forbidden、line MSE 0.000081、tree 一句、volume 无效、fill、无 live order。它不重算模型；逐项应对前几课。volume did not help 对齐第 54 天 false；line MSE 对齐第 51 天。第 71 天起重读 quiet/jump/方向，MSE 不再是主角。新人先用十行自检，再跑 51–69 分项脚本验证。交阶段总结：贴十行 + 任选三课 deep dive，不要只贴十行。
 
 给工程师的阅读顺序：先跑本日脚本对照 stdout，再读正文；不要跳过第 51 天直接读诊断课，否则不知道直线系数从哪来。写单元测试时，对 frozen 系数在 hold-out 上断言 MSE 或账单与打印一致；失败常见原因是混用 train 行或把 BBB 行掺进 AAA。文档截图应至少露出核心块英文键名与六位小数，便于他人 diff。复现环境建议 python3 与仓库 pinned numpy；末位浮点差不改变本课结论，但不应改合同整数如 quiet=10、jump=5、direction wrong=3。
+
+工程师复现顺序：先跑本日脚本抄终端，再读正文；跳过第 51 天会导致不知道系数从哪来。单元测试应对 hold-out 断言与打印一致；常见失败是混 train 行、混 BBB、或把价格 SSE 当 return MSE。
+
+交作业时除核心块外，用一段话说明本课「改的是评分/合同/标签中的哪一项」，并引用至少一个 stdout 数字锚点。截图应露出 bash 命令与英文键名，便于同伴复现。
 
 ## 实战总结
 
@@ -80,9 +85,4 @@ python3 days/70-ten-lines/ten_lines.py
 
 脚本应打印与核心块一致的 stdout 行。实现是 [`ten_lines.py`](../../days/70-ten-lines/ten_lines.py).
 
-
-
 自检清单：训练/测试行数是否与脚本一致；核心块英文键名、符号、六位小数是否与终端逐字相同；FORBIDDEN 与 not a result 句是否原样保留；不要把 line 与 tree 的 MSE 或 bill 列对调；AAA 的 0.000081 与 volume helped=false 与 bill −18 等 lag-5 锚点未被改写。
-
-
-第 70 天补记：lag-5 合同锚点包括 line test MSE 0.000081、volume helped=false（第 54 天）、total bill line=−18.0000（第 75 天）。改切分或 name 会改分数，但未重跑脚本时不得手改上述字面量。

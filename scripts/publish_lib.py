@@ -215,26 +215,24 @@ def commit_subject(day: int) -> str:
 
 
 def zh_day_label(n: int) -> str:
-    ones = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
-    if n == 100:
-        return "第一百天"
-    if n <= 10:
-        return "第十天" if n == 10 else f"第{ones[n]}天"
-    if n < 20:
-        return f"第十{ones[n - 10]}天"
-    if n % 10 == 0:
-        return f"第{ones[n // 10]}十天"
-    return f"第{ones[n // 10]}十{ones[n % 10]}天"
+    return f"第{n:02d}天"
+
+
+def en_day_label(n: int) -> str:
+    return f"Day {n:02d}"
 
 
 def extract_root_readme_link_line(
     local_readme: str, day: int, *, english: bool = False
 ) -> str | None:
-    label = f"Day {day}" if english else zh_day_label(day)
+    label = en_day_label(day) if english else zh_day_label(day)
     for line in local_readme.splitlines():
         if line.startswith(f"- [{label}　"):
             return line
+    # Legacy index formats
     for line in local_readme.splitlines():
+        if line.startswith(f"- [第") and f"day-{day:02d}." in line:
+            return line
         if re.match(rf"^- \[\*\*{day}\s", line) or re.match(rf"^- \[\*\*{day:02d}\s", line):
             return line
     return None
@@ -266,8 +264,11 @@ def patch_root_readme(
     link = extract_root_readme_link_line(local_readme, day, english=english)
     if not link:
         return out
-    label = f"Day {day}" if english else zh_day_label(day)
+    label = en_day_label(day) if english else zh_day_label(day)
+    zh_plain = re.compile(rf"^- 第{day:02d}天　")
+    en_plain = re.compile(rf"^- Day {day:02d}　")
     for plain in (
+        zh_plain if not english else en_plain,
         re.compile(rf"^- \*\*{day}\s"),
         re.compile(rf"^- \*\*{day:02d}\s"),
         re.compile(rf"^- \[{re.escape(label)}　[^\]]+\]\("),  # already linked

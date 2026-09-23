@@ -20,7 +20,7 @@
 
 ## Phase I · Models
 
-Each day's calculation is in its own note. Only the titles are listed here. Days 1 through 10 run.
+Each day's calculation is in its own note. Only the titles are listed here. Days 1 through 50 run.
 
 ### 01 – 10
 
@@ -37,55 +37,55 @@ Each day's calculation is in its own note. Only the titles are listed here. Days
 
 ### 11 – 20
 
-- **11**　Direction labels
-- **12**　A threshold
-- **13**　Threshold sensitivity
-- **14**　A constant baseline
-- **15**　Two kinds of misclassification
-- **16**　Degree of being up
-- **17**　A check on stated confidence
-- **18**　Return and volume
-- **19**　Unscaled volume
-- **20**　A noise column
+- [**11**　Direction labels](docs/season-01/day-11.en.md)
+- [**12**　A threshold](docs/season-01/day-12.en.md)
+- [**13**　Threshold sensitivity](docs/season-01/day-13.en.md)
+- [**14**　A constant baseline](docs/season-01/day-14.en.md)
+- [**15**　Two kinds of misclassification](docs/season-01/day-15.en.md)
+- [**16**　Degree of being up](docs/season-01/day-16.en.md)
+- [**17**　A check on stated confidence](docs/season-01/day-17.en.md)
+- [**18**　Return and volume](docs/season-01/day-18.en.md)
+- [**19**　Unscaled volume](docs/season-01/day-19.en.md)
+- [**20**　A noise column](docs/season-01/day-20.en.md)
 
 ### 21 – 30
 
-- **21**　A fixed close table
-- **22**　Yesterday's direction
-- **23**　Three days the same way
-- **24**　The rule on the next stretch
-- **25**　Direction and price together
-- **26**　A random split
-- **27**　A split by time
-- **28**　Today's high
-- **29**　Standardize with a future open
-- **30**　A fixed lookback
+- [**21**　A fixed close table](docs/season-01/day-21.en.md)
+- [**22**　Yesterday's direction](docs/season-01/day-22.en.md)
+- [**23**　Three days the same way](docs/season-01/day-23.en.md)
+- [**24**　The rule on the next stretch](docs/season-01/day-24.en.md)
+- [**25**　Direction and price together](docs/season-01/day-25.en.md)
+- [**26**　A random split](docs/season-01/day-26.en.md)
+- [**27**　A split by time](docs/season-01/day-27.en.md)
+- [**28**　Today's high](docs/season-01/day-28.en.md)
+- [**29**　Standardize with a future open](docs/season-01/day-29.en.md)
+- [**30**　A fixed lookback](docs/season-01/day-30.en.md)
 
 ### 31 – 40
 
-- **31**　Noise in a three-day window
-- **32**　A sixty-day window
-- **33**　Standardize on the training stretch
-- **34**　Two ways to fill a gap
-- **35**　Gaps after a halt
-- **36**　Adjusted and unadjusted
-- **37**　Several names, mixed split
-- **38**　Lag the signal one day
-- **39**　A minimum round trip
-- **40**　A leakage list
+- [**31**　Noise in a three-day window](docs/season-01/day-31.en.md)
+- [**32**　A sixty-day window](docs/season-01/day-32.en.md)
+- [**33**　Standardize on the training stretch](docs/season-01/day-33.en.md)
+- [**34**　Two ways to fill a gap](docs/season-01/day-34.en.md)
+- [**35**　Gaps after a halt](docs/season-01/day-35.en.md)
+- [**36**　Adjusted and unadjusted](docs/season-01/day-36.en.md)
+- [**37**　Several names, mixed split](docs/season-01/day-37.en.md)
+- [**38**　Lag the signal one day](docs/season-01/day-38.en.md)
+- [**39**　A minimum round trip](docs/season-01/day-39.en.md)
+- [**40**　A leakage list](docs/season-01/day-40.en.md)
 
 ### 41 – 50
 
-- **41**　The line on a longer sample
-- **42**　Ridge
-- **43**　A local average
-- **44**　A shallow tree
-- **45**　A deeper tree
-- **46**　Three fits, next sample
-- **47**　Linear extrapolation
-- **48**　A tree does not extrapolate
-- **49**　One jump, three models
-- **50**　A vote of three
+- [**41**　The line on a longer sample](docs/season-01/day-41.en.md)
+- [**42**　Ridge](docs/season-01/day-42.en.md)
+- [**43**　A local average](docs/season-01/day-43.en.md)
+- [**44**　A shallow tree](docs/season-01/day-44.en.md)
+- [**45**　A deeper tree](docs/season-01/day-45.en.md)
+- [**46**　Three fits, next sample](docs/season-01/day-46.en.md)
+- [**47**　Linear extrapolation](docs/season-01/day-47.en.md)
+- [**48**　A tree does not extrapolate](docs/season-01/day-48.en.md)
+- [**49**　One jump, three models](docs/season-01/day-49.en.md)
+- [**50**　A vote of three](docs/season-01/day-50.en.md)
 
 ### 51 – 60
 

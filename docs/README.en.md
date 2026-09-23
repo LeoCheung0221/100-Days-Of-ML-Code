@@ -9,4 +9,4 @@
 | Phase III | Portfolio and constraints |
 | Phase IV | Execution |
 
-Notes for days 1 through 10 are in [Phase I](season-01/README.en.md).
+Notes for days 1 through 50 are in [Phase I](season-01/README.en.md).

@@ -2,7 +2,7 @@
 
 # Phase I · Models
 
-Note: days 1 through 50 have notes, linked in the table. The remaining days are titles only.
+Note: days 1 through 80 have notes, linked in the table. The remaining days are titles only.
 
 Back to the [front page](../../README.en.md).
 

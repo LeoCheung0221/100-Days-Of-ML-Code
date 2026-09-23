@@ -20,7 +20,7 @@
 
 ## Phase I · Models
 
-Each day's calculation is in its own note. Only the titles are listed here. Days 1 through 50 run.
+Each day's calculation is in its own note. Only the titles are listed here. Days 1 through 80 run.
 
 ### 01 – 10
 
@@ -89,42 +89,42 @@ Each day's calculation is in its own note. Only the titles are listed here. Days
 
 ### 51 – 60
 
-- **51**　Linear weights on five returns
-- **52**　A tree on the same five
-- **53**　The random seed
-- **54**　Drop volume
-- **55**　Three ways of missing
-- **56**　Next-day return
-- **57**　Refuse today's prices
-- **58**　Split by year
-- **59**　A zero-return baseline
-- **60**　The line against the baseline
+- [**51　Linear weights on five returns**](docs/season-01/day-51.en.md)
+- [**52　A tree on the same five**](docs/season-01/day-52.en.md)
+- [**53　The random seed**](docs/season-01/day-53.en.md)
+- [**54　Drop volume**](docs/season-01/day-54.en.md)
+- [**55　Three ways of missing**](docs/season-01/day-55.en.md)
+- [**56　Next-day return**](docs/season-01/day-56.en.md)
+- [**57　Refuse today's prices**](docs/season-01/day-57.en.md)
+- [**58　Split by year**](docs/season-01/day-58.en.md)
+- [**59　A zero-return baseline**](docs/season-01/day-59.en.md)
+- [**60　The line against the baseline**](docs/season-01/day-60.en.md)
 
 ### 61 – 70
 
-- **61**　The tree against the baseline
-- **62**　The most confident tenth
-- **63**　Residuals by month
-- **64**　Drop the month that carries the year
-- **65**　A second name
-- **66**　Excess return
-- **67**　Shift the market column
-- **68**　One entry point
-- **69**　The fill assumption
-- **70**　The task in ten lines
+- [**61　The tree against the baseline**](docs/season-01/day-61.en.md)
+- [**62　The most confident tenth**](docs/season-01/day-62.en.md)
+- [**63　Residuals by month**](docs/season-01/day-63.en.md)
+- [**64　Drop the month that carries the year**](docs/season-01/day-64.en.md)
+- [**65　A second name**](docs/season-01/day-65.en.md)
+- [**66　Excess return**](docs/season-01/day-66.en.md)
+- [**67　Shift the market column**](docs/season-01/day-67.en.md)
+- [**68　One entry point**](docs/season-01/day-68.en.md)
+- [**69　The fill assumption**](docs/season-01/day-69.en.md)
+- [**70　The task in ten lines**](docs/season-01/day-70.en.md)
 
 ### 71 – 80
 
-- **71**　Three residual classes
-- **72**　Quiet days
-- **73**　Days the direction was wrong
-- **74**　The five largest residuals
-- **75**　A tariff on mistakes
-- **76**　A miss and a false alarm
-- **77**　A higher threshold
-- **78**　A lower threshold
-- **79**　Rank again under the tariff
-- **80**　The mistake you will carry
+- [**71　Three residual classes**](docs/season-01/day-71.en.md)
+- [**72　Quiet days**](docs/season-01/day-72.en.md)
+- [**73　Days the direction was wrong**](docs/season-01/day-73.en.md)
+- [**74　The five largest residuals**](docs/season-01/day-74.en.md)
+- [**75　A tariff on mistakes**](docs/season-01/day-75.en.md)
+- [**76　A miss and a false alarm**](docs/season-01/day-76.en.md)
+- [**77　A higher threshold**](docs/season-01/day-77.en.md)
+- [**78　A lower threshold**](docs/season-01/day-78.en.md)
+- [**79　Rank again under the tariff**](docs/season-01/day-79.en.md)
+- [**80　The mistake you will carry**](docs/season-01/day-80.en.md)
 
 ### 81 – 90
 

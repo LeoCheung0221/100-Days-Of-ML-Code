@@ -1,4 +1,4 @@
-"""Shared series and estimators for days 11–50.
+"""Shared series and estimators for days 11–60.
 
 The five closes of days 1–10 stay in the early sessions. From day 21 the
 scripts read days/data/panel.csv and do not resample it.

@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+scripts/publish_state.json
+scripts/.publish_staging/
+scripts/.publish.lock
+scripts/publish.log

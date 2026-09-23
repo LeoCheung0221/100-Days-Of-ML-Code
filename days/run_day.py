@@ -1,4 +1,4 @@
-"""Days 11–81. Each day_xx prints the numbers its note quotes."""
+"""Days 11–82. Each day_xx prints the numbers its note quotes."""
 
 from __future__ import annotations
 
@@ -1024,6 +1024,20 @@ def day_81() -> None:
     print("mean abs error high vol weeks =", fmt(float(err[high].mean()), 6))
     print("mean abs error low vol weeks =", fmt(float(err[low].mean()), 6))
 
+def day_82() -> None:
+    test_y, test_hat, dates = _lag5_line_test()
+    abs_y = np.abs(test_y)
+    p75 = float(np.percentile(abs_y, 75))
+    high, _, _ = _week_vol_high_low(test_y, dates)
+    jump_high = high[abs_y[high] >= p75]
+    err = np.abs(test_y - test_hat)
+    print("regime = high volatility ISO weeks on test stretch")
+    print("jump days in high vol weeks =", len(jump_high))
+    if len(jump_high):
+        print("line mean abs error on those jump days =", fmt(float(err[jump_high].mean()), 6))
+    else:
+        print("line mean abs error on those jump days = not defined")
+
 def day_50() -> None:
     train_t, train_y, test_t, test_y = _train_test()
     _, _, dates, cut = _level()
@@ -1052,7 +1066,7 @@ def day_50() -> None:
     print("vote wrong =", str(bool(vote_wrong[index])).lower())
     print("days all three and the vote are wrong =", int(all_three.sum()))
 
-DAYS = {i: globals()[f"day_{i}"] for i in range(11, 82)}
+DAYS = {i: globals()[f"day_{i}"] for i in range(11, 83)}
 
 
 def main(day: int) -> None:
